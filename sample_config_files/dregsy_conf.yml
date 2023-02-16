@@ -1,0 +1,54 @@
+# relay type, either 'skopeo' or 'docker'
+relay: skopeo
+
+# relay config sections
+skopeo:
+  # path to the skopeo binary; defaults to 'skopeo', in which case it needs to
+  # be in PATH
+  binary: skopeo
+  # directory under which to look for client certs & keys, as well as CA certs
+  # (see note below)
+  certs-dir: /etc/skopeo/certs.d
+
+docker:
+  # Docker host to use as the relay
+  dockerhost: unix:///var/run/docker.sock
+  # Docker API version to use, defaults to 1.24
+  api-version: 1.24
+
+# list of sync tasks
+tasks:
+
+  - name: task1 # required
+
+    # interval in seconds at which the task should be run; when omitted,
+    # the task is only run once at start-up
+    interval: 60
+
+    # determines whether for this task, more verbose output should be
+    # produced; defaults to false when omitted
+    verbose: true
+
+    # 'source' and 'target' are both required and describe the source and
+    # target registries for this task:
+    #  - 'registry' points to the server; required
+    #  - 'auth' contains the base64 encoded credentials for the registry
+    #    in JSON form {"username": "...", "password": "..."}
+    #  - 'auth-refresh' specifies an interval for automatic retrieval of
+    #    credentials; only for AWS ECR (see below)
+    #  - 'skip-tls-verify' determines whether to skip TLS verification for the
+    #    registry server (only for 'skopeo', see note below); defaults to false
+    source:
+      registry: registry.hub.docker.com
+      auth: teentakle1212
+
+    target:
+      registry: localhost
+      skip-tls-verify: true
+
+    # 'mappings' is a list of 'from':'to' pairs that define mappings of image
+    # paths in the source registry to paths in the destination; 'from' is
+    # required, while 'to' can be dropped if the path should remain the same as
+    # 'from'. Additionally, the tags being synced for a mapping can be limited
+    # by providing a 'tags' list. When omitted, all image tags are synced.
+    mappings_file: /mappings_list.yaml
