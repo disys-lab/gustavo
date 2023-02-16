@@ -1,0 +1,10 @@
+docker-py==1.10.6
+NebulaPythonSDK==2.8.0
+python-dotenv==0.19.0
+pyinstaller==4.5.1
+pyYAML==5.4.1
+Click==7.1.2
+urllib3==1.25.2
+requests==2.23.0
+six==1.16.0
+python-on-whales==0.25.0
