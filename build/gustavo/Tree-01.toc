@@ -1,7 +1,0 @@
-('/Users/pramanan3/miniconda3/envs/SCARLETS/lib/python3.7/site-packages/async_timeout-4.0.2-py3.7.egg',
- None,
- {'*.abi3.so', '*.py', 'EGG-INFO', '*.so', '*.cpython-37m-darwin.so', '*.pyc'},
- 'DATA',
- [('async_timeout/py.typed',
-   '/Users/pramanan3/miniconda3/envs/SCARLETS/lib/python3.7/site-packages/async_timeout-4.0.2-py3.7.egg/async_timeout/py.typed',
-   'DATA')])

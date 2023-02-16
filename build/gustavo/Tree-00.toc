@@ -1,5 +1,0 @@
-('/Users/pramanan3/miniconda3/envs/SCARLETS/lib/python3.7/site-packages/Deprecated-1.2.13-py3.7.egg',
- None,
- {'*.abi3.so', '*.py', 'EGG-INFO', '*.so', '*.cpython-37m-darwin.so', '*.pyc'},
- 'DATA',
- [])

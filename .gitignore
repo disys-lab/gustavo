@@ -1,0 +1,9 @@
+build/
+.idea/
+nginx_app_config.yaml
+alpine_app_config.yaml
+app_settings.yaml
+*.spec
+__pycache__/
+dist/osx/gustavo
+.DS_Store
