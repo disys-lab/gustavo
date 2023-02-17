@@ -7,3 +7,4 @@ app_settings.yaml
 __pycache__/
 dist/osx/gustavo
 .DS_Store
+sample_config_files/

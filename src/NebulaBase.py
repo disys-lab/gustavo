@@ -13,7 +13,7 @@ class FileUndefined(Exception):
 
 class NebulaBase:
     """
-    NebulaBase class holds the configuration parameters as defined in the BLOCKALYTICS_CONFIG_FILE
+    NebulaBase class holds the configuration parameters as defined in the GUSTAVO_CONFIG_FILE
 
     Attributes
     ----------
@@ -75,23 +75,17 @@ class NebulaBase:
         if "GUSTAVO_CONFIG_FILE" in os.environ:
             self.base_config = os.environ["GUSTAVO_CONFIG_FILE"]
             if not os.path.isfile(self.base_config):
-                # raise Exception("BLOCKALYTICS_CONFIG_FILE: {} path not valid".format(self.base_config))
                 click.echo(
                     click.style(
-                        "BLOCKALYTICS_CONFIG_FILE: {} path not valid".format(
+                        "GUSTAVO_CONFIG_FILE: {} path not valid".format(
                             self.base_config
                         ),
                         fg="red",
                     )
                 )
-                # sys.exit()
-                # return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid"}
                 raise PathInvalid
         else:
-            # raise Exception("BLOCKALYTICS_CONFIG_FILE not defined")
             click.echo(click.style("GUSTAVO_CONFIG_FILE not defined", fg="red"))
-            # sys.exit()
-            # return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
             raise FileUndefined
 
         self.REGISTRY_IP = None

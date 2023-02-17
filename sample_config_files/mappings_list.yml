@@ -4,6 +4,6 @@ mappings:
         to: nginx
         tags: ['latest']
 
-      - from: nebulaorchestrator/test_linreg
+      - from: homert2admin/test_linreg
         to: test_scarlets
         tags: ['latest']
