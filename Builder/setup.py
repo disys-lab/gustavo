@@ -41,8 +41,6 @@ setup(
         "requests==2.28.1",
         "six==1.16.0",
         "Flask==2.2.2",
-        "web3==5.10.0",
-        "py-solc-x==0.8.2",
         "redis==4.3.4",
         "gunicorn==20.1.0",
         "retrying==1.3.3",
