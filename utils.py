@@ -282,7 +282,6 @@ def createWorker(name, device_group, image, prefix, expire_time):
         name = name + "_" + device_group
 
     try:
-        local_ip = socket.gethostbyname(socket.gethostname())
         print("Spinning up Worker in " + bcmp.WORKER_NMODE + " network mode")
         if bcmp.WORKER_NMODE == "host":
 
@@ -293,7 +292,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
                 network_mode=bcmp.WORKER_NMODE,
                 environment=[
                     "DEVICE_GROUP=" + str(device_group),
-                    "HOST_MACHINE_IP=" + str(local_ip),
+                    #"HOST_MACHINE_IP=" + str(local_ip),
                     "REDIS_HOST=" + str(bcmp.REDIS_IP),
                     "REDIS_PORT=" + str(bcmp.REDIS_PORT),
                     "REDIS_AUTH_TOKEN=" + str(bcmp.REDIS_AUTH_TOKEN),
@@ -323,7 +322,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
                 security_opt=["label=disable"],
                 environment=[
                     "DEVICE_GROUP=" + str(device_group),
-                    "HOST_MACHINE_IP=" + str(local_ip),
+                    #"HOST_MACHINE_IP=" + str(local_ip),
                     "REDIS_HOST=" + str(bcmp.REDIS_IP),
                     "REDIS_PORT=" + str(bcmp.REDIS_PORT),
                     "REDIS_AUTH_TOKEN=" + str(bcmp.REDIS_AUTH_TOKEN),

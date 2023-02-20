@@ -1,16 +1,14 @@
-test_scarlets:
-    docker_image: "10.0.0.70:5000/library/alpine"
+test_linreg:
+    docker_image: "10.227.86.91:5001/nginx"
     env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
+      - REDIS_DB_HOST: "10.227.86.91"
+      - REDIS_DB_PORT: "6379"
+      - REDIS_DB_PWD: "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
     networks:
-        - "nebula"
+        - "host"
     volumes:
-      - "/tmp/:/tmp/"
-      - "/var/tmp/:/var/tmp/:rw"
-#    starting_ports:
-#      - 81: 80
-
+      - "/tmp/:/tmp/1"
+      - "/var/tmp/:/var/tmp/1:rw"
     running: True
     rolling_restart: True
     containers_per:
@@ -38,42 +36,3 @@ test_scarlets2:
     privileged: False
     devices: []
 
-test_scarlets3:
-    docker_image: "10.0.0.70:5000/nginx"
-    env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
-    networks:
-        - "nebula"
-    volumes:
-      - "/tmp/:/tmp/"
-      - "/var/tmp/:/var/tmp/:rw"
-#    starting_ports:
-#      - 1000: 1000
-
-    running: True
-    rolling_restart: True
-    containers_per:
-        server: 1
-    privileged: False
-    devices: []
-
-test_scarlets4:
-    docker_image: "10.0.0.70:5000/test_scarlets"
-    env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
-    networks:
-        - "nebula"
-    volumes:
-      - "/tmp/:/tmp/"
-      - "/var/tmp/:/var/tmp/:rw"
-#    starting_ports:
-#      - 1000: 1000
-
-    running: True
-    rolling_restart: True
-    containers_per:
-        server: 1
-    privileged: False
-    devices: []

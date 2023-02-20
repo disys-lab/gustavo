@@ -40,10 +40,15 @@ tasks:
     #    registry server (only for 'skopeo', see note below); defaults to false
     source:
       registry: registry.hub.docker.com
-      auth: eyJ1c2VybmFtZSI6ICJob21lUnQyYWRtaW4iLCAicGFzc3dvcmQiOiAiVGVlblRha2xlMTIxMiJ9
+      auth: eyJ1c2VybmFtZSI6ICJob21lcnQyYWRtaW4iLCAicGFzc3dvcmQiOiAiVGVlblRha2xlMTIxMiJ9
+
+      #eyJ1c2VybmFtZSI6ICJjcm93bGV5YmxvY2thbHl0aWNzcG9jIiwgInBhc3N3b3JkIjogIlRlZW5UYWtsZTEyMTIifQ==
+
+      #{"username": "crowleyblockalyticspoc", "password": "TeenTakle1212"}
+      #{"username": "homert2admin", "password": "TeenTakle1212"}
 
     target:
-      registry: localhost:5001
+      registry: 10.227.86.91:5001
       skip-tls-verify: true
 
     # 'mappings' is a list of 'from':'to' pairs that define mappings of image
