@@ -1,0 +1,79 @@
+test_scarlets:
+    docker_image: "10.0.0.70:5000/library/alpine"
+    env_vars:
+        test: "blabla"
+        test3t2t32: "tesg4ehgee"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+      - "/var/tmp/:/var/tmp/:rw"
+#    starting_ports:
+#      - 81: 80
+
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+test_scarlets2:
+    docker_image: "10.0.0.70:5000/fedora"
+    env_vars:
+        test: "blabla"
+        test3t2t32: "tesg4ehgee"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+      - "/var/tmp/:/var/tmp/:rw"
+#    starting_ports:
+#      - 1000: 1000
+
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+test_scarlets3:
+    docker_image: "10.0.0.70:5000/nginx"
+    env_vars:
+        test: "blabla"
+        test3t2t32: "tesg4ehgee"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+      - "/var/tmp/:/var/tmp/:rw"
+#    starting_ports:
+#      - 1000: 1000
+
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+test_scarlets4:
+    docker_image: "10.0.0.70:5000/test_scarlets"
+    env_vars:
+        test: "blabla"
+        test3t2t32: "tesg4ehgee"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+      - "/var/tmp/:/var/tmp/:rw"
+#    starting_ports:
+#      - 1000: 1000
+
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
