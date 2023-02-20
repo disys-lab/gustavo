@@ -5,5 +5,13 @@ mappings:
         tags: ['latest']
 
       - from: homert2admin/test_linreg
-        to: test_scarlets
+        to: test_linreg
         tags: ['latest']
+
+      - from: homert2admin/redis
+        to: redis
+        tags: [ 'latest' ]
+
+      - from: mongo:4.0.1
+        to: mongo
+        tags: [ 'latest' ]
