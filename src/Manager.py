@@ -689,9 +689,9 @@ class Manager(NebulaBase):
                 click.echo(click.style("Manager Up", fg="green"))
                 # return True
                 return {"error": False, "response": "Manager up successfully"}
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
-            return {"error": True, "response": "Unexpected error"}
+        except Exception as e:
+            print("Unexpected error:", e)
+            return {"error": True, "response": e}
 
         # return False
 

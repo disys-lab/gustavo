@@ -1,0 +1,53 @@
+regressor_app:
+    docker_image: "172.31.17.1:5000/test_scarlets"
+    env_vars:
+      - REDIS_DB_HOST: "172.31.17.1"
+      - REDIS_DB_PORT: "6379"
+      - REDIS_DB_PWD: "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
+    networks:
+        - "host"
+    volumes:
+      - "/tmp/:/tmp/1"
+      - "/var/tmp/:/var/tmp/1:rw"
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+anomaly_detection:
+    docker_image: "130.207.90.202:5000/anomaly_detection_pitalk"
+    env_vars:
+      - REDIS_DB_HOST: "130.207.90.202"
+      - REDIS_DB_PORT: "6379"
+      - REDIS_DB_PWD: "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
+    networks:
+        - "host"
+    volumes:
+      - "/tmp/:/tmp/1"
+      - "/var/tmp/:/var/tmp/1:rw"
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+process_optimization:
+    docker_image: "130.207.90.202:5000/process_opt_pitalk"
+    env_vars:
+      - REDIS_DB_HOST: "130.207.90.202"
+      - REDIS_DB_PORT: "6379"
+      - REDIS_DB_PWD: "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
+    networks:
+        - "host"
+    volumes:
+      - "/tmp/:/tmp/1"
+      - "/var/tmp/:/var/tmp/1:rw"
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []

@@ -1,0 +1,9 @@
+mappings:
+      #generic images need to have library/ appended to their from tag
+      - from: library/nginx
+        to: nginx
+        tags: ['latest']
+
+      - from: homert2admin/test_linreg
+        to: test_scarlets
+        tags: ['latest']
