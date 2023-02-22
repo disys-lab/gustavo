@@ -1,6 +1,7 @@
 # Gustavo
-Gustavo is designed to be a one stop shop for administering all apps and services.
-
+Gustavo is a container orchestration framework constructed for Demo A3 under Research Thrust 2 of [NASA HOME STRI Project](https://homestri.ucdavis.edu/research). 
+Gustavo is designed to be a one stop shop for administering applications in an **autonomous, self aware** fashion.
+Gustavo is available in a Command Line Interface and can be run on Linux/Mac Environments as well as under Windows with the help of Windows Subsystem for Linux (WSL).
 ```
 Usage: gustavo [OPTIONS] COMMAND [ARGS]...
 
