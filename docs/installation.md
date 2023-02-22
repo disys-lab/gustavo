@@ -8,11 +8,21 @@ Execute this command:
 
 `pip install --index-url https://pypi.fury.io/osu-home-stri/ gustavo==0.1.4`
 
-## (OPTIONAL) Install `gustavo`  directly from binaries.
+## Install `gustavo`  directly from binaries.
 
 Download the administration tool `gustavo` and copy it to a location the system path for example `/usr/bin`. You can also create a symbolic link located in `/usr/bin/`  using:
 
  `sudo ln -s path/to/gustavo /usr/bin/gustavo`
+
+## Install `gustavo`  directly from github.
+
+Clone the Github repository `https://github.com/paritoshpr/gustavo.git` 
+
+ `cd gustavo && sh builder.sh`
+
+This will create a binary in `./gustavo/dist/<operating_system_name>/gustavo`.
+
+Add this path to `~/.bashrc` to directly execute the binary.
 
 ## Configure `gustavo`
 
