@@ -1,5 +1,9 @@
 # Gustavo
-Gustavo is designed to be a one stop shop for administering all apps and services.
+Gustavo is a container orchestration framework constructed for Demo A3 under Research Thrust 2 of [NASA HOME STRI Project](https://homestri.ucdavis.edu/research). 
+Gustavo is designed to be a one stop shop for administering applications in an **autonomous, self aware** fashion.
+Gustavo is available in a Command Line Interface and can be run on Linux/Mac Environments as well as under Windows with the help of Windows Subsystem for Linux (WSL).
+
+Read the [documentation](https://gustavo.readthedocs.io/en/latest/).
 
 ```
 Usage: gustavo [OPTIONS] COMMAND [ARGS]...
@@ -27,7 +31,7 @@ Commands:
 The following files are essential:
    - The environment file contains the list of environment variables needed for running the manager and its allied services.
      A sample ```manager.env``` file is as follows:
-        ```
+```
         REGISTRY_HOST=127.0.0.1
         REGISTRY_PORT=5000
           
@@ -50,7 +54,7 @@ The following files are essential:
         NEBULA_USERNAME=nebula
         NEBULA_PASSWORD=nebula
         NEBULA_AUTH_TOKEN="teentakle1212"
-        ```
+```
   - ```dregsy_conf.yml``` contains configuration for dregsy. Needs to be edited according to .env file.
   - ```mappings_list.yml``` contains which images to sync. This file is dynamically read. Feel free to change the entries during run time to pause or start sync of new/existing images.
 
@@ -58,8 +62,14 @@ The docker daemon requires registries to be running ```http```. However, the cur
 This needs to be done at each host where a docker daemon might be running. Be careful to set the ```myregistrydomain:5000``` to the ```REGISTRY_HOST:REGISTRY_PORT```.
 
 
-#Common Gotchas
+## Common Gotchas
 If using podman, you must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.
+
+## Development and Maintenance
+Gustavo was conceived and developed by researchers at Oklahoma State University and Georgia Tech.
+
+* [Paritosh Ramanan](https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html)
+* [Nagi Gebraeel](https://www.isye.gatech.edu/users/nagi-gebraeel)
 
 ## Documentation
 
