@@ -1,0 +1,17 @@
+site_name: Gustavo
+nav:
+  - Home:
+      - Gustavo: index.md
+      - Installation: installation.md
+      - Manager:
+        - Preprocessing: manager-preprocessing.md
+        - Manager Setup: manager-setup.md
+        - Platform Management: platform-management.md
+        - Tear Down: tear-down.md
+      - Worker:
+        - Preprocessing: worker-preprocessing.md
+        - Manager Setup: worker-setup.md
+        - Tear Down: tear-down-worker.md
+      - Troubleshooting: troubleshooting.md
+
+theme: readthedocs
