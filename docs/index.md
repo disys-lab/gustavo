@@ -28,7 +28,7 @@ Commands:
 The following files are essential:
    - The environment file contains the list of environment variables needed for running the manager and its allied services.
      A sample ```manager.env``` file is as follows:
-        ```
+```
         REGISTRY_HOST=127.0.0.1
         REGISTRY_PORT=5000
           
@@ -51,7 +51,7 @@ The following files are essential:
         NEBULA_USERNAME=nebula
         NEBULA_PASSWORD=nebula
         NEBULA_AUTH_TOKEN="teentakle1212"
-        ```
+```
   - ```dregsy_conf.yml``` contains configuration for dregsy. Needs to be edited according to .env file.
   - ```mappings_list.yml``` contains which images to sync. This file is dynamically read. Feel free to change the entries during run time to pause or start sync of new/existing images.
 
