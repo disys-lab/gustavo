@@ -1,5 +1,5 @@
 test_linreg:
-    docker_image: "10.0.0.34:5001/test_linreg"
+    docker_image: "10.0.0.130:5001/test_linreg"
     env_vars:
         REDIS_DB_HOST: "172.31.17.1"
         REDIS_DB_PORT: "6379"
