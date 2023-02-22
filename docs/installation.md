@@ -6,7 +6,7 @@ There are two ways to install Gustavo.
 
 Execute this command:
 
-`pip install --index-url [https://pypi.fury.io/osu-home-stri/](https://pypi.fury.io/osu-home-stri/) gustavo==0.1.4`
+`pip install --index-url https://pypi.fury.io/osu-home-stri/ gustavo==0.1.4`
 
 ## (OPTIONAL) Install `gustavo`  directly from binaries.
 
@@ -18,7 +18,7 @@ Download the administration tool `gustavo` and copy it to a location the system 
 
 1. Check whether it is functional by either running: `gustavo --help` or `gustavo --version` . You must get something like this:
     
-    ```
+```
     Usage: gustavo [OPTIONS] COMMAND [ARGS]...
     
       Manage gustavo from a simple CLI.
@@ -37,7 +37,7 @@ Download the administration tool `gustavo` and copy it to a location the system 
       registry      Manage local registry.
       utils         utility commands
       worker        Manage worker.
-    ```
+```
     
 2. Provide all the required config files for booting the worker. There are three files needed to configure the manager:
     1. `worker.env`: A list of configurations for the worker to interact with the manager that has been hosted at the BGN 

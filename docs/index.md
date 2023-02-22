@@ -59,8 +59,14 @@ The docker daemon requires registries to be running ```http```. However, the cur
 This needs to be done at each host where a docker daemon might be running. Be careful to set the ```myregistrydomain:5000``` to the ```REGISTRY_HOST:REGISTRY_PORT```.
 
 
-#Common Gotchas
+## Common Gotchas
 If using podman, you must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.
+
+## Development and Maintenance
+Gustavo was conceived and developed by researchers at Oklahoma State University and Georgia Tech.
+
+* [Paritosh Ramanan](https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html)
+* [Nagi Gebraeel](https://www.isye.gatech.edu/users/nagi-gebraeel)
 
 ## Documentation
 
