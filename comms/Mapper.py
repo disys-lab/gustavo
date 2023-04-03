@@ -2,6 +2,34 @@ from gustavo.comms.RedisComm import RedisComm
 
 import logging
 
+import operator
+import numpy as np
+
+
+SUM = operator.add
+MUL = operator.mul
+MAX = np.maximum
+MIN = np.minimum
+opArray = [SUM, MUL, MAX, MIN]
+
+
+def performOperation(self, modelLocal, globalModel, operation):
+    """
+    performs the given operation
+    Parameters
+    ----------
+    modelLocal : numpy array
+        Argument 1 of the operation
+    globalModel : numpy array
+        Argument 2 of the operation
+    Returns
+    ----------
+    retval : return value is None if the operation is not supported, else it returns the result
+    """
+    if operation not in self.opArray:
+        return None
+    else:
+        return operation(modelLocal, globalModel)
 
 class Mapper(RedisComm):
     """
