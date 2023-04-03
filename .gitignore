@@ -9,3 +9,4 @@ dist/osx/gustavo
 .DS_Store
 ./sample_config_files/
 ./config_files/
+./comms/
