@@ -1,4 +1,4 @@
-import logging, pickle, zlib, yaml
+import logging, pickle, zlib, yaml, os
 
 
 class RedisComm:
