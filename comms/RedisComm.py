@@ -1,4 +1,5 @@
 import logging, pickle, zlib, yaml, os
+from gustavo.comms.RedisContract import RedisContract
 
 
 class RedisComm:
