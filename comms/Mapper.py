@@ -6,30 +6,9 @@ import operator
 import numpy as np
 
 
-SUM = operator.add
-MUL = operator.mul
-MAX = np.maximum
-MIN = np.minimum
-opArray = [SUM, MUL, MAX, MIN]
 
 
-def performOperation(self, modelLocal, globalModel, operation):
-    """
-    performs the given operation
-    Parameters
-    ----------
-    modelLocal : numpy array
-        Argument 1 of the operation
-    globalModel : numpy array
-        Argument 2 of the operation
-    Returns
-    ----------
-    retval : return value is None if the operation is not supported, else it returns the result
-    """
-    if operation not in self.opArray:
-        return None
-    else:
-        return operation(modelLocal, globalModel)
+
 
 class Mapper(RedisComm):
     """
@@ -72,6 +51,31 @@ class Mapper(RedisComm):
         self.key = str(self.address)
 
         self.refresh()
+
+        self.SUM = operator.add
+        self.MUL = operator.mul
+        self.MAX = np.maximum
+        self.MIN = np.minimum
+        self.opArray = [self.SUM, self.MUL, self.MAX, self.MIN]
+
+    def performOperation(self, modelLocal, globalModel, operation):
+        """
+        performs the given operation
+        Parameters
+        ----------
+        modelLocal : numpy array
+            Argument 1 of the operation
+        globalModel : numpy array
+            Argument 2 of the operation
+        Returns
+        ----------
+        retval : return value is None if the operation is not supported, else it returns the result
+        """
+        if operation not in self.opArray:
+            return None
+        else:
+            return operation(modelLocal, globalModel)
+
 
     def refresh(self):
         """refresh contract details"""
