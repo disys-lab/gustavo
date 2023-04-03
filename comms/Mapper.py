@@ -3,7 +3,7 @@ from gustavo.comms import RedisComm
 import logging
 
 
-class Mapper(RedisComm):
+class Mapper:
     """
     Mapper Scarlet maps keys to values. Values could be anything such as model parameters, arrays etc.
     This Mapper inherits from multiple classes. However, at run time depending on the mode of the scarlet declaration,
