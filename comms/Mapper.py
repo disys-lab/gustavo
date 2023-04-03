@@ -96,7 +96,7 @@ class Mapper(RedisComm):
         try:
 
             self.refresh()
-            successChunksList = self.Push(modelLocal, key, [])
+            successChunksList = self.Push(modelLocal, key)
         except Exception as exception:
             logging.error("{}.Map failed", self.scarletName)
             return successChunksList, False, exception
