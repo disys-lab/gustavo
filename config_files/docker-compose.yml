@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  gustavo_base:
+    container_name: gustavo_base
+    image: "nasahomert2/gustavo_base:${GV}"
+    restart: always
+    network_mode: "host"
+    volumes:
+      - /tmp/:/tmp/
+    environment:
+      - REDIS_DB_HOST=127.0.0.1
+      - REDIS_DB_PORT=6379
+      - REDIS_DB_PWD=e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs
+    command: bash -c "python3 /home/tests/testRedisMapper.py"
