@@ -13,7 +13,7 @@ class RedisContract:
     -------
 
     * `load()`
-        Loads contract details from redis. Only done if debug is True.
+        Loads redis details from os.environ.
 
     * `registerNewKey(key)`
         registers new key on contract
@@ -55,9 +55,8 @@ class RedisContract:
     def load(self):
 
         """
-        Loads contract details from redis. Only done if debug is True.
+        Loads redis details from os.environ.
         """
-
 
         if "REDIS_DB_HOST" not in os.environ.keys():
             raise Exception("REDIS_DB_HOST not set in os.environ")
@@ -120,8 +119,8 @@ class RedisContract:
 
         """
         try:
-            if self.debug:
-                logging.info(self.redisDBHost,self.redisDBPort,self.redisDBPwd)
+
+            logging.info(self.redisDBHost,self.redisDBPort,self.redisDBPwd)
 
             r = redis.StrictRedis(host=self.redisDBHost, port=int(self.redisDBPort),
                                   password=self.redisDBPwd)
