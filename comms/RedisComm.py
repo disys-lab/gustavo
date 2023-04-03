@@ -147,7 +147,7 @@ class RedisComm:
         modelBinCompr = zlib.compress(modelBinCompr, level=9)
 
         status, exception = self.contract.setChunk(
-            key, 0, modelBinCompr, int(self.address, 16)
+            key, 0, modelBinCompr, self.address
         )
 
         if not status:
