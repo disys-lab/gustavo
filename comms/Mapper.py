@@ -1,4 +1,4 @@
-from RedisComm import RedisComm
+from gustavo.comms import RedisComm
 
 import logging
 
