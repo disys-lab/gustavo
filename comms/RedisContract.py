@@ -44,7 +44,9 @@ class RedisContract:
 
     """
 
-    def __init__(self):
+    def __init__(self,contractName):
+
+        self.contractName = contractName
 
         self.key_list = []
 
