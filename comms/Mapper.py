@@ -129,7 +129,7 @@ class Mapper(RedisComm):
 
             self.refresh()
 
-            mapperLength = self.contract.getMapperLength()
+            mapperLength = self.contract.getKeysLength()
             for key_index in range(int(mapperLength)):
                 key = self.contract.getKey(key_index)
                 modelOut, status = self.Pull(modelLocal, key)
@@ -207,7 +207,7 @@ class Mapper(RedisComm):
         successChunksList = []
         try:
             self.refresh()
-            mapperLength = self.contract.getMapperLength()
+            mapperLength = self.contract.getKeysLength()
             for key_index in range(int(mapperLength)):
                 key = self.contract.getKey(key_index)
                 successChunksList = self.Push(modelLocal, key)
