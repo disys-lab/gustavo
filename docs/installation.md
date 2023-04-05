@@ -48,32 +48,3 @@ Add this path to `~/.bashrc` to directly execute the binary.
       utils         utility commands
       worker        Manage worker.
 ```
-    
-2. Provide all the required config files for booting the worker. There are three files needed to configure the manager:
-    1. `worker.env`: A list of configurations for the worker to interact with the manager that has been hosted at the BGN 
-3. The `worker.env` must look something like this:
-    
-```
-    #the local registry details
-    REGISTRY_HOST=172.31.17.1
-    REGISTRY_PORT=5000
-    
-    #the details for Redis
-    REDIS_HOST=172.31.17.1
-    REDIS_PORT=6379
-    REDIS_AUTH_TOKEN="teentakle1212"
-    REDIS_EXPIRE_TIME=10
-    REDIS_KEY_PREFIX="nebula-reports"
-    
-    #the details of the manager host and port
-    MANAGER_HOST=172.31.17.1
-    MANAGER_PORT=80
-    
-    #nebula details
-    NEBULA_USERNAME=nebula
-    NEBULA_PASSWORD=nebula
-    NEBULA_AUTH_TOKEN=bmVidWxhOm5lYnVsYQ==
-```
-    
-Change the relevant entries. Common entries to be changed would include the host and ports of the registry, redis, manager and the REDIS_AUTH_TOKEN.
-    

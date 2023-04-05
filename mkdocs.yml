@@ -1,4 +1,15 @@
 site_name: Gustavo
+
+#ToRun mkdocs execute from parent : PYTHONPATH=gustavo mkdocs serve -f gustavo/mkdocs.yml
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            heading_level: 1
+            docstring_style: "numpy"
+
 nav:
   - Home:
       - Gustavo: index.md
@@ -10,8 +21,17 @@ nav:
         - Tear Down: tear-down.md
       - Worker:
         - Preprocessing: worker-preprocessing.md
-        - Manager Setup: worker-setup.md
+        - Worker Setup: worker-setup.md
         - Tear Down: tear-down-worker.md
+      - gustavo.comms:
+        - RedisComm: rediscomm.md
+        - Mapper: mapper.md
+        - RedisContract: rediscontract.md
+      - gustavo.src:
+        - Cache: cache.md
+        - Composer: composer.md
+        - Manager: manager2.md
+        - NebulaBase: nebulabase.md
       - Troubleshooting: troubleshooting.md
 
 theme: readthedocs
