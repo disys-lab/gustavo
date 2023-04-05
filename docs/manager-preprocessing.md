@@ -40,10 +40,7 @@
     4. `test_linreg.yml` : A configuration of the test app that will be hosted at each edge node.
 3. Ensure that docker clients can talk to local registries by creating a file `/etc/docker/daemon.json`. Open and edit the file as follows:
     
-    ```json
-    { 
-                "insecure-registries":["MANAGER_HOST:MANAGER_PORT"]
-    }
+    ```{ "insecure-registries":["MANAGER_HOST:MANAGER_PORT"]}
     ```
     
     **Remember: `MANAGER_HOST:MANAGER_PORT` must match the corresponding entries in `manager.env`**
@@ -84,6 +81,18 @@ MONGO_CERTIFICATE_FOLDER_PATH=/tmp/
 NEBULA_USERNAME=nebula
 NEBULA_PASSWORD=nebula
 NEBULA_AUTH_TOKEN=bmVidWxhOm5lYnVsYQ==
+
+#docker image details
+REGISTRY_IMAGE="registry:2"
+SYNCER_IMAGE="homert2admin/dregsy:latest"
+REDIS_IMAGE="homert2admin/redis"
+MONGO_IMAGE="mongo:4.0.1"
+MANAGER_IMAGE="nebulaorchestrator/manager:2.6.1"
+
+#network mode
+MANAGER_NMODE="host"
+WORKER_NMODE="host"
+SYNCER_IMAGE="host"
 ```
 
 Change the relevant entries. Common entries to be changed would include the host and ports of the registry, redis, manager and mongo, the REDIS_AUTH_TOKEN as well as the correct locations of the files: `dregsy_conf.yaml`, `mappings_list.yaml` as indicated by variables `DREGSY_CONFIG_FILE_PATH` and `DREGSY_MAPPING_FILE_PATH` respectively.
