@@ -15,3 +15,7 @@ mappings:
       - from: mongo:4.0.1
         to: mongo
         tags: [ 'latest' ]
+
+      - from: homert2admin/manager
+        to: manager
+        tags: [ 'latest' ]
