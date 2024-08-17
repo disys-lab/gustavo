@@ -48,7 +48,7 @@ tasks:
       #{"username": "homert2admin", "password": "TeenTakle1212"}
 
     target:
-      registry: 10.227.86.91:5001
+      registry: 10.219.128.99:5001
       skip-tls-verify: true
 
     # 'mappings' is a list of 'from':'to' pairs that define mappings of image

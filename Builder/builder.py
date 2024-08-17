@@ -11,6 +11,8 @@ To build python library package e.g python builder.py git@repo
 
 gitRepo = str(sys.argv[1])
 
+GEMFURY_TOKEN = str(sys.argv[2])
+
 if gitRepo:
 
     currentDir = os.getcwd()
@@ -45,7 +47,9 @@ if gitRepo:
     os.system("ln -sf {}/setup.py {}".format(currentDir, tempDir))
     os.system("ln -sf {}/README.md {}".format(currentDir, tempDir))
 
-    buildWheelPkg = "python3 setup.py bdist_wheel" + " " + str(versionInfo[1:-1])
+    print("Version: {}".format(versionInfo))
+
+    buildWheelPkg = "python setup.py bdist_wheel" + " " + str(versionInfo)
 
     os.system(buildWheelPkg)
 
@@ -55,10 +59,10 @@ if gitRepo:
 
     packageInfo = os.listdir(distpath)[0]
 
-    if "GEMFURY_TOKEN" in os.environ:
-        GEMFURY_TOKEN=os.environ["GEMFURY_TOKEN"]
-    else:
-        raise Exception("GEMFURY_TOKEN not specified")
+    # if "GEMFURY_TOKEN" in os.environ:
+    #     GEMFURY_TOKEN=os.environ["GEMFURY_TOKEN"]
+    # else:
+    #     raise Exception("GEMFURY_TOKEN not specified")
 
     subprocess.run(
         [
@@ -72,16 +76,6 @@ if gitRepo:
     os.chdir(currentDir)
 
     os.system("yes | rm -r temp")
-
-
-
-
-
-
-
-
-
-
 
 
 else:
