@@ -1,0 +1,75 @@
+
+We start with both manager and workers up.
+
+Each worker has a designated device_group.
+
+--------------------------------------------
+
+During demo:
+
+0. Show the registry list of manager node:
+
+gustavo registry list
+
+1. Show that there is no algorithms deployed in edge node.
+
+For ECLSS and Robotics do:
+
+docker ps
+
+2. Create apps:
+
+gustavo apps createm -n eclss_algorithm1,eclss_algorithm2,eclss_algorithm3 -f algorithms.yml -d eclss
+
+gustavo apps create -n robotics_algorithm1 -f algorithms.yml -d robotics
+
+gustavo apps create -n environment_algorithm1 -f algorithms.yml -d environment
+
+gustavo apps create -n eps_algorithm1 -f algorithms.yml -d eps
+
+
+3. Show that the container images are running on edge devices:
+
+For eclss, robotics, environment, and eps do:
+
+docker ps 
+
+
+4. Comms
+
+docker-compose -f comms_manager_config.yaml up -d
+
+
+OBTAIN MACOS:
+ifconfig -l | xargs -n1 ipconfig getifaddr
+
+CONFIG FILE GUSTAVO:
+
+export GUSTAVO_CONFIG_FILE=/Users/hrozas3/Documents/gustavo/manager.env
+
+
+
+
+docker-compose -f comms_manager_config.yaml up
+
+
+
+gustavo worker up -n worker -d eps
+
+
+
+
+
+gustavo worker up -n worker -d eclss
+
+
+
+
+
+
+
+
+
+
+
+

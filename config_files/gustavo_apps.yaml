@@ -1,5 +1,5 @@
 test_linreg:
-    docker_image: "10.227.82.53:5001/test_linreg"
+    docker_image: "10.227.82.211:5001/test_linreg"
     env_vars:
         REDIS_DB_HOST: "172.31.17.1"
         REDIS_DB_PORT: "6379"
@@ -16,8 +16,8 @@ test_linreg:
     privileged: False
     devices: []
 
-mongo:
-    docker_image: "10.227.82.53:5001/mongo"
+mongo_test:
+    docker_image: "10.227.82.211:5001/mongo"
     env_vars:
         REDIS_DB_HOST: "172.31.17.1"
         REDIS_DB_PORT: "6379"

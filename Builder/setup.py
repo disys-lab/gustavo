@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
-import sys
+import sys, platform
 
-
+python_version = platform.python_version()
 packageversion = str(sys.argv[-1])
 
 
@@ -18,23 +18,30 @@ setup(
     version=str(packageversion),
     author="Paritosh Ramanan",
     author_email="paritosh.ramanan@okstate.edu",
-    description="Project Gustavo: A CLI tool to manage container images across distributed edge resources",
+    description="Project Gustavo: Manage container images across distributed edge resources",
     packages=find_packages(),
     package_data={
         "gustavo": [
             "dist/linux/gustavo",
             "src/*",
             "src/__pycache__/*",
+            "gui/*",
+            "gui/__pycache__/*",
             "sample_config_files/*",
         ]
+    },options={
+        "bdist_wheel": {
+            "plat_name": platform.system()+"-"+platform.machine(),
+            "python_tag": "py{}{}".format(sys.version_info[0],sys.version_info[1]),
+        }
     },
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "Programming Language :: Python :: {}".format(python_version),
+        "Operating System :: Linux"
     ],
     install_requires=[
         "NebulaPythonSDK==2.8.0",
-        "python-dotenv==0.21.0",
+        "python-dotenv==0.19.0",
         "pyYAML==6.0",
         "Click==8.1.3",
         "urllib3==1.26.12",
@@ -46,8 +53,12 @@ setup(
         "retrying==1.3.3",
         "docker==6.0.0",
         "python-on-whales==0.52.0",
+        "streamlit==1.32.2",
+        "streamlit-card==1.0.0",
+        "streamlit-pills==0.3.0",
+        "plotly==5.20.0"
     ],
-    python_requires=">=3.7",
+    python_requires=">={}".format(python_version),
     entry_points="""
         [console_scripts]
         gustavo=gustavo.gustavo:gustavo

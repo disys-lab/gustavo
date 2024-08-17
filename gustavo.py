@@ -6,8 +6,13 @@ from gustavo.src.Cache import Cache
 from gustavo.src.Cache import ErrorHandling
 from gustavo.src.Manager import Manager
 from gustavo.utils import *
+from streamlit.web import cli
+import os
 
-VERSION = "0.3.1"
+try:
+    VERSION=pkg_resources.require("gustavo")[0].version
+except Exception as e:
+    VERSION="dev"
 
 
 @click.version_option(version=VERSION)
@@ -45,41 +50,38 @@ def worker():
 def registry():
     pass
 
-
-@gustavo.command(help="check nebula api responds")
-def ping():
-    try:
-        bcmp = Composer()
-    except PathInvalid:
-        return {
-            "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
-        }
-    except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
-    except Exception as e:
-        return {"error": True, "response": e}
-    response = bcmp.nebulaObj.check_api()
-    print(response)
-
-
 @click.version_option(version=VERSION)
-@gustavo.group(help="prune images.")
+@gustavo.group(help="Prune images.")
 def prune():
     pass
 
 
 @click.version_option(version=VERSION)
-@gustavo.group(help="obtain status of various workers on the platform")
+@gustavo.group(help="Obtain status of various workers on the platform")
 def cache():
     pass
 
 
 @click.version_option(version=VERSION)
-@gustavo.group(help="utility commands")
+@gustavo.group(help="Utility commands")
 def utils():
     pass
 
+# @click.version_option(version=VERSION)
+# @gustavo.group(help="Start the Gustavo GUI")
+# def gui():
+#     pass
+
+@gustavo.command(
+    help="Start the Gustavo GUI"
+)
+@click.option(
+    "--port", "-p", help="specify port for serving GUI", prompt=True
+)
+def gui(port):
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    gui_runner_file = os.path.join(cwd,"gui_runner.py")
+    cli.main_run([gui_runner_file, "--server.port", int(port)])
 
 @utils.command(
     help='specify JSON {"username": "...", "password": "..."}', name="syncer-auth-token"
@@ -181,10 +183,10 @@ def checkLocalRegistries(name, tag):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
     response = bcmp.checkLocalRepoImages(name, tag)
@@ -208,10 +210,10 @@ def prune_device_groups(device_group):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
     response = bcmp.prune_device_group_images(device_group)
@@ -228,10 +230,10 @@ def listApp():
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
     existing_app_list = bcmp.nebulaObj.list_apps()
@@ -280,10 +282,10 @@ def createApps(name, file, device_groups, fileType="yml"):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
 
@@ -345,12 +347,12 @@ def updateApps(name, file, fileType="yml"):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE not defined",
+            "response": "GUSTAVO_CONFIG_FILE not defined",
         }
     except Exception as e:
         return {"error": True, "response": e}
@@ -412,10 +414,10 @@ def deleteApps(name):
         except PathInvalid:
             return {
                 "error": True,
-                "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+                "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
             }
         except FileUndefined:
-            return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+            return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
         except Exception as e:
             return {"error": True, "response": e}
 
@@ -471,10 +473,10 @@ def listDeviceGroups(name):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
     if name == "all":
@@ -505,10 +507,10 @@ def createDeviceGroups(apps, name):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
     device_group_config = dict({"apps": [apps]})
@@ -558,12 +560,12 @@ def updateDeviceGroups(
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE not defined",
+            "response": "GUSTAVO_CONFIG_FILE not defined",
         }
     except Exception as e:
         return {"error": True, "response": e}
@@ -607,14 +609,17 @@ def deleteDeviceGroups(name="bca"):
         except PathInvalid:
             return {
                 "error": True,
-                "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+                "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
             }
         except FileUndefined:
-            return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+            return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
         except Exception as e:
             return {"error": True, "response": e}
 
         retval = bcmp.handleAsset("device_group", device_group, "delete")
+
+        if retval["error"] == "False":
+            click.echo(click.style("Deleted " + str(device_group), fg="green"))
 
         return retval
     else:
@@ -623,10 +628,6 @@ def deleteDeviceGroups(name="bca"):
             "error": True,
             "response": "DEVICE_GROUP_INVALID: enter a valid device_group name",
         }
-
-    if retval["error"] == "False":
-        click.echo(click.style("Deleted " + str(device_group), fg="green"))
-
 
 @worker.command(help="create a worker", name="up")
 @click.option("--name", "-n", help="name of the worker container", default="worker")

@@ -1,0 +1,107 @@
+environment_algorithm1:
+    docker_image: "10.219.128.99:5001/environment_algorithm1"
+    env_vars:
+        CACHE: "64"
+        NETRESTRICT: "0.0.0.0/0"
+        DISPLAY: "host.docker.internal:0"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+    starting_ports: []
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+eclss_algorithm3:
+    docker_image: "10.219.128.99:5001/eclss_algorithm3"
+    env_vars:
+        CACHE: "64"
+        NETRESTRICT: "0.0.0.0/0"
+        DISPLAY: "host.docker.internal:0"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+    starting_ports: []
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+eclss_algorithm2:
+    docker_image: "10.219.128.99:5001/eclss_algorithm2"
+    env_vars:
+        CACHE: "64"
+        NETRESTRICT: "0.0.0.0/0"
+        DISPLAY: "host.docker.internal:0"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+    starting_ports: []
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+eclss_algorithm1:
+    docker_image: "10.219.128.99:5001/eclss_algorithm1"
+    env_vars:
+        CACHE: "64"
+        NETRESTRICT: "0.0.0.0/0"
+        DISPLAY: "host.docker.internal:0"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+    starting_ports: []
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+    
+eps_algorithm1:
+    docker_image: "10.219.128.99:5001/eps_algorithm1"
+    env_vars:
+        CACHE: "64"
+        NETRESTRICT: "0.0.0.0/0"
+        DISPLAY: "host.docker.internal:0"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+    starting_ports: []
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
+
+robotics_algorithm1:
+    docker_image: "10.219.128.99:5001/robotics_algorithm1"
+    env_vars:
+        CACHE: "64"
+        NETRESTRICT: "0.0.0.0/0"
+        DISPLAY: "host.docker.internal:0"
+    networks:
+        - "nebula"
+    volumes:
+      - "/tmp/:/tmp/"
+    starting_ports: []
+    running: True
+    rolling_restart: True
+    containers_per:
+        server: 1
+    privileged: False
+    devices: []
