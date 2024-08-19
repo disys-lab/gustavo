@@ -10,8 +10,9 @@ class Sidebar:
             st.image(logo_url)
         #     #st.title('')
 
-            #home_url = os.path.join(parent,"Home.py")
-            st.page_link("Home.py",label="Home", icon="🏠")
+            home_url = os.path.join(parent,"Home.py")
+            st.page_link(home_url,label="Home", icon="🏠")
+
             st.page_link("pages/ManagerServices.py", label="Manager", icon="💼")
             st.page_link("pages/Apps.py",label="Apps", icon="📊")
             st.page_link("pages/Device_Groups.py",label="Device Groups", icon="🖥️")
