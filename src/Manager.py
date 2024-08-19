@@ -68,9 +68,9 @@ class Manager(NebulaBase):
 
     """
 
-    def __init__(self):
+    def __init__(self,mode="CLI",params = None):
 
-        NebulaBase.__init__(self)
+        NebulaBase.__init__(self,mode=mode,session_state=params)
 
         self.DREGSY_CONFIG_FILE_PATH = None
         self.DREGSY_MAPPING_FILE_PATH = None
@@ -91,7 +91,8 @@ class Manager(NebulaBase):
 
         self.service_list = "registry,redis,mongo,manager,syncer"
 
-        self.setManagerParams()
+        if mode == "CLI":
+            self.setManagerParams()
 
     def setManagerParams(self):
         """
@@ -745,6 +746,10 @@ class Manager(NebulaBase):
             success = self.runRegistry(client)
             if not success["error"]:
                 click.echo(click.style("Registry Up", fg="green"))
+                return {
+                    "error": False,
+                    "response": "Registry Up",
+                }
             else:
                 return {
                     "error": True,
@@ -755,6 +760,10 @@ class Manager(NebulaBase):
             success = self.runRedis(client)
             if not success["error"]:
                 click.echo(click.style("Redis Up", fg="green"))
+                return {
+                    "error": False,
+                    "response": "Redis Up",
+                }
             else:
                 return {
                     "error": True,
@@ -764,6 +773,10 @@ class Manager(NebulaBase):
             success = self.runSyncer(client)
             if not success["error"]:
                 click.echo(click.style("Syncer Up", fg="green"))
+                return {
+                    "error": False,
+                    "response": "Syncer Up",
+                }
             else:
                 return {
                     "error": True,
@@ -773,6 +786,10 @@ class Manager(NebulaBase):
             success = self.runMongo(client)
             if not success["error"]:
                 click.echo(click.style("Mongo Up", fg="green"))
+                return {
+                    "error": False,
+                    "response": "Mongo Up",
+                }
             else:
                 return {
                     "error": True,
@@ -782,6 +799,10 @@ class Manager(NebulaBase):
             success = self.runManager(client)
             if not success["error"]:
                 self.waitManager()
+                return {
+                    "error": False,
+                    "response": "Manager running",
+                }
             else:
                 return {
                     "error": True,
@@ -831,10 +852,29 @@ class Manager(NebulaBase):
                 }
             self.waitManager()
 
+            return {
+                "error": False,
+                "response": "All services brought up",
+            }
+
         else:
             click.echo(click.style("service_name is not valid", fg="red"))
+            return {
+                "error": True,
+                "response": "service_name is not valid",
+            }
 
-        return fg
+    def serviceStatus(self, service_name):
+        client = docker.from_env()
+        try:
+            client.containers.get(service_name)
+            return {"error": False, "response": "Container {} is running".format(service_name)}
+        except docker.errors.NotFound:
+            click.echo(click.style("Service {} does not exist".format(service_name), fg="red"))
+            return {"error": True, "response": "Container {} does not exist".format(service_name)}
+        except docker.errors.APIError:
+            click.echo(click.style("Trouble reaching the docker API", fg="red"))
+            return {"error": True, "response": "Trouble reaching the docker API"}
 
     def handleService(self, service_name, action):
         """

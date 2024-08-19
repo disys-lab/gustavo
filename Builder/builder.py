@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 from pathlib import Path
+import re
 
 """
 
@@ -10,8 +11,12 @@ To build python library package e.g python builder.py git@repo
 """
 
 gitRepo = str(sys.argv[1])
-
-GEMFURY_TOKEN = str(sys.argv[2])
+if len(sys.argv)>2:
+    mode = "prod"
+    GEMFURY_TOKEN = str(sys.argv[2])
+else:
+    mode = "dev"
+    GEMFURY_TOKEN = ""
 
 if gitRepo:
 
@@ -20,6 +25,7 @@ if gitRepo:
     subprocess.run(["git", "remote", "update"])
 
     versionInfo = str(os.popen("git describe --tags").read())
+    versionInfo = re.search(r'([\d.]+)', versionInfo).group(1)
 
     print(
         "\033[1m"
@@ -59,23 +65,19 @@ if gitRepo:
 
     packageInfo = os.listdir(distpath)[0]
 
-    # if "GEMFURY_TOKEN" in os.environ:
-    #     GEMFURY_TOKEN=os.environ["GEMFURY_TOKEN"]
-    # else:
-    #     raise Exception("GEMFURY_TOKEN not specified")
+    if mode == "prod":
+        subprocess.run(
+            [
+                "curl",
+                "-F",
+                "package=@" + str(packageInfo),
+                "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
+            ]
+        )
 
-    subprocess.run(
-        [
-            "curl",
-            "-F",
-            "package=@" + str(packageInfo),
-            "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
-        ]
-    )
+        os.chdir(currentDir)
 
-    os.chdir(currentDir)
-
-    os.system("yes | rm -r temp")
+        os.system("yes | rm -r temp")
 
 
 else:

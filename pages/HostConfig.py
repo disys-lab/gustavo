@@ -1,7 +1,7 @@
 import streamlit as st
 from urllib.error import URLError
 import pandas as pd
-from gui.Sidebar import Sidebar
+from pages.Sidebar import Sidebar
 import yaml
 
 class HostConfig:

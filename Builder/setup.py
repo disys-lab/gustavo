@@ -4,6 +4,10 @@ import sys, platform
 python_version = platform.python_version()
 packageversion = str(sys.argv[-1])
 
+if platform.system() == "Darwin":
+    platform_machine = "macosx_"+"_".join(platform.mac_ver()[0].split("."))+"_"+platform.machine()
+else:
+    platform_machine = platform.system()+"-"+platform.machine()
 
 def removeArgs():
     if packageversion in sys.argv:
@@ -31,7 +35,7 @@ setup(
         ]
     },options={
         "bdist_wheel": {
-            "plat_name": platform.system()+"-"+platform.machine(),
+            "plat_name": platform_machine,
             "python_tag": "py{}{}".format(sys.version_info[0],sys.version_info[1]),
         }
     },
@@ -52,7 +56,7 @@ setup(
         "gunicorn==20.1.0",
         "retrying==1.3.3",
         "docker==6.0.0",
-        "python-on-whales==0.52.0",
+        "python-on-whales==0.70.0",
         "streamlit==1.32.2",
         "streamlit-card==1.0.0",
         "streamlit-pills==0.3.0",

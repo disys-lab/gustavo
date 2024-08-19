@@ -1,7 +1,7 @@
 import streamlit as st
 from urllib.error import URLError
 import pandas as pd
-from gui.Sidebar import Sidebar
+from gustavo.pages.Sidebar import Sidebar
 
 class PlatformConfig:
     def __init__(self):
@@ -11,18 +11,18 @@ class PlatformConfig:
                             "REGISTRY_PORT":"5000",
                             "REGISTRY_IP_DISABLED": True,
                             "REGISTRY_IMAGE":"registry:2",
-                            "SYNCER_IMAGE":"blockalytics/dregsy:latest",
+                            "SYNCER_IMAGE":"homert2admin/dregsy:latest",
                             "SYNCER_NMODE":"host",
                             "REDIS_HOST":"172.31.18.128",
                             "REDIS_IP_DISABLED": True,
                             "REDIS_PORT":"6379",
                             "REDIS_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
-                            "REDIS_IMAGE":"blockalytics/redis",
+                            "REDIS_IMAGE":"homert2admin/redis",
                             "MANAGER_HOST":"172.31.18.128",
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
-                            "MANAGER_IMAGE":"blockalytics/manager:2.6.3",
-                            "MANAGER_NMODE":"host",
+                            "MANAGER_IMAGE":"homert2admin/manager",
+                            "MANAGER_NMODE":"bridge",
                             "MONGO_HOST":"172.31.18.128",
                             "MONGO_IP_DISABLED": True,
                             "MONGO_PORT":"27017",
@@ -41,13 +41,14 @@ class PlatformConfig:
         self.global_platform_env_file_str=""
 
         if "visibility" not in st.session_state:
+            print("Visibility set to TRUE")
             st.session_state.visibility = "visible"
             st.session_state.disabled = False
 
-            #if "MANAGER_HOST" not in st.session_state.keys():
+        if "MANAGER_HOST" not in st.session_state.keys():
             st.session_state.MANAGER_HOST = "172.31.18.128"
-            st.session_state.MANAGER_PORT = "80"
-            st.session_state.MANAGER_NMODE = "host"
+            st.session_state.MANAGER_PORT = "8080"
+            st.session_state.MANAGER_NMODE = "bridge"
 
             st.session_state.REGISTRY_HOST = "172.31.18.128"
             st.session_state.REGISTRY_PORT = "5000"
@@ -77,6 +78,7 @@ class PlatformConfig:
             st.session_state.NEBULA_USERNAME = "nebula"
             st.session_state.NEBULA_PASSWORD = "nebula"
             st.session_state.NEBULA_AUTH_TOKEN = "bmVidWxhOm5lYnVsYQ=="
+            st.session_state.NEBULA_PROTOCOL = "http"
 
             # KEYGEN_ADD_ACC_ID=34b683d0-6121-4a5a-ac92-ee6320611484
             # KEYGEN_USER_ID=0cf72126-2151-4f14-a960-bd72d33f5716
@@ -86,13 +88,13 @@ class PlatformConfig:
             # docker image details
 
             st.session_state.REGISTRY_IMAGE = "registry:2"
-            st.session_state.SYNCER_IMAGE = "blockalytics/dregsy:latest"
-            st.session_state.REDIS_IMAGE = "blockalytics/redis"
+            st.session_state.SYNCER_IMAGE = "homert2admin/dregsy:latest"
+            st.session_state.REDIS_IMAGE = "homert2admin/redis"
             st.session_state.MONGO_IMAGE = "mongo:4.0.19"
-            st.session_state.MANAGER_IMAGE = "blockalytics/manager:2.6.3"
+            st.session_state.MANAGER_IMAGE = "homert2admin/manager"
 
             # network mode
-            st.session_state.MANAGER_NMODE = "host"
+            st.session_state.MANAGER_NMODE = "bridge"
             st.session_state.MANAGER_MODE = 0
             st.session_state.WORKER_NMODE = "host"
             st.session_state.SYNCER_NMODE = "host"
@@ -123,7 +125,7 @@ class PlatformConfig:
 
     def platform(self):
 
-       st.header("Platform Configuration")
+       # st.header("Platform Configuration")
        # st.divider()
        with st.container():
         load_config, save_config, download_config = st.columns([50,50,50])
@@ -201,7 +203,7 @@ class PlatformConfig:
              "Select Manager Network Mode", horizontal=True,
              key="KEY_MANAGER_NMODE",
              options=self.platform_config["MANAGER_MODE_OPT"],
-             index = 0
+             index = 1
          )
          if self.platform_config["MANAGER_NMODE"] in self.platform_config["MANAGER_MODE_OPT"]:
             st.session_state.MANAGER_MODE=self.platform_config["MANAGER_MODE_OPT"].index(self.platform_config["MANAGER_NMODE"])
@@ -352,14 +354,14 @@ class PlatformConfig:
        for config_var in self.platform_config.keys():
            st.session_state[config_var] = self.platform_config[config_var]
 
-st.set_page_config(
-
-            page_title="Gustavo Admin Console",
-            page_icon="",
-            layout="wide",
-            initial_sidebar_state="expanded"
-
-        )
+# st.set_page_config(
+#
+#             page_title="Gustavo Admin Console",
+#             page_icon="",
+#             layout="wide",
+#             initial_sidebar_state="expanded"
+#
+#         )
 
 sb = Sidebar()
 pc = PlatformConfig()

@@ -1,7 +1,7 @@
 import yaml,time, sys,os,copy
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from gui.Sidebar import Sidebar
+from pages.Sidebar import Sidebar
 from src.Composer import Composer
 
 
@@ -12,7 +12,6 @@ class AppHandler:
         else:
             self.app_list = []
             st.session_state.app_list = []
-
 
     def process_uploaded_file(self,uploaded_file):
         app_config = yaml.load(uploaded_file,Loader=yaml.Loader)

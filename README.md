@@ -61,6 +61,13 @@ The following files are essential:
 The docker daemon requires registries to be running ```http```. However, the current version only supports ```http```. To turn off ```https```, follow the steps outlined in the [link](https://docs.docker.com/registry/insecure/)
 This needs to be done at each host where a docker daemon might be running. Be careful to set the ```myregistrydomain:5000``` to the ```REGISTRY_HOST:REGISTRY_PORT```.
 
+## Building and testing locally
+
+Use the following command from within ```Builder``` directory
+```python builder.py https://github.com/disys-lab/gustavo.git```
+
+Install using the following command:
+```pip install bdist temp/dist/gustavo-version.whl```
 
 ## Common Gotchas
 If using podman, you must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.

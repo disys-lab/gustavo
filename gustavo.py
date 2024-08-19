@@ -76,12 +76,13 @@ def utils():
     help="Start the Gustavo GUI"
 )
 @click.option(
-    "--port", "-p", help="specify port for serving GUI", prompt=True
+    "--port", "-p", help="specify port for serving GUI", prompt=True, default=8501
 )
 def gui(port):
     cwd = os.path.dirname(os.path.realpath(__file__))
-    gui_runner_file = os.path.join(cwd,"gui_runner.py")
-    cli.main_run([gui_runner_file, "--server.port", int(port)])
+    gui_runner_file = os.path.join(cwd,"Home.py")
+    print(gui_runner_file)
+    #cli.main_run([gui_runner_file, "--server.port", int(port)])
 
 @utils.command(
     help='specify JSON {"username": "...", "password": "..."}', name="syncer-auth-token"
@@ -461,7 +462,7 @@ def deleteApps(name):
 
 @device_group.command(help="list all device groups", name="list")
 @click.option(
-    "--name", "-n", help="name of the device group to be created", default="all"
+    "--name", "-n", help="name of the device group to be listed", default="all"
 )
 def listDeviceGroup(name):
     listDeviceGroups(name)
