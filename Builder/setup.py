@@ -26,7 +26,7 @@ setup(
     packages=find_packages(),
     package_data={
         "gustavo": [
-            "dist/linux/gustavo",
+            "images/*",
             "src/*",
             "src/__pycache__/*",
             "gui/*",
