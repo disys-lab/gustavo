@@ -1,7 +1,7 @@
 import streamlit as st
 from urllib.error import URLError
 import pandas as pd
-from gustavo.pages.Sidebar import Sidebar
+# from gustavo.pages.Sidebar import Sidebar
 
 class PlatformConfig:
     def __init__(self):
@@ -136,7 +136,7 @@ class PlatformConfig:
             def set_load_config_clicked():
                 st.session_state.load_config_clicked = not(st.session_state.load_config_clicked)
 
-            st.button('Upload Configuration File', on_click=set_load_config_clicked)
+            st.button('Upload Configuration File', on_click=set_load_config_clicked,key="upload_pc_conf_button_widget_key")
             if st.session_state.load_config_clicked:
                 uploaded_env_file = st.file_uploader("Upload Configuration File", type=".env")
                 if uploaded_env_file is not None:
@@ -149,7 +149,7 @@ class PlatformConfig:
             def set_save_config_clicked():
                 st.session_state.save_config_clicked = True #not(st.session_state.save_config_clicked)
 
-            st.button("Save Configuration", on_click=set_save_config_clicked)
+            st.button("Save Configuration", on_click=set_save_config_clicked,key="save_pc_conf_button_widget_key")
             if st.session_state.save_config_clicked:
                 self.global_platform_env_file_str = self.save_params()
                 st.session_state.save_config_clicked = False
@@ -168,7 +168,8 @@ class PlatformConfig:
                 data=self.global_platform_env_file_str,#self.save_params(),
                 file_name='manager.env',
                 mime='text',
-                on_click=set_dn_config_clicked
+                on_click=set_dn_config_clicked,
+                key="download_pc_conf_button_widget_key"
             )
             #if st.session_state.dn_config_clicked:
 
@@ -362,8 +363,8 @@ class PlatformConfig:
 #             initial_sidebar_state="expanded"
 #
 #         )
-
-sb = Sidebar()
+#
+# sb = Sidebar()
 pc = PlatformConfig()
 pc.platform()
 #

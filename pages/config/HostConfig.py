@@ -98,13 +98,13 @@ class HostConfig:
         # st.markdown(f"Your favorite command is **{favorite_command}** 🎈")
 
 
-st.set_page_config(
-
-    layout="wide",
-    initial_sidebar_state="expanded"
-
-)
-sb = Sidebar()
+# st.set_page_config(
+#
+#     layout="wide",
+#     initial_sidebar_state="expanded"
+#
+# )
+# sb = Sidebar()
 hc = HostConfig()
 hc.hosts()
 #
