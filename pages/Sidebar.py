@@ -1,12 +1,16 @@
 import streamlit as st
-
+import os
 class Sidebar:
     def __init__(self):
+        parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
         with st.sidebar:
-            logo_url = "./images/gustavo_bw.jpeg"
+            logo_url = os.path.join(parent,"images","gustavo_bw.jpeg")
+            #logo_url = "./images/gustavo_bw.jpeg"
             st.image(logo_url)
         #     #st.title('')
+
+            #home_url = os.path.join(parent,"Home.py")
             st.page_link("Home.py",label="Home", icon="🏠")
             st.page_link("pages/ManagerServices.py", label="Manager", icon="💼")
             st.page_link("pages/Apps.py",label="Apps", icon="📊")
