@@ -1,7 +1,7 @@
 import streamlit as st
 from urllib.error import URLError
 import pandas as pd
-from pages.Sidebar import Sidebar
+# from pages.Sidebar import Sidebar
 import yaml
 
 class SyncerConfig:
@@ -78,7 +78,7 @@ class SyncerConfig:
                 def set_syncer_load_config_clicked():
                     st.session_state.syncer_load_config_clicked = not (st.session_state.syncer_load_config_clicked)
 
-                st.button('Upload Configuration 📤', on_click=set_syncer_load_config_clicked)
+                st.button('Upload Configuration 📤', on_click=set_syncer_load_config_clicked,key="syncer_map_load_button_widget_key")
                 if st.session_state.syncer_load_config_clicked:
                     uploaded_env_file = st.file_uploader("Upload Configuration File", type=[".yaml",".yml"],key="SYNCER_MAPPINGS_UPLOAD")
                     if uploaded_env_file is not None:
@@ -92,7 +92,7 @@ class SyncerConfig:
                 def set_syncer_save_config_clicked():
                     st.session_state.syncer_save_config_clicked = True  # not(st.session_state.save_config_clicked)
 
-                st.button("Save Configuration 💾", on_click=set_syncer_save_config_clicked)
+                st.button("Save Configuration 💾", on_click=set_syncer_save_config_clicked, key="syncer_map_save_button_widget_key")
                 if st.session_state.syncer_save_config_clicked:
                     global_platform_env_file_str = self.save_mappings_list("mappings_list")
                     st.session_state.syncer_save_config_clicked = False
@@ -104,6 +104,7 @@ class SyncerConfig:
                     data=self.save_mappings_list("mappings_list"),
                     file_name='mappings_list.yaml',
                     mime='text',
+                    key="syncer_map_download_button_widget_key"
                 )
 
             #TODO: mixing data types makes the column uneditable.
@@ -150,6 +151,7 @@ class SyncerConfig:
                     data=self.save_params("dregsy_conf"),
                     file_name='dregsy_conf.yaml',
                     mime='text',
+                    key="syncer_task_download_button_widget_key"
                 )
             task_conf = st.data_editor(st.session_state["dregsy_vars"],
                                      num_rows="fixed", use_container_width=True,
@@ -165,8 +167,8 @@ class SyncerConfig:
 #     initial_sidebar_state="expanded"
 #
 # )
-
-sb = Sidebar()
+#
+# sb = Sidebar()
 sy = SyncerConfig()
 sy.syncer()
 #

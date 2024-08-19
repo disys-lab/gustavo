@@ -1,8 +1,15 @@
 import yaml,time, sys,os
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from pages.Sidebar import Sidebar
+# from pages.Sidebar import Sidebar
 from src.Manager import Manager
+
+parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+logo_url = os.path.join(parent,"images","gustavo_bw.png")
+st.logo(logo_url)
+
+with st.sidebar:
+    st.text("Gustavo Admin Tool")
 
 class ManagerService:
     def __init__(self):
@@ -379,11 +386,11 @@ class ManagerService:
             self.serviceExpander("Syncer", status_container)
             self.serviceExpander("Manager",status_container)
 
-st.set_page_config(
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-sb = Sidebar()
+# st.set_page_config(
+#     layout="wide",
+#     initial_sidebar_state="expanded"
+# )
+#
+# sb = Sidebar()
 mn = ManagerService()
 mn.manager()

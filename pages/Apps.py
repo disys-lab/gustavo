@@ -1,9 +1,15 @@
 import yaml,time, sys,os,copy
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from pages.Sidebar import Sidebar
-from src.Composer import Composer
+# from pages.Sidebar import Sidebar
+from gustavo.src.Composer import Composer
 
+parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+logo_url = os.path.join(parent,"images","gustavo_bw.png")
+st.logo(logo_url)
+
+with st.sidebar:
+    st.text("Gustavo Admin Tool")
 
 class AppHandler:
     def __init__(self):
@@ -274,11 +280,11 @@ class AppHandler:
                 on_click=set_dn_config_clicked
             )
 
-st.set_page_config(
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-sb = Sidebar()
+# st.set_page_config(
+#     layout="wide",
+#     initial_sidebar_state="expanded"
+# )
+#
+# sb = Sidebar()
 ah = AppHandler()
 ah.apps()
