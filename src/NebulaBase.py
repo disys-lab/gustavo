@@ -66,27 +66,12 @@ class NebulaBase:
 
     """
 
-    def __init__(self):
+    def __init__(self,mode,session_state):
         """
         Inorder to make NebulaBase rest friendly replaced sys.exit() with raising exceptions which will get excepted
         in gustavo.py and eventually return a dictionary there {"error": True, "response": reason for error}
         """
         self.base_config = None
-        if "GUSTAVO_CONFIG_FILE" in os.environ:
-            self.base_config = os.environ["GUSTAVO_CONFIG_FILE"]
-            if not os.path.isfile(self.base_config):
-                click.echo(
-                    click.style(
-                        "GUSTAVO_CONFIG_FILE: {} path not valid".format(
-                            self.base_config
-                        ),
-                        fg="red",
-                    )
-                )
-                raise PathInvalid
-        else:
-            click.echo(click.style("GUSTAVO_CONFIG_FILE not defined", fg="red"))
-            raise FileUndefined
 
         self.REGISTRY_IP = None
         self.REGISTRY_PORT = None
@@ -110,7 +95,67 @@ class NebulaBase:
 
         self.nebulaObj = None
 
-        self.setNebulaParams()
+        if mode == "CLI":
+            self.base_config = None
+            if "GUSTAVO_CONFIG_FILE" in os.environ:
+                self.base_config = os.environ["GUSTAVO_CONFIG_FILE"]
+                if not os.path.isfile(self.base_config):
+                    # raise Exception("GUSTAVO_CONFIG_FILE: {} path not valid".format(self.base_config))
+                    click.echo(
+                        click.style(
+                            "GUSTAVO_CONFIG_FILE: {} path not valid".format(
+                                self.base_config
+                            ),
+                            fg="red",
+                        )
+                    )
+                    # sys.exit()
+                    # return {"error": True, "response": "GUSTAVO_CONFIG_FILE: {} path not valid"}
+                    raise PathInvalid
+            else:
+                # raise Exception("GUSTAVO_CONFIG_FILE not defined")
+                click.echo(click.style("GUSTAVO_CONFIG_FILE not defined", fg="red"))
+                # sys.exit()
+                # return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
+                raise FileUndefined
+
+            self.setNebulaParams()
+
+        else:
+            if session_state:
+                self.REGISTRY_IP = session_state["REGISTRY_HOST"]
+                self.REGISTRY_PORT = session_state["REGISTRY_PORT"]
+                self.MANAGER_IP = session_state["MANAGER_HOST"]
+
+                self.REDIS_IP = session_state["REDIS_HOST"]
+                self.REDIS_PORT = session_state["REDIS_PORT"]
+                self.REDIS_AUTH_TOKEN = session_state["REDIS_AUTH_TOKEN"]
+                self.CACHE_PREFIX = session_state["REDIS_PORT"]
+
+                self.MANAGER_PORT = session_state["MANAGER_PORT"]
+                self.NEBULA_USERNAME = session_state["NEBULA_USERNAME"]
+                self.NEBULA_PASSWORD = session_state["NEBULA_PASSWORD"]
+                self.NEBULA_AUTH_TOKEN = session_state["NEBULA_AUTH_TOKEN"]
+                self.NEBULA_PROTOCOL = session_state["NEBULA_PROTOCOL"]
+
+                self.DOCKER_HOST = "unix:/var/run/docker.sock"
+                if len(self.DOCKER_HOST.split(":")) == 2:
+                    self.DOCKER_HOST_SOCKET = self.DOCKER_HOST.split(":")[1]
+                else:
+                    click.echo(
+                        click.style(
+                            "ERROR: DOCKER_HOST={} must be like unix:/var/run/docker.sock .... quitting".format(
+                                self.DOCKER_HOST_SOCKET
+                            ),
+                            fg="red",
+                        )
+                    )
+
+                self.WORKER_NMODE = session_state["WORKER_NMODE"]
+            else:
+                click.echo(
+                    click.style("session_state undefined in NebulaBase", fg="red")
+                )
 
     def setNebulaParams(self):
         """
@@ -118,8 +163,9 @@ class NebulaBase:
         Inorder to make NebulaBase rest friendly replaced sys.exit(); return a dictionary there
         {"error": True, "response": reason for error}
         """
-        dotenv_path = Path(self.base_config)
-        load_dotenv(dotenv_path=dotenv_path)
+        if "GUSTAVO_CONFIG_FILE" in os.environ:
+            dotenv_path = Path(self.base_config)
+            load_dotenv(dotenv_path=dotenv_path)
 
         if "CACHE_PREFIX" in os.environ.keys():
             self.CACHE_PREFIX = os.getenv("CACHE_PREFIX")

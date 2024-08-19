@@ -15,9 +15,8 @@ class Composer(NebulaBase):
 
     """
 
-    def __init__(self):
-        NebulaBase.__init__(self)
-
+    def __init__(self,mode = "CLI",params = None):
+        NebulaBase.__init__(self, mode = mode,session_state=params)
         if self.NEBULA_PROTOCOL:
             self.nebulaObj = Nebula(
                 username=self.NEBULA_USERNAME,
@@ -36,6 +35,8 @@ class Composer(NebulaBase):
                 token=self.NEBULA_AUTH_TOKEN,
                 password=self.NEBULA_PASSWORD,
             )
+
+
 
     def checkLocalRepoImages(self, name, tag):
         """
@@ -69,9 +70,12 @@ class Composer(NebulaBase):
                 + "/v2/_catalog"
             )
             response = requests.get(url.geturl(), auth=None, verify=False)
-            response_dict = json.loads(response.text)
-            print(response_dict)
-            return {"error": False, "response": response_dict}
+            print(response.status_code)
+            if response.status_code ==200:
+                response_dict = json.loads(response.text)
+                return {"error": False, "response": response_dict}
+            else:
+                return {"error": True, "response": {"status":response.status_code}}
         else:
             url = urlparse(
                 self.NEBULA_PROTOCOL
@@ -87,7 +91,10 @@ class Composer(NebulaBase):
                 response = requests.get(url.geturl(), auth=None, verify=False)
             except requests.exceptions.RequestException as e:  # This is the correct syntax
                 raise SystemExit(e)
+            if response.status_code != 200:
+                return {"error": True, "response": {"status": response.status_code}}
             response_dict = json.loads(response.text)
+
             if "errors" in response_dict.keys():
                 error_msg = response_dict["errors"][0]
                 if "code" in error_msg.keys() and error_msg["code"] == "NAME_UNKNOWN":
@@ -99,6 +106,9 @@ class Composer(NebulaBase):
                             fg="red",
                         )
                     )
+                    return {"error": True, "response": "{} has not been found in the local repository, add this to the syncer mapping list to pull from remote".format(
+                                name
+                            )}
                 else:
                     click.echo(click.style(str(error_msg), fg="red"))
                 # sys.exit()
@@ -112,7 +122,7 @@ class Composer(NebulaBase):
                 print(response_dict)
                 if tag == "all":
                     # sys.exit()
-                    return {"error": True, "response": "tag cannot be all"}
+                    return {"error": False, "response": response_dict}
                 elif tag not in response_dict["tags"]:
                     click.echo(
                         click.style(

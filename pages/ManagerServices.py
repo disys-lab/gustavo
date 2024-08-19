@@ -1,7 +1,7 @@
 import yaml,time, sys,os
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from gui.Sidebar import Sidebar
+from pages.Sidebar import Sidebar
 from src.Manager import Manager
 
 class ManagerService:
@@ -119,6 +119,7 @@ class ManagerService:
             self.man.DREGSY_CONFIG_FILE_PATH = st.session_state.DREGSY_CONFIG_FILE_PATH
             if os.path.isfile(self.syncer_conf["DREGSY_CONFIG_FILE_PATH"]):
                 st.success("Valid DREGSY_CONFIG_FILE_PATH")
+                st.session_state.DREGSY_CONFIG_FILE_PATH = st.session_state.DREGSY_CONFIG_FILE_PATH
             else:
                 st.error("Invalid DREGSY_CONFIG_FILE_PATH")
 
@@ -129,6 +130,7 @@ class ManagerService:
             self.man.DREGSY_MAPPING_FILE_PATH = st.session_state.DREGSY_MAPPING_FILE_PATH
             if os.path.isfile(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]):
                 st.success("Valid DREGSY_MAPPING_FILE_PATH")
+                st.session_state.DREGSY_MAPPING_FILE_PATH = self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]
             else:
                 st.error("Invalid DREGSY_MAPPING_FILE_PATH {}".format(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]))
 
@@ -238,6 +240,12 @@ class ManagerService:
                 conf = self.obtainRegistryConf()
             if service_name == "Syncer":
                 config_file_path, mapping_file_path = st.columns([50, 50], gap="large")
+                if "DREGSY_CONFIG_FILE_PATH" in st.session_state.keys():
+                    self.syncer_conf["DREGSY_CONFIG_FILE_PATH"] = st.session_state.DREGSY_CONFIG_FILE_PATH
+
+                if "DREGSY_MAPPING_FILE_PATH" in st.session_state.keys():
+                    self.syncer_conf["DREGSY_MAPPING_FILE_PATH"] = st.session_state.DREGSY_MAPPING_FILE_PATH
+
                 with config_file_path:
                     st.session_state.DREGSY_CONFIG_FILE_PATH = st.text_input("SYNCER_CONFIG_PATH",
                                                                                 self.syncer_conf["DREGSY_CONFIG_FILE_PATH"],
@@ -314,11 +322,11 @@ class ManagerService:
                             status_container.update(label=":green[{} is Up]".format(service_name), expanded=True,
                                                     state="complete")
 
-                        elif "error" in result.keys():
-                            st.session_state[service_name_status] = "Down"
-                            st.write(result["response"])
-                            status_container.update(label=":red[Errors encountered while launching {}]".format(service_name),
-                                                    expanded=True, state="error")
+                        # elif :
+                        #     st.session_state[service_name_status] = "Down"
+                        #     st.write(result["response"])
+                        #     status_container.update(label=":red[Errors encountered while launching {}]".format(service_name),
+                        #                             expanded=True, state="error")
                         else:
                             st.session_state[service_name_status] = "Down"
                             st.write(result["response"])

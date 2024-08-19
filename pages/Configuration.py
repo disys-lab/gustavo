@@ -3,7 +3,7 @@ import streamlit as st
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from gui.config.PlatformConfig import PlatformConfig
+from pages.config.PlatformConfig import PlatformConfig
 
 st.set_page_config(
 
