@@ -41,9 +41,7 @@ if gitRepo:
 
     distpath = "./dist/"
 
-    os.chdir(Path(distpath))
-
-    packageInfo = os.listdir(distpath)[0]
+    packageInfo = os.listdir(Path(distpath))[0]
 
     if mode == "prod":
         subprocess.run(
@@ -56,9 +54,5 @@ if gitRepo:
         )
 
         os.chdir(currentDir)
-
-        os.system("yes | rm -r temp")
-
-
 else:
     print("provide Git repo details")
