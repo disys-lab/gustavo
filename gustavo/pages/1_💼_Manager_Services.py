@@ -1,15 +1,11 @@
 import yaml,time, sys,os
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-# from pages.Sidebar import Sidebar
+from gustavo.pages.config.Sidebar import sidebarInit
+from gustavo.pages.config.SyncerConfig import SyncerConfig
 from src.Manager import Manager
 
-parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-logo_url = os.path.join(parent,"images","gustavo_bw.png")
-st.logo(logo_url)
-
-with st.sidebar:
-    st.text("Gustavo Admin Tool")
+sidebarInit()
 
 class ManagerService:
     def __init__(self):
@@ -124,22 +120,13 @@ class ManagerService:
         else:
             self.syncer_conf["DREGSY_CONFIG_FILE_PATH"] = st.session_state.DREGSY_CONFIG_FILE_PATH
             self.man.DREGSY_CONFIG_FILE_PATH = st.session_state.DREGSY_CONFIG_FILE_PATH
-            if os.path.isfile(self.syncer_conf["DREGSY_CONFIG_FILE_PATH"]):
-                st.success("Valid DREGSY_CONFIG_FILE_PATH")
-                st.session_state.DREGSY_CONFIG_FILE_PATH = st.session_state.DREGSY_CONFIG_FILE_PATH
-            else:
-                st.error("Invalid DREGSY_CONFIG_FILE_PATH")
+
 
         if "DREGSY_MAPPING_FILE_PATH" not in st.session_state.keys():
             self.syncer_conf["DREGSY_MAPPING_FILE_PATH"] = "Undefined"
         else:
             self.syncer_conf["DREGSY_MAPPING_FILE_PATH"] = st.session_state.DREGSY_MAPPING_FILE_PATH
             self.man.DREGSY_MAPPING_FILE_PATH = st.session_state.DREGSY_MAPPING_FILE_PATH
-            if os.path.isfile(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]):
-                st.success("Valid DREGSY_MAPPING_FILE_PATH")
-                st.session_state.DREGSY_MAPPING_FILE_PATH = self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]
-            else:
-                st.error("Invalid DREGSY_MAPPING_FILE_PATH {}".format(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]))
 
         return [self.syncer_conf]
     
@@ -246,22 +233,43 @@ class ManagerService:
             if service_name == "Registry":
                 conf = self.obtainRegistryConf()
             if service_name == "Syncer":
-                config_file_path, mapping_file_path = st.columns([50, 50], gap="large")
+                sy = SyncerConfig()
+
+                #config_file_path, mapping_file_path = st.columns([50, 50], gap="large")
                 if "DREGSY_CONFIG_FILE_PATH" in st.session_state.keys():
                     self.syncer_conf["DREGSY_CONFIG_FILE_PATH"] = st.session_state.DREGSY_CONFIG_FILE_PATH
 
                 if "DREGSY_MAPPING_FILE_PATH" in st.session_state.keys():
                     self.syncer_conf["DREGSY_MAPPING_FILE_PATH"] = st.session_state.DREGSY_MAPPING_FILE_PATH
 
-                with config_file_path:
+                with st.container():
                     st.session_state.DREGSY_CONFIG_FILE_PATH = st.text_input("SYNCER_CONFIG_PATH",
                                                                                 self.syncer_conf["DREGSY_CONFIG_FILE_PATH"],
                                                                 key="SYNCER_CONFIG_PATH_WIDGET_KEY")
+                    self.syncer_conf["DREGSY_CONFIG_FILE_PATH"] = st.session_state.DREGSY_CONFIG_FILE_PATH
+                    if os.path.exists(os.path.dirname(os.path.expanduser(self.syncer_conf["DREGSY_CONFIG_FILE_PATH"]))):
+                        st.success("Valid DREGSY_CONFIG_FILE_PATH")
+                        st.session_state.DREGSY_CONFIG_FILE_PATH = os.path.expanduser(self.syncer_conf["DREGSY_CONFIG_FILE_PATH"])
+                    else:
+                        st.error("Invalid DREGSY_CONFIG_FILE_PATH")
 
-                with mapping_file_path:
+                    sy.syncerConfigs()
+
+                with st.container():
                     st.session_state.DREGSY_MAPPING_FILE_PATH = st.text_input("SYNCER_MAPPING_PATH",
                                                                               self.syncer_conf["DREGSY_MAPPING_FILE_PATH"],
                                                                              key="SYNCER_MAPPING_PATH_WIDGET_KEY")
+                    self.syncer_conf["DREGSY_MAPPING_FILE_PATH"] = st.session_state.DREGSY_MAPPING_FILE_PATH
+                    if os.path.exists(
+                            os.path.dirname(os.path.expanduser(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]))):
+                        st.success("Valid DREGSY_MAPPING_FILE_PATH")
+                        st.session_state.DREGSY_MAPPING_FILE_PATH = os.path.expanduser(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"])
+                    else:
+                        st.error(
+                            "Invalid DREGSY_MAPPING_FILE_PATH {}".format(self.syncer_conf["DREGSY_MAPPING_FILE_PATH"]))
+
+                    sy.syncerMappings()
+
                 conf = self.obtainSyncerConf()
             st.data_editor(conf, disabled=True, num_rows="fixed", use_container_width=True, key=data_editor_widget_key)
 
@@ -329,11 +337,7 @@ class ManagerService:
                             status_container.update(label=":green[{} is Up]".format(service_name), expanded=True,
                                                     state="complete")
 
-                        # elif :
-                        #     st.session_state[service_name_status] = "Down"
-                        #     st.write(result["response"])
-                        #     status_container.update(label=":red[Errors encountered while launching {}]".format(service_name),
-                        #                             expanded=True, state="error")
+
                         else:
                             st.session_state[service_name_status] = "Down"
                             st.write(result["response"])

@@ -63,20 +63,32 @@ This needs to be done at each host where a docker daemon might be running. Be ca
 
 ## Building and testing locally
 
-Use the following command from within ```Builder``` directory
-```python builder.py https://github.com/disys-lab/gustavo.git```
+Then run
+```PACKAGE_VERSION=<dev-version> pip install -e .```
 
-There is going to be a copy located in ```Builder/temp/gustavo```
+[//]: # ()
+[//]: # (Use the following command from within ```Builder``` directory)
 
-If you want to rapidly test features locally you can *directly* edit the version present in ```Builder/temp/gustavo```.
-s
-Execute ```cd Builder/temp/ && yes| pip uninstall gustavo && rm -rf build```
+[//]: # (```python builder.py https://github.com/disys-lab/gustavo.git```)
 
-Then execute ```python setup.py bdist_wheel <current_version>-dev```
+[//]: # ()
+[//]: # (There is going to be a copy located in ```Builder/temp/gustavo```)
 
-Followed by ```pip install dist/gustavo-<current_version>-dev.whl```
+[//]: # ()
+[//]: # (If you want to rapidly test features locally you can *directly* edit the version present in ```Builder/temp/gustavo```.)
 
-This will give you a working Gustavo installation dev version.
+[//]: # (s)
+
+[//]: # (Execute ```cd Builder/temp/ && yes| pip uninstall gustavo && rm -rf build```)
+
+[//]: # ()
+[//]: # (Then execute ```python setup.py bdist_wheel <current_version>-dev```)
+
+[//]: # ()
+[//]: # (Followed by ```pip install dist/gustavo-<current_version>-dev.whl```)
+
+[//]: # ()
+[//]: # (This will give you a working Gustavo installation dev version.)
 
 ## Common Gotchas
 If using podman, you must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.

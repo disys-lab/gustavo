@@ -321,7 +321,7 @@ class Manager(NebulaBase):
                 # return False
                 return {
                     "error": True,
-                    "response": "Registry:Trouble reaching the docker API",
+                    "response": "Registry:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
 
             # return success
@@ -402,7 +402,7 @@ class Manager(NebulaBase):
                 # return False
                 return {
                     "error": True,
-                    "response": "Syncer:Trouble reaching the docker API",
+                    "response": "Syncer:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
 
             # return success
@@ -466,7 +466,7 @@ class Manager(NebulaBase):
                 # return False
                 return {
                     "error": True,
-                    "response": "Redis:Trouble reaching the docker API",
+                    "response": "Redis:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
 
             # return success
@@ -534,7 +534,7 @@ class Manager(NebulaBase):
                 # return False
                 return {
                     "error": True,
-                    "response": "Mongo:Trouble reaching the docker API",
+                    "response": "Mongo:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
 
             # return success
@@ -643,7 +643,7 @@ class Manager(NebulaBase):
                 # return False
                 return {
                     "error": True,
-                    "response": "Manager:Trouble reaching the docker API",
+                    "response": "Manager:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
 
             # return success
@@ -753,7 +753,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Registry Image Not defined in config files",
+                    "response": success["response"],
                 }
 
         elif service_name == "redis":
@@ -767,7 +767,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Redis Image Not defined in config files",
+                    "response": success["response"],
                 }
         elif service_name == "syncer":
             success = self.runSyncer(client)
@@ -780,7 +780,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Syncer Image Not defined in config files",
+                    "response": success["response"],
                 }
         elif service_name == "mongo":
             success = self.runMongo(client)
@@ -793,7 +793,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Mongo Image Not defined in config files",
+                    "response": success["response"],
                 }
         elif service_name == "manager":
             success = self.runManager(client)
@@ -806,7 +806,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Manager Image Not defined in config files",
+                    "response": success["response"],
                 }
         elif service_name == "all":
             success = self.runRegistry(client)
@@ -815,7 +815,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Registry Image Not defined in config files",
+                    "response": success["response"],
                 }
 
             success = self.runRedis(client)
@@ -824,7 +824,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Redis Image Not defined in config files",
+                    "response": success["response"],
                 }
             success = self.runSyncer(client)
             if not success["error"]:
@@ -832,7 +832,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Syncer Image Not defined in config files",
+                    "response": success["response"],
                 }
             success = self.runMongo(client)
             if not success["error"]:
@@ -840,7 +840,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Mongo Image Not defined in config files",
+                    "response": success["response"],
                 }
             success = self.runManager(client)
             if not success["error"]:
@@ -848,7 +848,7 @@ class Manager(NebulaBase):
             else:
                 return {
                     "error": True,
-                    "response": "Manager Image Not defined in config files",
+                    "response": success["response"],
                 }
             self.waitManager()
 

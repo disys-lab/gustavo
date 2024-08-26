@@ -1,29 +1,35 @@
 import streamlit as st
 from urllib.error import URLError
 import pandas as pd
+import socket
 # from gustavo.pages.Sidebar import Sidebar
 
 class PlatformConfig:
     def __init__(self):
+        try:
+            hostname = socket.gethostname()
+            netwIPAddr = socket.gethostbyname(hostname)
+        except Exception as e:
+            netwIPAddr = "127.0.0.1"
 
         self.platform_config = {
-                            "REGISTRY_HOST":"172.31.18.128",
+                            "REGISTRY_HOST":netwIPAddr,
                             "REGISTRY_PORT":"5000",
                             "REGISTRY_IP_DISABLED": True,
                             "REGISTRY_IMAGE":"registry:2",
                             "SYNCER_IMAGE":"homert2admin/dregsy:latest",
                             "SYNCER_NMODE":"host",
-                            "REDIS_HOST":"172.31.18.128",
+                            "REDIS_HOST":netwIPAddr,
                             "REDIS_IP_DISABLED": True,
                             "REDIS_PORT":"6379",
                             "REDIS_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
                             "REDIS_IMAGE":"homert2admin/redis",
-                            "MANAGER_HOST":"172.31.18.128",
+                            "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
                             "MANAGER_IMAGE":"homert2admin/manager",
                             "MANAGER_NMODE":"bridge",
-                            "MONGO_HOST":"172.31.18.128",
+                            "MONGO_HOST":netwIPAddr,
                             "MONGO_IP_DISABLED": True,
                             "MONGO_PORT":"27017",
                             "MONGO_USERNAME":"nebula",
@@ -46,20 +52,20 @@ class PlatformConfig:
             st.session_state.disabled = False
 
         if "MANAGER_HOST" not in st.session_state.keys():
-            st.session_state.MANAGER_HOST = "172.31.18.128"
+            st.session_state.MANAGER_HOST = netwIPAddr
             st.session_state.MANAGER_PORT = "8080"
             st.session_state.MANAGER_NMODE = "bridge"
 
-            st.session_state.REGISTRY_HOST = "172.31.18.128"
-            st.session_state.REGISTRY_PORT = "5000"
-            st.session_state.SYNCER_HOST = "172.31.18.128"
+            st.session_state.REGISTRY_HOST = netwIPAddr
+            st.session_state.REGISTRY_PORT = "5001"
+            st.session_state.SYNCER_HOST = netwIPAddr
             st.session_state.SYNCER_PORT = "5000"
             st.session_state.REGISTRY_IP_DISABLED = True
             #
             # DREGSY_CONFIG_FILE_PATH=/home/ubuntu/workshop_demo/dregsy_conf.yml
             # DREGSY_MAPPING_FILE_PATH=/home/ubuntu/workshop_demo/mappings_list.yml
 
-            st.session_state.REDIS_HOST = "172.31.18.128"
+            st.session_state.REDIS_HOST = netwIPAddr
             st.session_state.REDIS_PORT = "6379"
             st.session_state.REDIS_IP_DISABLED = True
             st.session_state.REDIS_AUTH_TOKEN = "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
@@ -68,7 +74,7 @@ class PlatformConfig:
 
             st.session_state.CACHE_EXPIRE_TIME = "120"
 
-            st.session_state.MONGO_HOST = "172.31.18.128"
+            st.session_state.MONGO_HOST = netwIPAddr
             st.session_state.MONGO_IP_DISABLED = True
             st.session_state.MONGO_PORT = "27017"
             st.session_state.MONGO_USERNAME = "nebula"
@@ -365,8 +371,8 @@ class PlatformConfig:
 #         )
 #
 # sb = Sidebar()
-pc = PlatformConfig()
-pc.platform()
+# pc = PlatformConfig()
+# pc.platform()
 #
 
 

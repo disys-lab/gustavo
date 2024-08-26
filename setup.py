@@ -1,8 +1,15 @@
 from setuptools import setup, find_packages
-import sys, platform
+import os, sys, platform
 
 python_version = platform.python_version()
-packageversion = str(sys.argv[-1])
+
+if "PACKAGE_VERSION" in os.environ.keys():
+    packageversion = os.environ["PACKAGE_VERSION"]
+elif len(sys.argv)>=2:
+    packageversion = str(sys.argv[-1])
+else:
+    print("Either run `python setup.py <version>` or `PACKAGE_VERSION=<version> python setup.py`")
+    sys.exit(1)
 
 if platform.system() == "Darwin":
     platform_machine = "macosx_"+"_".join(platform.mac_ver()[0].split("."))+"_"+platform.machine()
