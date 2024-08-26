@@ -62,33 +62,10 @@ The docker daemon requires registries to be running ```http```. However, the cur
 This needs to be done at each host where a docker daemon might be running. Be careful to set the ```myregistrydomain:5000``` to the ```REGISTRY_HOST:REGISTRY_PORT```.
 
 ## Building and testing locally
+Clone repository using ```git clone -b main https://github.com/disys-lab/gustavo.git```
 
 Then run
 ```PACKAGE_VERSION=<dev-version> pip install -e .```
-
-[//]: # ()
-[//]: # (Use the following command from within ```Builder``` directory)
-
-[//]: # (```python builder.py https://github.com/disys-lab/gustavo.git```)
-
-[//]: # ()
-[//]: # (There is going to be a copy located in ```Builder/temp/gustavo```)
-
-[//]: # ()
-[//]: # (If you want to rapidly test features locally you can *directly* edit the version present in ```Builder/temp/gustavo```.)
-
-[//]: # (s)
-
-[//]: # (Execute ```cd Builder/temp/ && yes| pip uninstall gustavo && rm -rf build```)
-
-[//]: # ()
-[//]: # (Then execute ```python setup.py bdist_wheel <current_version>-dev```)
-
-[//]: # ()
-[//]: # (Followed by ```pip install dist/gustavo-<current_version>-dev.whl```)
-
-[//]: # ()
-[//]: # (This will give you a working Gustavo installation dev version.)
 
 ## Common Gotchas
 If using podman, you must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.
