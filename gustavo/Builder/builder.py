@@ -6,7 +6,7 @@ import re
 
 """
 
-To build python library package e.g python builder.py git@repo
+To build python library package e.g python builder.py repo_url
 
 """
 
@@ -52,6 +52,8 @@ if gitRepo:
     )
     os.system("ln -sf {}/setup.py {}".format(currentDir, tempDir))
     os.system("ln -sf {}/README.md {}".format(currentDir, tempDir))
+    os.system("ln -sf {}/dev_reinstall.sh {}".format(currentDir, tempDir))
+
 
     print("Version: {}".format(versionInfo))
 

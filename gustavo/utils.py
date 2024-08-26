@@ -16,6 +16,7 @@ import json
 from re import search
 
 
+
 def readConfigFile(config_file):
     """
     Reads configuration file
@@ -217,6 +218,8 @@ def handleCreateApp(bcmp, app_name, app_config, device_groups):
             responseDG = bcmp.handleAsset(
                 "device_group", device_group, "create", {"apps": [app_name]}
             )
+            if responseDG["error"]:
+                return responseDG
 
         else:
             # else update the device group by adding app_name as one of the apps in the device group
@@ -224,7 +227,7 @@ def handleCreateApp(bcmp, app_name, app_config, device_groups):
                 app_name, "update", device_group=device_group
             )
 
-    return {"error_app": appRes, "error_dg": responseDG}
+    return {"error": False, "response": "App {} created successfully".format(app_name)}
 
 
 def createWorker(name, device_group, image, prefix, expire_time):

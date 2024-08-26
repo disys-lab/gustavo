@@ -1,15 +1,10 @@
 import yaml,time, sys,os,copy
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-# from pages.Sidebar import Sidebar
+from gustavo.pages.config.Sidebar import sidebarInit
 from src.Composer import Composer
 
-parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-logo_url = os.path.join(parent,"images","gustavo_bw.png")
-st.logo(logo_url)
-
-with st.sidebar:
-    st.text("Gustavo Admin Tool")
+sidebarInit()
 
 class DGHandler:
     def __init__(self):

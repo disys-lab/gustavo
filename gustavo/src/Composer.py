@@ -70,9 +70,9 @@ class Composer(NebulaBase):
                 + "/v2/_catalog"
             )
             response = requests.get(url.geturl(), auth=None, verify=False)
-            print(response.status_code)
             if response.status_code ==200:
                 response_dict = json.loads(response.text)
+                # print(response_dict)
                 return {"error": False, "response": response_dict}
             else:
                 return {"error": True, "response": {"status":response.status_code}}
@@ -119,7 +119,7 @@ class Composer(NebulaBase):
                     ),
                 }
             elif "name" in response_dict.keys():
-                print(response_dict)
+                # print(response_dict)
                 if tag == "all":
                     # sys.exit()
                     return {"error": False, "response": response_dict}
@@ -505,9 +505,13 @@ class Composer(NebulaBase):
 
             device_group_config = dict({"apps": apps_to_be_modified})
             print(device_group_config)
-            self.handleAsset(
+            responseDG = self.handleAsset(
                 "device_group", device_group, "update", device_group_config
             )
+
+            if responseDG["error"]:
+                return responseDG
+
             response = self.nebulaObj.list_device_group(device_group)
 
             self.printDiagnosticResponse(
@@ -516,3 +520,5 @@ class Composer(NebulaBase):
             click.echo(response["reply"]["apps"])
 
             return {"error": False, "response": response["reply"]["apps"]}
+        else:
+            return success

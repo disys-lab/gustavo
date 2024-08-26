@@ -7,7 +7,7 @@ from gustavo.src.Cache import ErrorHandling
 from gustavo.src.Manager import Manager
 from gustavo.utils import *
 from streamlit.web import cli
-import os
+import os, pkg_resources
 
 try:
     VERSION=pkg_resources.require("gustavo")[0].version

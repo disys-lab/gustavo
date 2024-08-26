@@ -5,8 +5,9 @@ alpine_app_config.yaml
 app_settings.yaml
 *.spec
 __pycache__/
-dist/osx/gustavo
+dist/
 .DS_Store
 ./sample_config_files/
 ./config_files/
 ./comms/
+*.egg-info
