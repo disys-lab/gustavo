@@ -58,14 +58,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build Package files
-          working-directory: ./
-          env:
-            SUPER_SECRET: ${{ secrets.GIT_INFO }}
-            GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
-          run: |
-            pip install wheel
-            pip install -r requirements.txt
-            python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
+        working-directory: ./
+        env:
+          SUPER_SECRET: ${{ secrets.GIT_INFO }}
+          GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
+        run: |
+          pip3 install wheel
+          pip3 install -r requirements.txt
+          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
 
   
 
