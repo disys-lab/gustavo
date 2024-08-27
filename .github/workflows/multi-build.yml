@@ -9,69 +9,44 @@ on:
     branches: [ "main", "gui_integration" ]
 
 jobs:
-#  linuxbuild:
-#    runs-on: ${{ matrix.os }}
-#    strategy:
-#        matrix:
-#             os: [ubuntu-24.04, ubuntu-22.04]
-#             python-version: [ 3.11.9 ]
-#    if: "contains(github.event.head_commit.message, '#buildpackage')"
-#    steps:
-#    - uses: actions/checkout@v2
-#      with:
-#        fetch-depth: '0'
-#    - name: Set up Python ${{ matrix.python-version }}
-#      uses: actions/setup-python@v2
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#    - name: Bump version and push tag
-#      uses: anothrNick/github-tag-action@1.36.0
-#      env:
-#        #RELEASE_BRANCHES: main
-#        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-#        WITH_V: true
-#        PRERELEASE: true
-#    - name: Build Package files
-#      working-directory: ./
-#      env:
-#        SUPER_SECRET: ${{ secrets.GIT_INFO }}
-#        GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
-#      run: |
-#        pip install wheel
-#        pip install -r requirements.txt
-#        python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
-#
-#  macbuild:
-#    needs: linuxbuild
-#    runs-on: ${{ matrix.os }}
-#    strategy:
-#      matrix:
-#        os: [ macos-12, macos-13, macos-latest ]
-#        python-version: [ 3.11.9 ]
-#    if: "contains(github.event.head_commit.message, '#buildpackage')"
-#    steps:
-#      - uses: actions/checkout@v2
-#        with:
-#          fetch-depth: '0'
-#      - name: Set up Python ${{ matrix.python-version }}
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Build Package files
-#        working-directory: ./
-#        env:
-#          SUPER_SECRET: ${{ secrets.GIT_INFO }}
-#          GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
-#        run: |
-#          pip3 install wheel
-#          pip3 install -r requirements.txt
-#          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
-  winbuild:
-    #needs: linuxbuild
+  linuxbuild:
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+             os: [ubuntu-24.04, ubuntu-22.04]
+             python-version: [ 3.11.9 ]
+    if: "contains(github.event.head_commit.message, '#buildpackage')"
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: '0'
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@1.36.0
+      env:
+        #RELEASE_BRANCHES: main
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        WITH_V: true
+        PRERELEASE: true
+    - name: Build Package files
+      working-directory: ./
+      env:
+        SUPER_SECRET: ${{ secrets.GIT_INFO }}
+        GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
+      run: |
+        pip install wheel
+        pip install -r requirements.txt
+        python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
+
+  macbuild:
+    needs: linuxbuild
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-latest ]
+        os: [ macos-12, macos-13, macos-latest ]
         python-version: [ 3.11.9 ]
     if: "contains(github.event.head_commit.message, '#buildpackage')"
     steps:
@@ -83,14 +58,39 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build Package files
-        working-directory: .
+        working-directory: ./
         env:
           SUPER_SECRET: ${{ secrets.GIT_INFO }}
           GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
         run: |
           pip3 install wheel
           pip3 install -r requirements.txt
-          python3 builder.py "https://github.com/disys-lab/gustavo.git" "$GEMFURY_TOKEN"
-  
+          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
+#  winbuild:
+#    needs: linuxbuild
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      matrix:
+#        os: [ windows-latest ]
+#        python-version: [ 3.11.9 ]
+#    if: "contains(github.event.head_commit.message, '#buildpackage')"
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: '0'
+#      - name: Set up Python ${{ matrix.python-version }}
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#      - name: Build Package files
+#        working-directory: .
+#        env:
+#          SUPER_SECRET: ${{ secrets.GIT_INFO }}
+#          GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
+#        run: |
+#          pip3 install wheel
+#          pip3 install -r requirements.txt
+#          python3 builder.py "https://github.com/disys-lab/gustavo.git" "$GEMFURY_TOKEN"
+#
 
 
