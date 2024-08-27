@@ -11,8 +11,30 @@ else:
     print("Either run `python setup.py <version>` or `PACKAGE_VERSION=<version> python setup.py`")
     sys.exit(1)
 
+package_data = {
+        "gustavo": [
+            "images/*",
+            "src/*",
+            "src/__pycache__/*",
+            "gui/*",
+            "gui/__pycache__/*",
+            "sample_config_files/*",
+        ]
+    }
+
 if platform.system() == "Darwin":
     platform_machine = "macosx_"+"_".join(platform.mac_ver()[0].split("."))+"_"+platform.machine()
+
+elif platform.system() == "Windows":
+    package_data={
+        "gustavo": [
+            "images\*",
+            "src\*",
+            "gui\*",
+            "sample_config_files\*",
+        ]
+    }
+    platform_machine = platform.system() + "-" + platform.machine()
 else:
     platform_machine = platform.system()+"-"+platform.machine()
 
@@ -31,16 +53,8 @@ setup(
     author_email="paritosh.ramanan@okstate.edu",
     description="Project Gustavo: Manage container images across distributed edge resources",
     packages=find_packages(),
-    package_data={
-        "gustavo": [
-            "images/*",
-            "src/*",
-            "src/__pycache__/*",
-            "gui/*",
-            "gui/__pycache__/*",
-            "sample_config_files/*",
-        ]
-    },options={
+    package_data=package_data,
+    options={
         "bdist_wheel": {
             "plat_name": platform_machine,
             "python_tag": "py{}{}".format(sys.version_info[0],sys.version_info[1]),
