@@ -25,7 +25,7 @@ if gitRepo:
     subprocess.run(["git", "remote", "update"])
 
     versionInfo = str(os.popen("git describe --tags").read())
-    versionInfo = re.search(r'([\d.]+)', versionInfo).group(1)
+    #versionInfo = re.search(r'([\d.]+)', versionInfo).group(1)
 
     print(
         "\033[1m"
