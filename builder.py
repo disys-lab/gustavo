@@ -39,9 +39,9 @@ if gitRepo:
 
     os.system(buildWheelPkg)
 
-    distpath = "./dist/"
+    distpath = Path("./dist/")
 
-    packageInfo = os.listdir(Path(distpath))[0]
+    packageInfo = os.path.join(distpath,os.listdir(distpath)[0])
 
     if mode == "prod":
         subprocess.run(
