@@ -67,7 +67,7 @@ jobs:
 #          pip3 install -r requirements.txt
 #          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
   winbuild:
-    needs: linuxbuild
+    #needs: linuxbuild
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
