@@ -5,7 +5,7 @@ name: Python Package Creation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "gui_integration" ]
 
 jobs:
   build:
@@ -28,6 +28,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         WITH_V: true
+        PRERELEASE: true
     - name: Build Package files
       working-directory: ./
       env:
