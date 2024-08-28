@@ -9,6 +9,16 @@ on:
     branches: [ "main", "gui_integration" ]
 
 jobs:
+  bumpversion:
+    if: "contains(github.event.head_commit.message, '#bump')"
+    steps:
+    - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          #RELEASE_BRANCHES: main
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          WITH_V: true
+          PRERELEASE: true
   linuxbuild:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,13 +34,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.36.0
-      env:
-        #RELEASE_BRANCHES: main
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        WITH_V: true
-        PRERELEASE: true
     - name: Build Package files
       working-directory: ./
       env:
