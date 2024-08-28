@@ -20,6 +20,7 @@ jobs:
           WITH_V: true
           PRERELEASE: true
   linuxbuild:
+    needs: bumpversion
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
