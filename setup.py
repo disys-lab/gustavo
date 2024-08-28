@@ -23,7 +23,7 @@ package_data = {
     }
 
 if platform.system() == "Darwin":
-    platform_machine = "macosx_"+"_".join(platform.mac_ver()[0].split("."))+"_"+platform.machine()
+    platform_machine = "any" #"macosx_"+"_".join(platform.mac_ver()[0].split("."))+"_"+platform.machine()
 
 elif platform.system() == "Windows":
     package_data={
