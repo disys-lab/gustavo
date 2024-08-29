@@ -186,7 +186,7 @@ class SyncerConfig:
                     st.session_state.syncer_save_config_clicked = True  # not(st.session_state.save_config_clicked)
 
                 check = True
-                if os.path.isdir(os.path.dir(os.path.expanduser(st.session_state.DREGSY_MAPPING_FILE_PATH))):
+                if os.path.isdir(os.path.dirname(os.path.expanduser(st.session_state.DREGSY_MAPPING_FILE_PATH))):
                     check = False
                 st.button("Save Configuration 💾", on_click=set_syncer_save_config_clicked, key="syncer_map_save_button_widget_key",disabled = check)
 
@@ -241,7 +241,7 @@ class SyncerConfig:
                     st.session_state.syncer_task_save_config_clicked = True  # not(st.session_state.save_config_clicked)
 
                 check = True
-                if os.path.isdir(os.path.dir(os.path.expanduser(st.session_state.DREGSY_CONFIG_FILE_PATH))):
+                if os.path.isdir(os.path.dirname(os.path.expanduser(st.session_state.DREGSY_CONFIG_FILE_PATH))):
                     check = False
 
                 st.button("Save Configuration 💾", on_click=set_syncer_task_save_config_clicked,key="SYNCER_TASK_SAVE",disabled=check)
