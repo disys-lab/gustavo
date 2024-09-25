@@ -1,0 +1,190 @@
+/* Background Color */
+body {
+    background-color: #87CEEB; /* Light Blue */
+}
+
+/* Expander Style */
+.streamlit-expanderHeader {
+    background-color: #87CEEB; /* Light Blue */
+    color: #4682B4; /* Steel Blue */
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #87CEEB; /* Soft Blue Border */
+}
+
+/* Input Box Style */
+.stTextInput input {
+    background-color: white; /* Light Blue */
+    color: #4682B4; /* Steel Blue for text */
+    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    font-size: 16px;
+}
+
+/* Multiselect Box Style */
+.stMultiSelect div[data-baseweb="select"] {
+    background-color: white; /* Light Blue */
+    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border-radius: 5px;
+    color: #4682B4; /* Steel Blue for text */
+    padding: 10px;
+}
+
+/* Selected Items in Multiselect */
+.stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-container {
+    background-color: #FFFFFF; /* White background for the multiselect container after selection */
+    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border-radius: 5px;
+}
+
+/* Selected Items in Multiselect */
+.stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-option {
+    background-color: white; /* Light Blue */
+    color: #4682B4; /* Steel Blue */
+    border: none;
+    border-radius: 5px;
+    margin-right: 5px;
+    padding: 5px 10px;
+}
+
+.stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-option:hover {
+    background-color: white; /* Slightly darker blue on hover */
+    color: #87CEEB;
+}
+
+/* select Box Style */
+st.selectbox div[data-baseweb="select"] {
+    background-color: white; /* Light Blue */
+    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border-radius: 5px;
+    color: #4682B4; /* Steel Blue for text */
+    padding: 10px;
+}
+
+/* Selected Items in select */
+st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option {
+    background-color: white; /* Light Blue */
+    color: #4682B4; /* Steel Blue */
+    border: none;
+    border-radius: 5px;
+    margin-right: 5px;
+    padding: 5px 10px;
+}
+
+st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option:hover {
+    background-color: white; /* Slightly darker blue on hover */
+    color: #87CEEB;
+}
+
+/* Button Style */
+.stButton button {
+    background-color: #87CEEB; /* Light Blue */
+    color: #4682B4; /* Steel Blue */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.stButton button:hover {
+    background-color: #87CEEB; /* Slightly darker blue on hover */
+    color: white;
+}
+
+st.download_button button {
+    background-color: #87CEEB; /* Light Blue */
+    color: #1C1C1C; /* Dark Text */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+st.download_button button:hover {
+    background-color: #87CEEB; /* Slightly darker blue on hover */
+    color: white;
+}
+
+/* Section Headers */
+h1, h2, h3 {
+    color: #87CEEB; /* Steel Blue */
+    text-align: center;
+}
+
+/* General Text Color */
+body {
+    color: #87CEEB; /* Steel Blue */
+}
+
+/* General Border Style */
+input, select, textarea, button, .streamlit-expanderHeader {
+    border-radius: 5px;
+    border: 2px solid #87CEEB; /* Soft Blue Border */
+}
+
+/* General Circle Style */
+.status-circle {
+    height: 15px;
+    width: 15px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Circle status for different statuses */
+.status-up {
+    background-color: green;
+}
+
+.status-down {
+    background-color: red;
+}
+
+.status-unknown {
+    background-color: gray;
+}
+
+/* Dynamic button styles for each status */
+.status-button-up {
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.status-button-down {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.status-button-unknown {
+    background-color: gray;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.status-button-up:hover, .status-button-down:hover, .status-button-unknown:hover {
+    opacity: 0.85;
+}
