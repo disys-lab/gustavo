@@ -7,6 +7,13 @@ from gustavo.src.Composer import Composer
 from gustavo.pages.config.SyncerConfig import refresh_registry, checkRegistryStatus
 from gustavo.utils import *
 
+def load_css(file_name):
+    """Load CSS from a file and inject into Streamlit."""
+    with open(file_name) as f:
+        css = f.read()
+        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+load_css("gustavo/pages/styles/style.css")
+
 
 class AppHandler:
     def __init__(self):
