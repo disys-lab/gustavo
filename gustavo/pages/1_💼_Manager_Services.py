@@ -3,6 +3,7 @@ import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
 from gustavo.pages.config.SyncerConfig import SyncerConfig
+sidebarInit()
 from src.Manager import Manager
 
 def load_css(file_name):
@@ -74,6 +75,15 @@ class ManagerService:
                 else:
                     st.error("Down")
 
+    def status_pill(self, status):
+        if status == "Up":
+            return '<div style="background-color: green; color: white; border-radius: 12px; padding: 5px 10px;">Up</div>'
+        elif status == "Down":
+            return '<div style="background-color: red; color: white; border-radius: 12px; padding: 5px 10px;">Down</div>'
+        else:
+            return '<div style="background-color: yellow; color: black; border-radius: 12px; padding: 5px 10px;">Unknown</div>'
+    
+    
     def obtainManagerConf(self):
         if "MANAGER_HOST" not in st.session_state.keys():
             self.manager_conf["MANAGER_HOST"] = "Undefined"
@@ -250,6 +260,8 @@ class ManagerService:
             
             # Status circle initially at the top of the box
             # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+            # status_container.markdown(f"**{service_name} Status** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+            # status_container.markdown(f"**Current Status:** {st.session_state[service_name_status]}")
 
 
             # Determine the configuration for each service
@@ -307,16 +319,27 @@ class ManagerService:
 
             # Columns for status, launch, and kill buttons
             # 
+            # circle, status, launch, kill = st.columns([1, 50, 50, 50], gap="large")
             status, launch, kill = st.columns([50, 50, 50], gap="large")
             status_session_key = '{}_status_clicked'.format(service_name)
             launch_session_key = '{}_launch_clicked'.format(service_name)
             remove_session_key = '{}_remove_clicked'.format(service_name)
+            # circle = st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
 
             # Status button logic
             with status:
-                # Call the separated status button logic
-                self.statusButton(service_name, status_container, suffix="expander")
-
+                
+                # st.write(f"Creating status button for {service_name}")
+                self.statusButton(service_name, status_container, suffix="")
+                #  if st.session_state[service_name_status] != "Unkown":
+                st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+                
+            # with circle:
+            #     st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+            
+            # with small_gap:
+            #     st.write("")  # Just to create a small gap
+            
             # Launch button logic
             with launch:
                 launch_session_key = f'{service_name}_launch_clicked'
@@ -337,7 +360,7 @@ class ManagerService:
                             status_container.markdown(f":green[{service_name} is Up]")
                         else:
                             st.session_state[service_name_status] = "Down"
-                            st.write(result["response"])
+                            # st.write(result["response"])
                             status_container.markdown(f":red[Error while launching {service_name}]")
 
                     # Refresh the status circle after launching
@@ -369,9 +392,12 @@ class ManagerService:
                             status_container.markdown(f":red[Error encountered while removing {service_name}]")
 
                     # Refresh the status circle after removing
-                    # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+                        # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
 
                     st.session_state[remove_session_key] = False
+            
+            # st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+            
 
     def statusButton(self, service_name, status_container, suffix=""):
         """Encapsulates the status button logic and status circle update, with a unique key suffix."""
@@ -381,36 +407,45 @@ class ManagerService:
         status_button_widget_key = f"{service_name}_status_button_{suffix}"  # Add suffix to make the key unique
         status_session_key = f"{service_name}_status_clicked_{suffix}"  # Also make the session key unique
 
+        # if service_name_status not in st.session_state:
+        #     st.session_state[service_name_status] = "Unknown"
+
         if status_session_key not in st.session_state:
             st.session_state[status_session_key] = False
 
         # Define the function to toggle status session state
         def set_status_clicked():
             st.session_state[status_session_key] = not st.session_state[status_session_key]
+            
 
+        # status_placeholder = status_container.empty()
+        # status_placeholder.markdown(f" {st.session_state[service_name_status]}")
+        # status_container.markdown(f" {st.session_state[service_name_status]}")
+        
         # Create the Status button
         st.button(f'Status {suffix} 📈', on_click=set_status_clicked, key=status_button_widget_key)
-
+        
         # If the status button is clicked
         if st.session_state[status_session_key]:
             with status_container:
                 # Display status as checking
-                status_container.write(f"Checking {service_name} Status...")  # Use write instead of update
+                # status_container.write(f"Checking {service_name} Status...")  # Use write instead of update
                 # st.write(f"Checking for {service_name} Container")
 
                 # Check the service status
                 result = self.man.serviceStatus(service_name.lower())
                 if result["error"]:
                     st.session_state[service_name_status] = "Down"
-                    st.write(result["response"])
-                    status_container.markdown(f":red[{service_name} is not running]")  # Use markdown to format text in color
-                else:
                     # st.write(result["response"])
-                    status_container.markdown(f":green[{service_name} is running]")
+                    # status_container.markdown(f":red[{service_name} is not running 🚨]")  # Use markdown to format text in color
+                else:
+                    # st.section_state[service_name_status] = "Up"
+                    # st.write(result["response"])
+                    # status_container.markdown(f":green[{service_name} is running ✅]")
 
                     # Additional check for Manager API if it's the Manager service
                     if service_name == "Manager":
-                        st.write("Checking if Manager API is available")
+                        # st.write("Checking if Manager API is available")
                         
                         # Safely fetch the configuration from session state with defaults
                         manager_host = st.session_state.get("MANAGER_HOST", None)
@@ -419,7 +454,8 @@ class ManagerService:
 
                         # Ensure the host and port are not None before proceeding
                         if manager_host is None or manager_port is None or not auth_token:
-                            status_container.markdown(f":red[Manager configuration is incomplete]")
+                            st.section_state[service_name_status] ="Up"
+                            # status_container.markdown(f":red[Manager configuration is incomplete 🚨]")
                         else:
                             # Safeguard the token and host before assigning to self.man
                             self.man.MANAGER_IP = manager_host
@@ -430,23 +466,30 @@ class ManagerService:
                             result = self.man.checkManager()
                             if result["error"]:
                                 st.session_state["Manager_status"] = "Down"
-                                st.write(result["response"])
-                                status_container.markdown(f":red[Manager API is not available]")
+                                # st.write(result["response"])
+                                # status_container.markdown(f":red[Manager API is not available 🚨]")
+                            elif 'status' in result and result["status"] == "unknown":
+                                st.session_state["Manager_status"] = "Unknown"
+                                # status_container.markdown(f":orange[Manager API status is unknown ❓]")
                             else:
                                 st.session_state["Manager_status"] = "Up"
-                                st.write(result["response"])
-                                status_container.markdown(f":green[Manager API Live!]")
+                                # st.write(result["response"])
+                                # status_container.markdown(f":green[Manager API Live! 🚀]")
 
 
                     else:
                         st.session_state[service_name_status] = "Up"
+                        # status_container.markdown(f":green[{service_name} is running ✅]")
 
             # Refresh the status circle after checking the status
-            st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+            # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
+                # st.markdown(f"{self.status_pill(st.session_state[service_name_status])}", unsafe_allow_html=True)
+        
 
-
+            
             # Reset the status session state
-            st.session_state[status_session_key] = False
+            # st.session_state[status_session_key] = False
+        
 
     def statusButtonTop(self):
         """Renders the top status buttons with individual boxes for each service."""
@@ -458,12 +501,32 @@ class ManagerService:
         for i, service in enumerate(services):
             with cols[i]:
                 with st.container():  # Create a separate box for each service
-                    # st.markdown(f"### {service} Service")  # Title for each box
+                    # Define the status variable for each service
+                    service_name_status = f'{service}_status'
+
+                    # Ensure session state is initialized for each service's status
+                    # if service_name_status not in st.session_state:
+                    #     st.session_state[service_name_status] = "Unknown"
+
+                    # Create an empty container to dynamically update the status pill
+                    status_pill_placeholder = st.empty()
+
+                    # Display the initial status pill for each service at the top
+                    status_pill_placeholder.markdown(
+                        f"{self.status_pill(st.session_state[service_name_status])}",
+                        unsafe_allow_html=True
+                    )
 
                     # Status button logic for each service
                     status_container = st.empty()  # Placeholder for status updates
                     self.statusButton(service, status_container, suffix=service)
 
+                    # After the status check, update the status pill again dynamically
+                    status_pill_placeholder.markdown(
+                        f"{self.status_pill(st.session_state[service_name_status])}",
+                        unsafe_allow_html=True
+                    )
+    
 
     def manager(self):
         # Header for the detailed services
