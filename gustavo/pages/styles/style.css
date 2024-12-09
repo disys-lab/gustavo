@@ -1,24 +1,24 @@
 /* Background Color */
 body {
-    background-color: #87CEEB; /* Light Blue */
+    background-color: #90B4D3; /* Light Blue */
 }
 
 /* Expander Style */
 .streamlit-expanderHeader {
-    background-color: #87CEEB; /* Light Blue */
+    background-color: #90B4D3; /* Light Blue */
     color: #4682B4; /* Steel Blue */
     font-weight: bold;
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
-    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border: 2px solid #90B4D3; /* Soft Blue Border */
 }
 
 /* Input Box Style */
 .stTextInput input {
     background-color: white; /* Light Blue */
     color: #4682B4; /* Steel Blue for text */
-    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border: 2px solid #90B4D3; /* Soft Blue Border */
     border-radius: 5px;
     padding: 10px;
     width: 100%;
@@ -28,7 +28,7 @@ body {
 /* Multiselect Box Style */
 .stMultiSelect div[data-baseweb="select"] {
     background-color: white; /* Light Blue */
-    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border: 2px solid #90B4D3; /* Soft Blue Border */
     border-radius: 5px;
     color: #4682B4; /* Steel Blue for text */
     padding: 10px;
@@ -37,7 +37,7 @@ body {
 /* Selected Items in Multiselect */
 .stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-container {
     background-color: #FFFFFF; /* White background for the multiselect container after selection */
-    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border: 2px solid #90B4D3; /* Soft Blue Border */
     border-radius: 5px;
 }
 
@@ -53,13 +53,13 @@ body {
 
 .stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-option:hover {
     background-color: white; /* Slightly darker blue on hover */
-    color: #87CEEB;
+    color: #90B4D3;
 }
 
 /* select Box Style */
 st.selectbox div[data-baseweb="select"] {
     background-color: white; /* Light Blue */
-    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border: 2px solid #90B4D3; /* Soft Blue Border */
     border-radius: 5px;
     color: #4682B4; /* Steel Blue for text */
     padding: 10px;
@@ -77,12 +77,12 @@ st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option {
 
 st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option:hover {
     background-color: white; /* Slightly darker blue on hover */
-    color: #87CEEB;
+    color: #90B4D3;
 }
 
 /* Button Style */
 .stButton button {
-    background-color: #87CEEB; /* Light Blue */
+    background-color: #90B4D3; /* Light Blue */
     color: #4682B4; /* Steel Blue */
     border: none;
     border-radius: 5px;
@@ -93,7 +93,7 @@ st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option:hover {
 }
 
 .stButton button:hover {
-    background-color: #87CEEB; /* Slightly darker blue on hover */
+    background-color: #90B4D3; /* Slightly darker blue on hover */
     color: white;
 }
 
@@ -115,7 +115,7 @@ st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option:hover {
 }
 
 st.download_button button {
-    background-color: #87CEEB; /* Light Blue */
+    background-color: #90B4D3; /* Light Blue */
     color: #1C1C1C; /* Dark Text */
     border: none;
     border-radius: 5px;
@@ -126,25 +126,25 @@ st.download_button button {
 }
 
 st.download_button button:hover {
-    background-color: #87CEEB; /* Slightly darker blue on hover */
+    background-color: #90B4D3; /* Slightly darker blue on hover */
     color: white;
 }
 
 /* Section Headers */
 h1, h2, h3 {
-    color: #87CEEB; /* Steel Blue */
+    color: #90B4D3; /* Steel Blue */
     text-align: center;
 }
 
 /* General Text Color */
 body {
-    color: #87CEEB; /* Steel Blue */
+    color: #90B4D3; /* Steel Blue */
 }
 
 /* General Border Style */
 input, select, textarea, button, .streamlit-expanderHeader {
     border-radius: 5px;
-    border: 2px solid #87CEEB; /* Soft Blue Border */
+    border: 2px solid #90B4D3; /* Soft Blue Border */
 }
 
 .status-circle {
@@ -156,7 +156,7 @@ input, select, textarea, button, .streamlit-expanderHeader {
 }
 
 .status-up {
-    background-color: green;
+    background-color: 9CECA2;
 }
 
 .status-down {
@@ -181,7 +181,7 @@ button.status-button {
 
 /* Button color styles */
 button.status-up {
-    background-color: green;
+    background-color: #9CECA2;
 }
 
 button.status-down {
@@ -207,7 +207,7 @@ button.status-unknown {
 
 /* This keeps your existing button style */
 .stButton button {
-    background-color: #87CEEB; /* Light Blue */
+    background-color: #90B4D3; /* Light Blue */
     color: #4682B4; /* Steel Blue */
     border: none;
     border-radius: 5px;
