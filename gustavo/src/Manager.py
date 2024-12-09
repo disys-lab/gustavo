@@ -671,6 +671,7 @@ class Manager(NebulaBase):
         # nebulaObj = Nebula(username=self.NEBULA_USERNAME, host=self.MANAGER_IP, port=self.MANAGER_PORT,
         #                         token=self.NEBULA_AUTH_TOKEN, password=self.NEBULA_PASSWORD)
         # response = nebulaObj.check_api()
+        
         if not self.NEBULA_PROTOCOL:
             self.NEBULA_PROTOCOL = "http"
         url = urlparse(
