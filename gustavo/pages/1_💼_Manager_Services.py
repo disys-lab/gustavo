@@ -77,11 +77,11 @@ class ManagerService:
 
     def status_pill(self, status):
         if status == "Up":
-            return '<div style="background-color: green; color: white; border-radius: 12px; padding: 5px 10px;">Up</div>'
+            return '<div style="background-color: #9beba1; color: white; border-radius: 12px; padding: 5px 10px;">Up</div>'
         elif status == "Down":
-            return '<div style="background-color: red; color: white; border-radius: 12px; padding: 5px 10px;">Down</div>'
+            return '<div style="background-color: #f37e7a; color: white; border-radius: 12px; padding: 5px 10px;">Down</div>'
         else:
-            return '<div style="background-color: yellow; color: black; border-radius: 12px; padding: 5px 10px;">Unknown</div>'
+            return '<div style="background-color: #ffcc49; color: black; border-radius: 12px; padding: 5px 10px;">Unknown</div>'
     
     
     def obtainManagerConf(self):
@@ -258,12 +258,6 @@ class ManagerService:
             launch_button_widget_key = service_name + "_" + "launch_button"
             remove_button_widget_key = service_name + "_" + "remove_button"
             
-            # Status circle initially at the top of the box
-            # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-            # status_container.markdown(f"**{service_name} Status** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-            # status_container.markdown(f"**Current Status:** {st.session_state[service_name_status]}")
-
-
             # Determine the configuration for each service
             if service_name == "Manager":
                 conf = self.obtainManagerConf()
@@ -317,29 +311,16 @@ class ManagerService:
             # Display the configuration for the service
             st.data_editor(conf, disabled=True, num_rows="fixed", use_container_width=True, key=f"{service_name}_data_editor")
 
-            # Columns for status, launch, and kill buttons
-            # 
             # circle, status, launch, kill = st.columns([1, 50, 50, 50], gap="large")
             status, launch, kill = st.columns([50, 50, 50], gap="large")
             status_session_key = '{}_status_clicked'.format(service_name)
             launch_session_key = '{}_launch_clicked'.format(service_name)
             remove_session_key = '{}_remove_clicked'.format(service_name)
-            # circle = st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
 
             # Status button logic
             with status:
-                
-                # st.write(f"Creating status button for {service_name}")
                 self.statusButton(service_name, status_container, suffix="")
-                #  if st.session_state[service_name_status] != "Unkown":
-                st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
                 
-            # with circle:
-            #     st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-            
-            # with small_gap:
-            #     st.write("")  # Just to create a small gap
-            
             # Launch button logic
             with launch:
                 launch_session_key = f'{service_name}_launch_clicked'
@@ -362,10 +343,6 @@ class ManagerService:
                             st.session_state[service_name_status] = "Down"
                             # st.write(result["response"])
                             status_container.markdown(f":red[Error while launching {service_name}]")
-
-                    # Refresh the status circle after launching
-                    # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-
                     st.session_state[launch_session_key] = False
 
             # Remove button logic
@@ -390,14 +367,7 @@ class ManagerService:
                         elif "error" in result.keys():
                             st.write(result["response"])
                             status_container.markdown(f":red[Error encountered while removing {service_name}]")
-
-                    # Refresh the status circle after removing
-                        # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-
                     st.session_state[remove_session_key] = False
-            
-            # st.markdown(f" {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-            
 
     def statusButton(self, service_name, status_container, suffix=""):
         """Encapsulates the status button logic and status circle update, with a unique key suffix."""
@@ -407,9 +377,6 @@ class ManagerService:
         status_button_widget_key = f"{service_name}_status_button_{suffix}"  # Add suffix to make the key unique
         status_session_key = f"{service_name}_status_clicked_{suffix}"  # Also make the session key unique
 
-        # if service_name_status not in st.session_state:
-        #     st.session_state[service_name_status] = "Unknown"
-
         if status_session_key not in st.session_state:
             st.session_state[status_session_key] = False
 
@@ -417,20 +384,12 @@ class ManagerService:
         def set_status_clicked():
             st.session_state[status_session_key] = not st.session_state[status_session_key]
             
-
-        # status_placeholder = status_container.empty()
-        # status_placeholder.markdown(f" {st.session_state[service_name_status]}")
-        # status_container.markdown(f" {st.session_state[service_name_status]}")
-        
         # Create the Status button
         st.button(f'Status {suffix} 📈', on_click=set_status_clicked, key=status_button_widget_key)
         
         # If the status button is clicked
         if st.session_state[status_session_key]:
             with status_container:
-                # Display status as checking
-                # status_container.write(f"Checking {service_name} Status...")  # Use write instead of update
-                # st.write(f"Checking for {service_name} Container")
 
                 # Check the service status
                 result = self.man.serviceStatus(service_name.lower())
@@ -481,16 +440,6 @@ class ManagerService:
                         st.session_state[service_name_status] = "Up"
                         # status_container.markdown(f":green[{service_name} is running ✅]")
 
-            # Refresh the status circle after checking the status
-            # st.markdown(f"**{service_name}** {self.status_circle(st.session_state[service_name_status])}", unsafe_allow_html=True)
-                # st.markdown(f"{self.status_pill(st.session_state[service_name_status])}", unsafe_allow_html=True)
-        
-
-            
-            # Reset the status session state
-            # st.session_state[status_session_key] = False
-        
-
     def statusButtonTop(self):
         """Renders the top status buttons with individual boxes for each service."""
         # Create columns for each button box
@@ -503,10 +452,6 @@ class ManagerService:
                 with st.container():  # Create a separate box for each service
                     # Define the status variable for each service
                     service_name_status = f'{service}_status'
-
-                    # Ensure session state is initialized for each service's status
-                    # if service_name_status not in st.session_state:
-                    #     st.session_state[service_name_status] = "Unknown"
 
                     # Create an empty container to dynamically update the status pill
                     status_pill_placeholder = st.empty()
@@ -545,11 +490,5 @@ class ManagerService:
             self.serviceExpander("Manager", status_container)
 
 
-# st.set_page_config(
-#     layout="wide",
-#     initial_sidebar_state="expanded"
-# )
-#
-# sb = Sidebar()
 mn = ManagerService()
 mn.manager()
