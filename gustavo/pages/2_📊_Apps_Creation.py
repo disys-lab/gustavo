@@ -147,8 +147,11 @@ class AppHandler:
                                         "device_groups": dg_list,
                                         "devices": app_response["reply"]["devices"]
                                         }
+                    docker_image = app_response["reply"]["docker_image"]
+                    image = docker_image.split("/")[-1]
+
                     st.session_state[app_name]["form_values"] = {
-                        "image": app_response["reply"]["docker_image"],
+                        "image": image,
                         "env_vars": self.setEnvVars(app_response["reply"]["env_vars"]),
                         "networks": ",".join(app_response["reply"]["networks"]),
                         "volumes": self.setVolumes(app_response["reply"]["volumes"]),
@@ -312,15 +315,25 @@ class AppHandler:
                 refresh_registry()
             else:
                 st.session_state.registry_name_list=[]
+            preselected_idx = 0
+            if name != "create":
+                try:
+                    preselected_idx = st.session_state.registry_name_list.index(st.session_state[name]["form_values"]["image"])
+                except Exception as e:
+
+                    st.warning("{} not found in existing registry list".format(st.session_state[name]["form_values"]["image"]))
+
             image = st.selectbox(
                 "Container Image",
                 st.session_state.registry_name_list,
                 disabled = not check,
+                index=preselected_idx,
                 key=image_key
             )
             if check:
                 st.session_state[name]["config"]["docker_image"] = "{}:{}/{}".format(st.session_state.REGISTRY_HOST,st.session_state.REGISTRY_PORT,image)
                 st.session_state[name]["form_values"]["image"] = image
+
             else:
                 st.session_state[name]["config"]["docker_image"] = ""
                 st.session_state[name]["form_values"]["image"] = ""
@@ -359,7 +372,8 @@ class AppHandler:
         env_col, vol_col, port_col= app_expander.columns([50, 50, 50], gap="small")
         with env_col:
             st.write("Env Vars")
-            edited_env_vars = st.data_editor(st.session_state[name]["form_values"]["env_vars"], use_container_width=True, num_rows="dynamic", disabled=False,
+            #print("before display", name, self.setEnvVars(st.session_state[name]["config"]))
+            edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
                                          key=env_key,)
             st.session_state[name]["config"]["env_vars"] = self.getEnvVars(edited_env_vars)
 
@@ -367,7 +381,7 @@ class AppHandler:
         with vol_col:
 
             st.write("Volumes")
-            edited_volumes = st.data_editor(st.session_state[name]["form_values"]["volumes"], use_container_width=True, num_rows="dynamic", disabled=False,
+            edited_volumes = st.data_editor(self.setVolumes(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
                                          key=vol_key)  # column_order=("env_var", "value"),column_config=st.column_config.NumberColumn("Dollar values”, format=”$ %d"))
             st.session_state[name]["config"]["volumes"] = self.getVolumes(edited_volumes)
 
@@ -375,7 +389,7 @@ class AppHandler:
         with port_col:
             st.write("Ports")
             #print(st.session_state[name]["form_values"]["ports"])
-            edited_ports = st.data_editor(st.session_state[name]["form_values"]["ports"], use_container_width=True, num_rows="dynamic", disabled=False,
+            edited_ports = st.data_editor(self.setPorts(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
                                         key=port_key)
 
 
@@ -432,11 +446,13 @@ class AppHandler:
                     st.session_state[app_name]["config"])
 
         self.listAllApps()
+        st.session_state.fields_size = len(self.app_list)
+        st.session_state.fields = [app for app in self.app_list]
+
         if "fields_size" not in st.session_state:
-            st.session_state.fields_size = len(self.app_list)
-            st.session_state.fields = [app for app in self.app_list]
             st.session_state.deletes = []
 
+        #print(st.session_state.fields_size,self.app_list)
         for i in range(st.session_state.fields_size):
 
             if i < len(self.app_list):
@@ -494,7 +510,6 @@ class AppHandler:
 
                         st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
                         st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])
-
                         st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(st.session_state[app_name]["config"])
 
                         response = self.createApp(app_name,st.session_state[app_name]["config"]["device_groups"])
@@ -504,6 +519,8 @@ class AppHandler:
                             del st.session_state[app_name]
                         else:
                             st.session_state.fields_size += 1
+
+                        #print(st.session_state[app_name]["form_values"])
                         #refreshAppListForm()
                         #st.session_state.fields = [app for app in self.app_list]
                 else:
