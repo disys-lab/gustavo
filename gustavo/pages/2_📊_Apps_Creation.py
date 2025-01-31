@@ -1,5 +1,6 @@
 import yaml,time, sys,os,copy
 import streamlit as st
+import socket
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
 sidebarInit()
@@ -248,8 +249,8 @@ class AppHandler:
     def getEnvVars(self,edited_env_vars):
         env_var_dict = {}
         for ev in edited_env_vars:
-            if ev["key"] is not None and ev["value"] is not None:
-                if ev["key"] !="" and ev["value"] != "":
+            if ev["key"] is not None:
+                if ev["key"] !="":
                     env_var_dict[ev["key"]] = ev["value"]
         return env_var_dict
 
@@ -257,6 +258,7 @@ class AppHandler:
         if "env_vars" not in app_config:
             return [{"key":"","value":""}]
         env_var_dict = app_config["env_vars"]
+        # print(env_var_dict)
         edited_env_vars = [] #[{"key": "", "value": ""}]
         for key in env_var_dict:
             edited_env_vars.append({"key":key,"value":env_var_dict[key]})
@@ -271,11 +273,42 @@ class AppHandler:
             st.session_state.app_list = []
 
         if name not in st.session_state:
+            try:
+                hostname = socket.gethostname()
+                netwIPAddr = socket.gethostbyname(hostname)
+            except Exception as e:
+                netwIPAddr = "127.0.0.1"
+
+            redis_host = st.session_state["REDIS_HOST"] if "REDIS_HOST" in st.session_state else ""
+            redis_port = st.session_state["REDIS_PORT"] if "REDIS_PORT" in st.session_state else ""
+            redis_auth_token = st.session_state["REDIS_AUTH_TOKEN"] if "REDIS_AUTH_TOKEN" in st.session_state else ""
+            manager_host = st.session_state["MANAGER_HOST"] if "MANAGER_HOST" in st.session_state else ""
+            manager_port = st.session_state["MANAGER_PORT"] if "MANAGER_PORT" in st.session_state else ""
+            nebula_auth_token = st.session_state["NEBULA_AUTH_TOKEN"] if "NEBULA_AUTH_TOKEN" in st.session_state else ""
+
+            env_vars = {"env_vars": {"REDIS_DB_HOST": redis_host,
+                                     "REDIS_DB_PORT": redis_port,
+                                     "REDIS_DB_PWD": redis_auth_token,
+                                     "MANAGER_HOST": manager_host,
+                                     "MANAGER_PORT": manager_port,
+                                     "NEBULA_AUTH_TOKEN": nebula_auth_token
+                                     }}
+
+            # env_vars = {"env_vars":{"REDIS_DB_HOST":st.session_state.get("REDIS_HOST", f"{netwIPAddr}"),
+            #             "REDIS_DB_PORT":st.session_state.get("REDIS_PORT", "6379"),
+            #             "REDIS_DB_PWD":st.session_state.get("REDIS_AUTH_TOKEN",""),
+            #             "MANAGER_HOST":st.session_state.get("MANAGER_HOST", f"{netwIPAddr}"),
+            #             "MANAGER_PORT": st.session_state.get("MANAGER_PORT", "8080"),
+            #             "NEBULA_AUTH_TOKEN": st.session_state.get("NEBULA_AUTH_TOKEN","")
+            # }}
+
+
             st.session_state[name] = {}
             st.session_state[name]["app_name"] = ""
             st.session_state[name]["form_values"] = {
                                                         "image": "",
-                                                        "env_vars": [{"key":"","value":""}],
+                                                        "env_vars": self.setEnvVars(env_vars),
+                                                        #"env_vars": [{"key":"","value":""}],
                                                         "networks": "nebula",
                                                         "volumes": [{"from": "", "to": ""}],
                                                         "ports": [{"from":" ","to":""}],
@@ -287,7 +320,7 @@ class AppHandler:
                                                     }
             st.session_state[name]["config"] = {
                                         "docker_image": "",
-                                        "env_vars": {},
+                                        "env_vars": env_vars["env_vars"],
                                         "networks": [],
                                         "volumes": [],
                                         "starting_ports": [],
@@ -314,7 +347,6 @@ class AppHandler:
         with name_col:
             app_name = st.text_input("App Name",st.session_state[name]["app_name"],key=name_key)
             st.session_state[name]["app_name"] = app_name
-
 
         with image_col:
 
@@ -344,7 +376,6 @@ class AppHandler:
             else:
                 st.session_state[name]["config"]["docker_image"] = ""
                 st.session_state[name]["form_values"]["image"] = ""
-
 
         with networks_col:
             networks = st.text_input("Network",st.session_state[name]["form_values"]["networks"],key=network_key)
@@ -376,14 +407,24 @@ class AppHandler:
             st.session_state[name]["config"]["device_groups"] = device_groups
             st.session_state[name]["form_values"]["device_groups"] = device_groups
 
-        env_col, vol_col, port_col= app_expander.columns([50, 50, 50], gap="small")
-        with env_col:
+        with app_expander.container():
             st.write("Env Vars")
-            #print("before display", name, self.setEnvVars(st.session_state[name]["config"]))
-            edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
-                                         key=env_key,)
+            # print("before display", name, self.setEnvVars(st.session_state[name]["config"]))
+            edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
+                                             use_container_width=True,
+                                             num_rows="dynamic", disabled=False,
+                                             key=env_key, )
             st.session_state[name]["config"]["env_vars"] = self.getEnvVars(edited_env_vars)
 
+        vol_col, port_col= app_expander.columns([ 50, 50], gap="small")
+        # with env_col:
+        #     st.write("Env Vars")
+        #     # print("before display", name, self.setEnvVars(st.session_state[name]["config"]))
+        #     edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
+        #                                      use_container_width=True,
+        #                                      num_rows="dynamic", disabled=False,
+        #                                      key=env_key, )
+        #     st.session_state[name]["config"]["env_vars"] = self.getEnvVars(edited_env_vars)
 
         with vol_col:
 

@@ -413,7 +413,7 @@ class ManagerService:
 
                         # Ensure the host and port are not None before proceeding
                         if manager_host is None or manager_port is None or not auth_token:
-                            st.section_state[service_name_status] ="Up"
+                            st.session_state[service_name_status] ="Up"
                             # status_container.markdown(f":red[Manager configuration is incomplete 🚨]")
                         else:
                             # Safeguard the token and host before assigning to self.man

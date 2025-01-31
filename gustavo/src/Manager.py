@@ -451,7 +451,7 @@ class Manager(NebulaBase):
                     name="redis",
                     ports={"6379": str(self.REDIS_PORT)},
                     restart_policy={"Name": "always"},
-                    environment=["AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN)],
+                    environment=[f"REDIS_ARGS= --requirepass {str(self.REDIS_AUTH_TOKEN)}"],
                 )
             except docker.errors.ImageNotFound as e:
                 click.echo(click.style(e, fg="red"))
@@ -575,6 +575,7 @@ class Manager(NebulaBase):
         if self.MANAGER_IMAGE:
             # success = True
             dockerow.pull(self.MANAGER_IMAGE)
+
             try:
                 print("Spinning up Manager in " + self.MANAGER_NMODE + " network mode")
                 if self.MANAGER_NMODE == "host":
@@ -601,6 +602,9 @@ class Manager(NebulaBase):
                             "BASIC_AUTH_USER=" + str(self.NEBULA_USERNAME),
                             "BASIC_AUTH_PASSWORD=" + str(self.NEBULA_PASSWORD),
                             "AUTH_TOKEN=" + str(self.NEBULA_AUTH_TOKEN),
+                            "REDIS_HOST=" + str(self.REDIS_IP),
+                            "REDIS_PORT=" + str(self.REDIS_PORT),
+                            "REDIS_AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN)
                         ],
                     )
                 else:
@@ -627,6 +631,9 @@ class Manager(NebulaBase):
                             "BASIC_AUTH_USER=" + str(self.NEBULA_USERNAME),
                             "BASIC_AUTH_PASSWORD=" + str(self.NEBULA_PASSWORD),
                             "AUTH_TOKEN=" + str(self.NEBULA_AUTH_TOKEN),
+                            "REDIS_HOST=" + str(self.REDIS_IP),
+                            "REDIS_PORT=" + str(self.REDIS_PORT),
+                            "REDIS_AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN)
                         ],
                     )
 

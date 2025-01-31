@@ -130,7 +130,6 @@ class NebulaBase:
                 self.REDIS_IP = session_state["REDIS_HOST"]
                 self.REDIS_PORT = session_state["REDIS_PORT"]
                 self.REDIS_AUTH_TOKEN = session_state["REDIS_AUTH_TOKEN"]
-                self.CACHE_PREFIX = session_state["REDIS_PORT"]
 
                 self.MANAGER_PORT = session_state["MANAGER_PORT"]
                 self.NEBULA_USERNAME = session_state["NEBULA_USERNAME"]
