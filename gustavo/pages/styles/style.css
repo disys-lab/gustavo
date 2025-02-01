@@ -217,3 +217,50 @@ button.status-unknown {
     position: relative;  /* Ensure the button is placed above the background */
     z-index: 1;  /* Higher z-index to ensure it stays above the background */
 }
+
+
+/* Ensure all buttons have the same width */
+.stButton button, div[data-testid="stDownloadButton"] button {
+    background-color: #90B4D3; /* Light Blue */
+    color: #4682B4; /* Steel Blue */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100% !important; /* Forces all buttons to take full column width */
+    text-align: center;
+}
+
+/* Hover effect */
+.stButton button:hover, div[data-testid="stDownloadButton"] button:hover {
+    background-color: #90B4D3; 
+    color: white;
+}
+
+
+.stButton button, div[data-testid="stDownloadButton"] button {
+    background-color: #90B4D3; 
+    color: #4682B4;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: auto; 
+    min-width: 150px; 
+    max-width: 250px; 
+    text-align: center;
+    display: block; 
+    margin-left: auto; 
+    margin-right: auto; 
+}
+
+
+.stButton button:hover, div[data-testid="stDownloadButton"] button:hover {
+    background-color: #90B4D3; 
+    color: white;
+}
+
