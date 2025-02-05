@@ -80,7 +80,7 @@ def utils():
 )
 def gui(port):
     cwd = os.path.dirname(os.path.realpath(__file__))
-    gui_runner_file = os.path.join(cwd,"Home.py")
+    gui_runner_file = os.path.join(cwd,"🏠Home.py")
     print(gui_runner_file)
     cli.main_run([gui_runner_file, "--server.headless", "true", "--server.port", int(port)])
 

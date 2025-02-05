@@ -43,6 +43,8 @@ class AppHandler:
         except Exception as e:
             return {"error": True, "response": e}
 
+        st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
+
         app_config = {app_name: st.session_state[app_name]["config"]}
 
         response = handleCreateApp(bcmp, app_name, app_config, dg_str)
@@ -51,12 +53,15 @@ class AppHandler:
         return response
 
     def updateApp(self,app_name):
+        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
+
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
         except Exception as e:
             return {"error": True, "response": e}
 
         app_config = st.session_state[app_name]["config"]
+        st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
         response = bcmp.handleAsset("app", app_name, "update", app_config)
 
         return response
@@ -180,18 +185,21 @@ class AppHandler:
         appkeys = list(app_config.keys())
         app_name = appkeys[0]
         st.session_state["create"]["app_name"] = app_name
+
         st.session_state["create"]["form_values"] = {
                                                         "image": app_config[app_name]["docker_image"],
-                                                        "env_vars": self.setEnvVars(app_config[app_name]),#[{"key":"","value":""}],
+                                                        "env_vars": self.setEnvVars(app_config[app_name]),
                                                         "networks": "nebula",
-                                                        "volumes": self.setVolumes(app_config[app_name]),#[{"from": "", "to": ""}],
-                                                        "ports": self.setPorts(app_config[app_name]), #[{"from":" ","to":""}],
+                                                        "volumes": self.setVolumes(app_config[app_name]),
+                                                        "ports": self.setPorts(app_config[app_name]),
                                                         "running": True,
                                                         "rolling_restart": True,
                                                         "containers_per": {"server": 1},
                                                         "privileged": False
-
                                                     }
+
+        st.session_state["create"]["config"] = app_config[app_name]
+
         #st.session_state[appkeys[0]] = app_config
         print(st.session_state["create"]["form_values"])
         return app_config
@@ -291,17 +299,15 @@ class AppHandler:
                                      "REDIS_DB_PWD": redis_auth_token,
                                      "MANAGER_HOST": manager_host,
                                      "MANAGER_PORT": manager_port,
-                                     "NEBULA_AUTH_TOKEN": nebula_auth_token
+                                     "NEBULA_AUTH_TOKEN": nebula_auth_token,
+                                     "SLEEP_SECS": 600,
+                                     "KEYGEN_PUBLIC_KEY": "06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc",
                                      }}
 
-            # env_vars = {"env_vars":{"REDIS_DB_HOST":st.session_state.get("REDIS_HOST", f"{netwIPAddr}"),
-            #             "REDIS_DB_PORT":st.session_state.get("REDIS_PORT", "6379"),
-            #             "REDIS_DB_PWD":st.session_state.get("REDIS_AUTH_TOKEN",""),
-            #             "MANAGER_HOST":st.session_state.get("MANAGER_HOST", f"{netwIPAddr}"),
-            #             "MANAGER_PORT": st.session_state.get("MANAGER_PORT", "8080"),
-            #             "NEBULA_AUTH_TOKEN": st.session_state.get("NEBULA_AUTH_TOKEN","")
-            # }}
 
+
+            if "edited_env_vars" not in st.session_state:
+                st.session_state["edited_env_vars"] = self.setEnvVars(env_vars)
 
             st.session_state[name] = {}
             st.session_state[name]["app_name"] = ""
@@ -331,6 +337,8 @@ class AppHandler:
                                         "device_groups": [],
                                         "devices": []
                                         }
+
+
 
         app_expander = st.expander(form_name, expanded=False)
 
@@ -409,22 +417,13 @@ class AppHandler:
 
         with app_expander.container():
             st.write("Env Vars")
-            # print("before display", name, self.setEnvVars(st.session_state[name]["config"]))
-            edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
+
+            st.session_state.edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
                                              use_container_width=True,
                                              num_rows="dynamic", disabled=False,
                                              key=env_key, )
-            st.session_state[name]["config"]["env_vars"] = self.getEnvVars(edited_env_vars)
 
         vol_col, port_col= app_expander.columns([ 50, 50], gap="small")
-        # with env_col:
-        #     st.write("Env Vars")
-        #     # print("before display", name, self.setEnvVars(st.session_state[name]["config"]))
-        #     edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
-        #                                      use_container_width=True,
-        #                                      num_rows="dynamic", disabled=False,
-        #                                      key=env_key, )
-        #     st.session_state[name]["config"]["env_vars"] = self.getEnvVars(edited_env_vars)
 
         with vol_col:
 
@@ -512,6 +511,7 @@ class AppHandler:
                 with downloadcol:
 
                     app_name = self.app_list[i]
+
                     app_dict = {app_name : st.session_state[app_name]["config"]}
                     app_config = yaml.dump(app_dict, default_flow_style=False, sort_keys=False)
 
@@ -555,6 +555,7 @@ class AppHandler:
                         st.session_state[app_name]["config"] = copy.deepcopy(st.session_state["create"]["config"])
 
                         #need to convert from form values to config values for data editor
+                        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
 
                         st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
                         st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])

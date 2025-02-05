@@ -616,6 +616,7 @@ class Manager(NebulaBase):
                         hostname="manager",
                         ports={"80": self.MANAGER_PORT},
                         restart_policy={"Name": "always"},
+                        sysctls={"net.ipv4.conf.all.forwarding":"1"},
                         environment=[
                             "MONGO_URL=mongodb://"
                             + str(self.MONGO_USERNAME)

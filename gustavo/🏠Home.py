@@ -16,6 +16,14 @@ from gustavo.pages.config.SyncerConfig import SyncerConfig, refresh_registry, ch
 from gustavo.src.Composer import Composer
 import socket,os
 
+def load_css(file_name):
+    """Load CSS from a file and inject into Streamlit."""
+    with open(file_name) as f:
+        css = f.read()
+        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
+load_css("gustavo/pages/styles/style.css")
+
 if "visibility" not in st.session_state:
     st.session_state.visibility = "visible"
     st.session_state.disabled = False
@@ -23,11 +31,13 @@ if "visibility" not in st.session_state:
 if "registry_dict_list" not in st.session_state:
     st.session_state.registry_dict_list = []
 
-with st.expander("Platform Config", expanded=False):
+st.header("Platform Configuration Handler")
+
+with st.expander("Platform Config", expanded=True):
     pc = PlatformConfig()
     pc.platform()
 
-with st.expander("Registry List", expanded = False):
+with st.expander("Registry List", expanded = True):
     registry_container = st.container()
     with registry_container:
         status, refresh, _ = st.columns([100,100,100])
