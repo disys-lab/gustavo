@@ -1,1 +1,0 @@
-/home/ubuntu/gustavo/gustavo/Builder/dev_reinstall.sh
