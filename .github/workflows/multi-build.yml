@@ -49,7 +49,7 @@ jobs:
       run: |
         pip install wheel
         pip install -r requirements.txt
-        python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
+        python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN" "$GEMFURY_TOKEN2"
 
   macbuild:
     needs: bumpversion

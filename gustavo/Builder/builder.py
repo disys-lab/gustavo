@@ -79,8 +79,6 @@ if gitRepo:
             ]
         )
 
-        os.chdir(currentDir)
-
         subprocess.run(
             [
                 "curl",
