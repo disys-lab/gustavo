@@ -63,7 +63,7 @@ setup(
     },
     classifiers=[
         "Programming Language :: Python :: {}".format(python_version),
-        "Operating System :: Linux"
+        "Operating System :: OS Independent"
     ],
     install_requires=[
         "NebulaPythonSDK==2.8.0",
