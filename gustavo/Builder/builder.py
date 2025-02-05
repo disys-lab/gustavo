@@ -76,7 +76,8 @@ if gitRepo:
                 "-F",
                 "package=@" + str(packageInfo),
                 "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
-            ]
+            ],
+            capture_output=True
         )
 
         subprocess.run(
@@ -85,7 +86,8 @@ if gitRepo:
                 "-F",
                 "package=@" + str(packageInfo),
                 "https://{}@push.fury.io/blockalytics/".format(GEMFURY_TOKEN2),
-            ]
+            ],
+            capture_output=True
         )
 
         os.chdir(currentDir)
