@@ -72,10 +72,13 @@ jobs:
         env:
           SUPER_SECRET: ${{ secrets.GIT_INFO }}
           GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
+          GEMFURY_TOKEN2: ${{ secrets.GEMFURY_TOKEN2 }}
         run: |
           pip3 install wheel
           pip3 install -r requirements.txt
-          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN"
+          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN" "$GEMFURY_TOKEN2"
+
+
 #  winbuild:
 #    needs: linuxbuild
 #    runs-on: ${{ matrix.os }}
