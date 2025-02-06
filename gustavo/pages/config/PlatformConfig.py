@@ -23,11 +23,11 @@ class PlatformConfig:
                             "REDIS_IP_DISABLED": True,
                             "REDIS_PORT":"6379",
                             "REDIS_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
-                            "REDIS_IMAGE":"homert2admin/redis",
+                            "REDIS_IMAGE":"redis:7.4.0",
                             "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
-                            "MANAGER_IMAGE":"homert2admin/manager",
+                            "MANAGER_IMAGE":"blockalytics/manager",
                             "MANAGER_NMODE":"bridge",
                             "MONGO_HOST":netwIPAddr,
                             "MONGO_IP_DISABLED": True,
@@ -124,8 +124,6 @@ class PlatformConfig:
 
     def platform(self):
 
-       # st.header("Platform Configuration")
-       # st.divider()
        with st.container():
         load_config, save_config, download_config = st.columns([50,50,50])
         with load_config:
@@ -260,7 +258,7 @@ class PlatformConfig:
             st.session_state.SYNCER_IMAGE,
             key="KEY_SYNCER_IMAGE",
         )
-        
+
 
        with mongo_col:
         st.subheader("Mongo")
