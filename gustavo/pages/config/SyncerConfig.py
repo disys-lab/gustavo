@@ -36,11 +36,13 @@ def checkRegistryStatus(error_container):
             try:
                 check = checkSocket(st.session_state.REGISTRY_HOST, st.session_state.REGISTRY_PORT)
             except Exception as e:
-                st.error("Registry connection encountered an error {}".format(str(e)))
+                with error_container:
+                    st.error("Registry connection encountered an error {}".format(str(e)))
             if check:
-                st.error(
-                    "Unable to reach {}:{}".format(st.session_state.REGISTRY_HOST, st.session_state.REGISTRY_PORT),
-                    icon="🚨")
+                with error_container:
+                    st.error(
+                        "Unable to reach registry {}:{}".format(st.session_state.REGISTRY_HOST, st.session_state.REGISTRY_PORT),
+                        icon="🚨")
         return not check
 
 def refresh_registry():
