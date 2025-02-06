@@ -59,7 +59,7 @@ if gitRepo:
 
     print("Version: {}".format(versionInfo))
 
-    buildWheelPkg = "python setup.py sdist bdist_wheel" + " " + str(versionInfo)
+    buildWheelPkg = "python setup.py bdist_wheel" + " " + str(versionInfo)
 
     os.system(buildWheelPkg)
 
@@ -82,12 +82,14 @@ if gitRepo:
 
         subprocess.run(
             [
-                "twine",
-                "upload",
-                f"{distpath}/*",
-            ],
-            capture_output=True
+                "curl",
+                "-F",
+                "package=@" + str(packageInfo),
+                f"{GEMFURY_TOKEN2}",
+            ]
         )
+
+
 
         os.chdir(currentDir)
 

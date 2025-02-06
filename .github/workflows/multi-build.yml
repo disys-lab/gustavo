@@ -46,7 +46,7 @@ jobs:
       env:
         SUPER_SECRET: ${{ secrets.GIT_INFO }}
         GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
-        TWINE_PASSWORD: ${{ secrets.GEMFURY_TOKEN2 }}
+        GEMFURY_TOKEN2: ${{ secrets.GEMFURY_TOKEN2 }}
       run: |
         pip install wheel
         pip install -r requirements.txt
@@ -73,11 +73,11 @@ jobs:
         env:
           SUPER_SECRET: ${{ secrets.GIT_INFO }}
           GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
-          TWINE_PASSWORD: ${{ secrets.GEMFURY_TOKEN2 }}
+          GEMFURY_TOKEN2: ${{ secrets.GEMFURY_TOKEN2 }}
         run: |
           pip3 install wheel
           pip3 install -r requirements.txt
-          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN" 
+          python3 builder.py "$SUPER_SECRET" "$GEMFURY_TOKEN" "$GEMFURY_TOKEN2" 
 
 
 #  winbuild:
