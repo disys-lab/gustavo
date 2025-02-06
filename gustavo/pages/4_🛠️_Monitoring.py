@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import redis
+import redis, os
 import json
 import pickle
 import streamlit as st
