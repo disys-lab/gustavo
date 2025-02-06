@@ -70,15 +70,15 @@ if gitRepo:
     packageInfo = os.listdir(distpath)[0]
 
     if mode == "prod":
-        subprocess.run(
-            [
-                "curl",
-                "-F",
-                "package=@" + str(packageInfo),
-                "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
-            ],
-            capture_output=True
-        )
+        # subprocess.run(
+        #     [
+        #         "curl",
+        #         "-F",
+        #         "package=@" + str(packageInfo),
+        #         "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
+        #     ],
+        #     capture_output=True
+        # )
 
         subprocess.run(
             [
