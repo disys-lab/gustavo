@@ -26,6 +26,8 @@ parent = os.path.dirname(os.path.realpath(__file__))
 css_url = os.path.join(parent,"styles","style.css")
 load_css(css_url)
 
+error_container = st.container()
+
 if "visibility" not in st.session_state:
     st.session_state.visibility = "visible"
     st.session_state.disabled = False
@@ -44,7 +46,7 @@ with st.expander("Registry List", expanded = True):
     with registry_container:
         status, refresh, _ = st.columns([100,100,100])
         with status:
-            checkRegistryStatus()
+            checkRegistryStatus(error_container)
         with refresh:
             refresh_button = st.button("Refresh", on_click=refresh_registry)
 

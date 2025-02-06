@@ -17,13 +17,15 @@ def checkSocket(ip,port):
 
     return check
 
-def checkRegistryStatus():
+def checkRegistryStatus(error_container):
     if "REGISTRY_HOST" not in st.session_state.keys():
-        st.error('REGISTRY_HOST undefined', icon="🚨")
+        with error_container:
+            st.error('REGISTRY_HOST undefined', icon="🚨")
         return False
 
     elif "REGISTRY_PORT" not in st.session_state.keys():
-        st.error('REGISTRY_PORT undefined', icon="🚨")
+        with error_container:
+            st.error('REGISTRY_PORT undefined', icon="🚨")
         return False
 
     else:
