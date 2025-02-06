@@ -14,9 +14,11 @@ gitRepo = str(sys.argv[1])
 if len(sys.argv)>2:
     mode = "prod"
     GEMFURY_TOKEN = str(sys.argv[2])
+    GEMFURY_TOKEN2 = str(sys.argv[3])
 else:
     mode = "dev"
     GEMFURY_TOKEN = ""
+    GEMFURY_TOKEN2 = ""
 
 if gitRepo:
 
