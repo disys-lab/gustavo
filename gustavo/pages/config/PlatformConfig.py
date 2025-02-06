@@ -27,7 +27,7 @@ class PlatformConfig:
                             "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
-                            "MANAGER_IMAGE":"blockalytics/manager",
+                            "MANAGER_IMAGE":"homert2admin/manager",
                             "MANAGER_NMODE":"bridge",
                             "MONGO_HOST":netwIPAddr,
                             "MONGO_IP_DISABLED": True,
@@ -90,7 +90,7 @@ class PlatformConfig:
 
             st.session_state.REGISTRY_IMAGE = "registry:2"
             st.session_state.SYNCER_IMAGE = "homert2admin/dregsy:latest"
-            st.session_state.REDIS_IMAGE = "homert2admin/redis"
+            st.session_state.REDIS_IMAGE = "redis:7.4.0"
             st.session_state.MONGO_IMAGE = "mongo:4.0.19"
             st.session_state.MANAGER_IMAGE = "homert2admin/manager"
 
