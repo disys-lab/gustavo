@@ -13,7 +13,10 @@ def load_css(file_name):
     with open(file_name) as f:
         css = f.read()
         st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
-load_css("gustavo/pages/styles/style.css")
+
+parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+css_url = os.path.join(parent,"styles","style.css")
+load_css(css_url)
 
 
 class AppHandler:

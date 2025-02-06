@@ -14,10 +14,9 @@ else:
 package_data = {
         "gustavo": [
             "images/*",
+            "styles/*",
             "src/*",
-            "src/__pycache__/*",
             "gui/*",
-            "gui/__pycache__/*",
             "sample_config_files/*",
         ]
     }
