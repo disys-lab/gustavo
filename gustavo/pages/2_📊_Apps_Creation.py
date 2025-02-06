@@ -53,8 +53,14 @@ class AppHandler:
         return response
 
     def updateApp(self,app_name):
-        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
+        # print(st.session_state.edited_env_vars)
+        # st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
+        # print(st.session_state[app_name]["config"]["env_vars"])
         bcmp = Composer(mode="streamlit", params=st.session_state)
+
+        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state[app_name]["form_values"]["env_vars"])
+        st.session_state[app_name]["config"]["volumes"] = self.getVolumes(st.session_state[app_name]["form_values"]["volumes"])
+        st.session_state[app_name]["config"]["ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
 
         app_config = st.session_state[app_name]["config"]
         st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
@@ -278,6 +284,27 @@ class AppHandler:
             edited_env_vars = [{"key":"","value":""}]
         return edited_env_vars
 
+    def getLatestEnvVars(self):
+        redis_host = st.session_state["REDIS_HOST"] if "REDIS_HOST" in st.session_state else ""
+        redis_port = st.session_state["REDIS_PORT"] if "REDIS_PORT" in st.session_state else ""
+        redis_auth_token = st.session_state["REDIS_AUTH_TOKEN"] if "REDIS_AUTH_TOKEN" in st.session_state else ""
+        manager_host = st.session_state["MANAGER_HOST"] if "MANAGER_HOST" in st.session_state else ""
+        manager_port = st.session_state["MANAGER_PORT"] if "MANAGER_PORT" in st.session_state else ""
+        nebula_auth_token = st.session_state["NEBULA_AUTH_TOKEN"] if "NEBULA_AUTH_TOKEN" in st.session_state else ""
+
+        env_vars = {"env_vars": {"REDIS_DB_HOST": redis_host,
+                                 "REDIS_DB_PORT": redis_port,
+                                 "REDIS_DB_PWD": redis_auth_token,
+                                 "MANAGER_HOST": manager_host,
+                                 "MANAGER_PORT": manager_port,
+                                 "NEBULA_AUTH_TOKEN": nebula_auth_token,
+                                 "MANAGER_AUTH": nebula_auth_token,
+                                 "SLEEP_SECS": "600",
+                                 "KEYGEN_PUBLIC_KEY": "06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc",
+                                 }}
+
+        return env_vars
+
     def appExpander(self,name,form_name):
         if "visibility" not in st.session_state:
             st.session_state.visibility = "visible"
@@ -291,27 +318,9 @@ class AppHandler:
             except Exception as e:
                 netwIPAddr = "127.0.0.1"
 
-            redis_host = st.session_state["REDIS_HOST"] if "REDIS_HOST" in st.session_state else ""
-            redis_port = st.session_state["REDIS_PORT"] if "REDIS_PORT" in st.session_state else ""
-            redis_auth_token = st.session_state["REDIS_AUTH_TOKEN"] if "REDIS_AUTH_TOKEN" in st.session_state else ""
-            manager_host = st.session_state["MANAGER_HOST"] if "MANAGER_HOST" in st.session_state else ""
-            manager_port = st.session_state["MANAGER_PORT"] if "MANAGER_PORT" in st.session_state else ""
-            nebula_auth_token = st.session_state["NEBULA_AUTH_TOKEN"] if "NEBULA_AUTH_TOKEN" in st.session_state else ""
+            env_vars = self.getLatestEnvVars()
 
-            env_vars = {"env_vars": {"REDIS_DB_HOST": redis_host,
-                                     "REDIS_DB_PORT": redis_port,
-                                     "REDIS_DB_PWD": redis_auth_token,
-                                     "MANAGER_HOST": manager_host,
-                                     "MANAGER_PORT": manager_port,
-                                     "NEBULA_AUTH_TOKEN": nebula_auth_token,
-                                     "SLEEP_SECS": 600,
-                                     "KEYGEN_PUBLIC_KEY": "06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc",
-                                     }}
-
-
-
-            if "edited_env_vars" not in st.session_state:
-                st.session_state["edited_env_vars"] = self.setEnvVars(env_vars)
+            st.session_state["edited_env_vars"] = self.setEnvVars(env_vars)
 
             st.session_state[name] = {}
             st.session_state[name]["app_name"] = ""
@@ -342,6 +351,10 @@ class AppHandler:
                                         "devices": []
                                         }
 
+        elif name == "create":
+                env_vars = self.getLatestEnvVars()
+                st.session_state[name]["form_values"]["env_vars"] = self.setEnvVars(env_vars)
+                st.session_state[name]["config"]["env_vars"] = env_vars["env_vars"]
 
 
         app_expander = st.expander(form_name, expanded=False)
@@ -435,10 +448,12 @@ class AppHandler:
         with app_expander.container():
             st.write("Env Vars")
 
-            st.session_state.edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
+            edited_env_vars = st.data_editor(self.setEnvVars(st.session_state[name]["config"]),
                                              use_container_width=True,
                                              num_rows="dynamic", disabled=False,
                                              key=env_key, )
+
+            st.session_state[name]["form_values"]["env_vars"] = edited_env_vars
 
         vol_col, port_col= app_expander.columns([ 50, 50], gap="small")
 
@@ -484,6 +499,7 @@ class AppHandler:
         def update_app(app_name):
             try:
                 response = self.updateApp(app_name)
+
                 if response["error"]:
                     with self.error_container:
                         st.error("Error updating app {}, response was {}".format(app_name,response["response"]))
@@ -491,7 +507,6 @@ class AppHandler:
                     # need to convert from form values to config values for data editor
                     if st.session_state[app_name]["app_name"] != app_name:
                         new_app_name = copy.deepcopy(st.session_state[app_name]["app_name"])
-                        print(new_app_name)
                         app_index = st.session_state.app_list.index(app_name)
                         st.session_state.app_list[app_index] = new_app_name
 
@@ -500,6 +515,7 @@ class AppHandler:
                         del st.session_state[app_name]
 
                         app_name = new_app_name
+
 
                     st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
                     st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(
@@ -510,6 +526,7 @@ class AppHandler:
             except Exception as e:
                 with self.error_container:
                     st.error(f"Error updating app {app_name}, exception :{e}")
+
         try:
             self.listAllApps()
         except Exception as e:
@@ -589,11 +606,13 @@ class AppHandler:
                         st.session_state[app_name]["config"] = copy.deepcopy(st.session_state["create"]["config"])
 
                         #need to convert from form values to config values for data editor
-                        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
+                        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state[app_name]["form_values"]["env_vars"])
+                        st.session_state[app_name]["config"]["volumes"] = self.getVolumes(st.session_state[app_name]["form_values"]["volumes"])
+                        st.session_state[app_name]["config"]["ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
 
-                        st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
-                        st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])
-                        st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(st.session_state[app_name]["config"])
+                        # st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
+                        # st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])
+                        # st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(st.session_state[app_name]["config"])
 
                         try:
                             response = self.createApp(app_name,st.session_state[app_name]["config"]["device_groups"])

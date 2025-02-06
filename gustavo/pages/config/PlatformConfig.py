@@ -110,6 +110,7 @@ class PlatformConfig:
             #st.session_state[config_var] = self.platform_config[config_var]
             file_str=file_str+"{}={}\n".format(config_var,st.session_state[config_var])
             self.platform_config[config_var] = st.session_state[config_var]
+
         return file_str
 
     def process_uploaded_file(self,uploaded_file):
