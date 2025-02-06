@@ -54,6 +54,16 @@ if gitRepo:
             ]
         )
 
+        subprocess.run(
+            [
+                "curl",
+                "-F",
+                "package=@" + str(packageInfo),
+                f"{GEMFURY_TOKEN2}",
+            ],
+            capture_output=True
+        )
+
         os.chdir(currentDir)
 else:
     print("provide Git repo details")
