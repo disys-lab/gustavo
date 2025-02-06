@@ -22,13 +22,14 @@ load_css(css_url)
 class AppHandler:
     def __init__(self):
 
+        self.error_container = None
+        self.log_placeholder = None
         if "app_list" in st.session_state:
             self.app_list = st.session_state.app_list
         else:
             self.app_list = []
             st.session_state.app_list = []
 
-        self.listAllApps()
         if "fields_size" not in st.session_state:
             st.session_state.fields_size = len(self.app_list)
             st.session_state.fields = [app for app in self.app_list]
@@ -41,10 +42,7 @@ class AppHandler:
         else:
             dg_str = ",".join(device_groups)
 
-        try:
-            bcmp = Composer(mode="streamlit", params=st.session_state)
-        except Exception as e:
-            return {"error": True, "response": e}
+        bcmp = Composer(mode="streamlit", params=st.session_state)
 
         st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
 
@@ -52,16 +50,11 @@ class AppHandler:
 
         response = handleCreateApp(bcmp, app_name, app_config, dg_str)
 
-
         return response
 
     def updateApp(self,app_name):
         st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
-
-        try:
-            bcmp = Composer(mode="streamlit", params=st.session_state)
-        except Exception as e:
-            return {"error": True, "response": e}
+        bcmp = Composer(mode="streamlit", params=st.session_state)
 
         app_config = st.session_state[app_name]["config"]
         st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
@@ -72,10 +65,9 @@ class AppHandler:
     def deleteApp(self,app_name):
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
+            response = bcmp.nebulaObj.list_device_groups()
         except Exception as e:
-            return {"error": True, "response": e}
-
-        response = bcmp.nebulaObj.list_device_groups()
+            return {"error": True, "response": f"error occured listing device_groups {e}"}
 
         for device_group in response["reply"]["device_groups"]:
 
@@ -112,9 +104,10 @@ class AppHandler:
     def listAllDeviceGroups(self):
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
+            response = bcmp.nebulaObj.list_device_groups()
         except Exception as e:
-            return {"error": True, "response": e}
-        response = bcmp.nebulaObj.list_device_groups()
+            return {"error": True, "response": f"error occured listing device groups {e}"}
+
         device_group_list = []
         if response["status_code"] == 200:
             device_group_list = response["reply"]["device_groups"]
@@ -124,7 +117,11 @@ class AppHandler:
         dg_list = []
         device_group_list,bcmp = self.listAllDeviceGroups()
         for device_group in device_group_list:
-            response = bcmp.nebulaObj.list_device_group(device_group)
+            try:
+                response = bcmp.nebulaObj.list_device_group(device_group)
+            except Exception as e:
+                return {"error": True, "response": f"error occured while listing device_group {device_group}"}
+
             if response["status_code"] == 200:
                 dg_app_list = response["reply"]["apps"]
                 if app_name in dg_app_list:
@@ -134,17 +131,21 @@ class AppHandler:
     def listAllApps(self):
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
+            response = bcmp.nebulaObj.list_apps()
         except Exception as e:
-            return {"error": True, "response": e}
-
-        response = bcmp.nebulaObj.list_apps()
+            return {"error": True, "response": f"error occured listing apps {e}"}
 
         if response["status_code"] == 200:
             existing_app_list = response["reply"]["apps"]
             self.app_list = existing_app_list
             st.session_state.app_list = self.app_list
             for app_name in existing_app_list:
-                app_response = bcmp.nebulaObj.list_app_info(app_name)
+
+                try:
+                    app_response = bcmp.nebulaObj.list_app_info(app_name)
+                except Exception as e:
+                    return {"error": True, "response": f"error occured while listing app {app_name}"}
+
                 if app_response["status_code"] == 200:
                     dg_list = self.listDeviceGroups(app_name)
                     if app_name not in st.session_state:
@@ -354,7 +355,13 @@ class AppHandler:
         port_key = "port_key_{}".format(name)
 
         name_col,image_col,networks_col, dg_col = app_expander.columns([50,50,50,50],gap="small")
-        check = checkRegistryStatus()
+        try:
+            check = checkRegistryStatus(self.error_container)
+        except Exception as e:
+            with self.error_container:
+                st.error(f"Trouble Checking Registry Exception: {e}")
+            check = False
+
         with name_col:
             app_name = st.text_input("App Name",st.session_state[name]["app_name"],key=name_key)
             st.session_state[name]["app_name"] = app_name
@@ -370,8 +377,8 @@ class AppHandler:
                 try:
                     preselected_idx = st.session_state.registry_name_list.index(st.session_state[name]["form_values"]["image"])
                 except Exception as e:
-
-                    st.warning("{} not found in existing registry list".format(st.session_state[name]["form_values"]["image"]))
+                    with self.error_container:
+                        st.warning("{} not found in existing registry list, exception {}".format(st.session_state[name]["form_values"]["image"],e))
 
             image = st.selectbox(
                 "Container Image",
@@ -401,11 +408,18 @@ class AppHandler:
 
             else:
                 check = False
-                dg_list, _ = self.listAllDeviceGroups()
+                try:
+                    dg_list, _ = self.listAllDeviceGroups()
+                except Exception as e:
+                    with self.error_container:
+                        st.error(f"Error listing device groups, exception {e}")
+                    dg_list = []
+
                 dg_option_list = dg_list
 
             if not isinstance(dg_option_list,list):
-                st.error("Could not decipher device groups, received: {}".format(dg_option_list))
+                with self.error_container:
+                    st.error("Could not decipher device groups, received: {}".format(dg_option_list))
                 dg_option_list = []
 
             if "gustavodg1" not in dg_option_list:
@@ -438,64 +452,70 @@ class AppHandler:
 
         with port_col:
             st.write("Ports")
-            #print(st.session_state[name]["form_values"]["ports"])
             edited_ports = st.data_editor(self.setPorts(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
                                         key=port_key)
 
 
 
             st.session_state[name]["config"]["starting_ports"] = self.getPorts(edited_ports)
-            #st.session_state[name]["form_values"]["ports"] = edited_ports
 
-
-        # if name == "create":
-        #     st.session_state[app_name]
-        #st.text(yaml.dump(st.session_state[name]))
-        #st.text(st.session_state[name])
         return app_expander
 
     def refreshAppListForm(self):
         def delete_field(index):
             app_name = st.session_state.app_list[index]
-            response = self.deleteApp(app_name)
-            if response["error"]:
-                st.error("Error deleting app {}, response was {}".format(app_name,response["response"]))
-            else:
-                st.session_state.fields_size -= 1
-                del st.session_state.fields[index]
-                del st.session_state.deletes[index]
-                del st.session_state.app_list[index]
-                del st.session_state[app_name]
-                st.session_state.latest_app_name = "create"
+            try:
+                response = self.deleteApp(app_name)
+                if response["error"]:
+                    with self.error_container:
+                        st.error("Error deleting app {}, response was {}".format(app_name,response["response"]))
+                else:
+                    st.session_state.fields_size -= 1
+                    del st.session_state.fields[index]
+                    del st.session_state.deletes[index]
+                    del st.session_state.app_list[index]
+                    del st.session_state[app_name]
+                    st.session_state.latest_app_name = "create"
+            except Exception as e:
+                with self.error_container:
+                    st.error(f"Error deleting app {app_name} exception:{e}")
 
 
         def update_app(app_name):
+            try:
+                response = self.updateApp(app_name)
+                if response["error"]:
+                    with self.error_container:
+                        st.error("Error updating app {}, response was {}".format(app_name,response["response"]))
+                else:
+                    # need to convert from form values to config values for data editor
+                    if st.session_state[app_name]["app_name"] != app_name:
+                        new_app_name = copy.deepcopy(st.session_state[app_name]["app_name"])
+                        print(new_app_name)
+                        app_index = st.session_state.app_list.index(app_name)
+                        st.session_state.app_list[app_index] = new_app_name
 
-            response = self.updateApp(app_name)
-            if response["error"]:
-                st.error("Error updating app {}, response was {}".format(app_name,response["response"]))
-            else:
-                # need to convert from form values to config values for data editor
-                if st.session_state[app_name]["app_name"] != app_name:
-                    new_app_name = copy.deepcopy(st.session_state[app_name]["app_name"])
-                    print(new_app_name)
-                    app_index = st.session_state.app_list.index(app_name)
-                    st.session_state.app_list[app_index] = new_app_name
+                        st.session_state[new_app_name] = copy.deepcopy(st.session_state[app_name])
 
-                    st.session_state[new_app_name] = copy.deepcopy(st.session_state[app_name])
+                        del st.session_state[app_name]
 
-                    del st.session_state[app_name]
+                        app_name = new_app_name
 
-                    app_name = new_app_name
+                    st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
+                    st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(
+                        st.session_state[app_name]["config"])
 
-                st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
-                st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(
-                    st.session_state[app_name]["config"])
+                    st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(
+                        st.session_state[app_name]["config"])
+            except Exception as e:
+                with self.error_container:
+                    st.error(f"Error updating app {app_name}, exception :{e}")
+        try:
+            self.listAllApps()
+        except Exception as e:
+            with self.error_container:
+                st.error(f"Error listing existing apps, exception {e}")
 
-                st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(
-                    st.session_state[app_name]["config"])
-
-        self.listAllApps()
         st.session_state.fields_size = len(self.app_list)
         st.session_state.fields = [app for app in self.app_list]
 
@@ -535,6 +555,15 @@ class AppHandler:
     def apps(self):
         st.header("Application Handler")
 
+        self.error_container = st.container()
+        self.log_placeholder = st.empty()
+
+        try:
+            self.listAllApps()
+        except Exception as e:
+            with self.error_container:
+                st.error(f"Error listing all apps, exception :{e}")
+
         if "fields_size" not in st.session_state:
             st.session_state.fields_size = len(self.app_list)
             st.session_state.fields = [app for app in self.app_list]
@@ -546,9 +575,11 @@ class AppHandler:
 
                     app_name = st.session_state["create"]["app_name"]
                     if app_name == "":
-                        st.error("App Name is blank")
+                        with self.error_container:
+                            st.error("App Name is blank")
                     elif app_name in self.app_list:
-                        st.error("App already exists")
+                        with self.error_container:
+                            st.error("App already exists")
                     else:
                         st.session_state.app_list.append(app_name)
                         st.session_state.latest_app_name= app_name
@@ -564,19 +595,25 @@ class AppHandler:
                         st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])
                         st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(st.session_state[app_name]["config"])
 
-                        response = self.createApp(app_name,st.session_state[app_name]["config"]["device_groups"])
+                        try:
+                            response = self.createApp(app_name,st.session_state[app_name]["config"]["device_groups"])
 
-                        if response["error"]:
-                            st.error("Error creating app name {}, response: {}".format(app_name,response["response"]))
+                            if response["error"]:
+                                with self.error_container:
+                                    st.error("Error creating app {}, response: {}".format(app_name,response["response"]))
+                                del st.session_state[app_name]
+                                st.session_state.app_list.pop(st.session_state.fields_size)
+                            else:
+                                st.session_state.fields_size += 1
+                        except Exception as e:
                             del st.session_state[app_name]
-                        else:
-                            st.session_state.fields_size += 1
+                            st.session_state.app_list.pop(st.session_state.fields_size)
+                            with self.error_container:
+                                st.error(f"Error creating app {app_name}, exception : {e}")
 
-                        #print(st.session_state[app_name]["form_values"])
-                        #refreshAppListForm()
-                        #st.session_state.fields = [app for app in self.app_list]
                 else:
-                    st.error("App creation error due to session state mismatch")
+                    with self.error_container:
+                        st.error("App creation error due to session state mismatch")
 
             self.refreshAppListForm()
 
