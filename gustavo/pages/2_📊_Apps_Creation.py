@@ -46,6 +46,10 @@ class AppHandler:
 
         st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
 
+        st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state[app_name]["form_values"]["env_vars"])
+        st.session_state[app_name]["config"]["volumes"] = self.getVolumes(st.session_state[app_name]["form_values"]["volumes"])
+        st.session_state[app_name]["config"]["starting_ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
+
         app_config = {app_name: st.session_state[app_name]["config"]}
 
         response = handleCreateApp(bcmp, app_name, app_config, dg_str)
@@ -60,7 +64,7 @@ class AppHandler:
 
         st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state[app_name]["form_values"]["env_vars"])
         st.session_state[app_name]["config"]["volumes"] = self.getVolumes(st.session_state[app_name]["form_values"]["volumes"])
-        st.session_state[app_name]["config"]["ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
+        st.session_state[app_name]["config"]["starting_ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
 
         app_config = st.session_state[app_name]["config"]
         st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
@@ -211,7 +215,7 @@ class AppHandler:
         st.session_state["create"]["config"] = app_config[app_name]
 
         #st.session_state[appkeys[0]] = app_config
-        print(st.session_state["create"]["form_values"])
+        # print(st.session_state["create"]["form_values"])
         return app_config
 
     def setPorts(self,app_config):
@@ -352,9 +356,12 @@ class AppHandler:
                                         }
 
         elif name == "create":
-                env_vars = self.getLatestEnvVars()
-                st.session_state[name]["form_values"]["env_vars"] = self.setEnvVars(env_vars)
-                st.session_state[name]["config"]["env_vars"] = env_vars["env_vars"]
+            existing_env_vars = st.session_state[name]["config"].get("env_vars",{})
+            env_vars = self.getLatestEnvVars()
+            env_vars["env_vars"] = env_vars["env_vars"] | existing_env_vars
+
+            st.session_state[name]["form_values"]["env_vars"] = self.setEnvVars(env_vars)
+            st.session_state[name]["config"]["env_vars"] = env_vars["env_vars"]
 
 
         app_expander = st.expander(form_name, expanded=False)
@@ -461,18 +468,19 @@ class AppHandler:
 
             st.write("Volumes")
             edited_volumes = st.data_editor(self.setVolumes(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
-                                         key=vol_key)  # column_order=("env_var", "value"),column_config=st.column_config.NumberColumn("Dollar values”, format=”$ %d"))
-            st.session_state[name]["config"]["volumes"] = self.getVolumes(edited_volumes)
+                                         key=vol_key)
+            # st.session_state[name]["config"]["volumes"] = self.getVolumes(edited_volumes)
+            st.session_state[name]["form_values"]["volumes"] = edited_volumes
 
 
         with port_col:
             st.write("Ports")
             edited_ports = st.data_editor(self.setPorts(st.session_state[name]["config"]), use_container_width=True, num_rows="dynamic", disabled=False,
                                         key=port_key)
+            st.session_state[name]["form_values"]["ports"] = edited_ports
 
 
-
-            st.session_state[name]["config"]["starting_ports"] = self.getPorts(edited_ports)
+            #st.session_state[name]["config"]["starting_ports"] = self.getPorts(edited_ports)
 
         return app_expander
 
@@ -516,13 +524,10 @@ class AppHandler:
 
                         app_name = new_app_name
 
-
                     st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
-                    st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(
-                        st.session_state[app_name]["config"])
+                    st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])
+                    st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(st.session_state[app_name]["config"])
 
-                    st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(
-                        st.session_state[app_name]["config"])
             except Exception as e:
                 with self.error_container:
                     st.error(f"Error updating app {app_name}, exception :{e}")
@@ -608,7 +613,7 @@ class AppHandler:
                         #need to convert from form values to config values for data editor
                         st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state[app_name]["form_values"]["env_vars"])
                         st.session_state[app_name]["config"]["volumes"] = self.getVolumes(st.session_state[app_name]["form_values"]["volumes"])
-                        st.session_state[app_name]["config"]["ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
+                        st.session_state[app_name]["config"]["starting_ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
 
                         # st.session_state[app_name]["form_values"]["ports"] = self.setPorts(st.session_state[app_name]["config"])
                         # st.session_state[app_name]["form_values"]["volumes"] = self.setVolumes(st.session_state[app_name]["config"])
