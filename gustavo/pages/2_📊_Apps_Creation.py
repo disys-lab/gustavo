@@ -44,11 +44,10 @@ class AppHandler:
 
         bcmp = Composer(mode="streamlit", params=st.session_state)
 
-        st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
-
         st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state[app_name]["form_values"]["env_vars"])
         st.session_state[app_name]["config"]["volumes"] = self.getVolumes(st.session_state[app_name]["form_values"]["volumes"])
         st.session_state[app_name]["config"]["starting_ports"] = self.getPorts(st.session_state[app_name]["form_values"]["ports"])
+        st.session_state[app_name]["config"]["env_vars"]["APP_ID"] = app_name
 
         app_config = {app_name: st.session_state[app_name]["config"]}
 
