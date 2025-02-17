@@ -1,8 +1,40 @@
 from dotenv import load_dotenv
 from pathlib import Path
 import os, sys, click
+import logging
+import colorlog
 
+def setup_logging(level=logging.INFO):
+    """Configures colored logging for the application."""
 
+    # Create a colored formatter
+    log_format = "%(log_color)s%(asctime)s - %(levelname)s - %(message)s"
+    formatter = colorlog.ColoredFormatter(
+        log_format,
+        log_colors={
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "bold_red",
+        }
+    )
+
+    # Get the root logger
+    logger = logging.getLogger()
+    logger.setLevel(level)
+
+    # Remove any existing handlers to avoid duplicates
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    # Create a console handler and set the formatter
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    logger.addHandler(handler)
+setup_logging()
 class PathInvalid(Exception):
     pass
 
@@ -100,23 +132,10 @@ class NebulaBase:
             if "GUSTAVO_CONFIG_FILE" in os.environ:
                 self.base_config = os.environ["GUSTAVO_CONFIG_FILE"]
                 if not os.path.isfile(self.base_config):
-                    # raise Exception("GUSTAVO_CONFIG_FILE: {} path not valid".format(self.base_config))
-                    click.echo(
-                        click.style(
-                            "GUSTAVO_CONFIG_FILE: {} path not valid".format(
-                                self.base_config
-                            ),
-                            fg="red",
-                        )
-                    )
-                    # sys.exit()
-                    # return {"error": True, "response": "GUSTAVO_CONFIG_FILE: {} path not valid"}
+                    logging.error(f"GUSTAVO_CONFIG_FILE: {self.base_config} path not valid")
                     raise PathInvalid
             else:
-                # raise Exception("GUSTAVO_CONFIG_FILE not defined")
-                click.echo(click.style("GUSTAVO_CONFIG_FILE not defined", fg="red"))
-                # sys.exit()
-                # return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
+                logging.error(f"GUSTAVO_CONFIG_FILE not defined")
                 raise FileUndefined
 
             self.setNebulaParams()
@@ -142,20 +161,11 @@ class NebulaBase:
                 if len(self.DOCKER_HOST.split(":")) == 2:
                     self.DOCKER_HOST_SOCKET = self.DOCKER_HOST.split(":")[1]
                 else:
-                    click.echo(
-                        click.style(
-                            "ERROR: DOCKER_HOST={} must be like unix:/var/run/docker.sock .... quitting".format(
-                                self.DOCKER_HOST_SOCKET
-                            ),
-                            fg="red",
-                        )
-                    )
+                    logging.error(f"ERROR: DOCKER_HOST={self.DOCKER_HOST_SOCKET} must be like unix:/var/run/docker.shok .... quitting")
 
                 self.WORKER_NMODE = session_state["WORKER_NMODE"]
             else:
-                click.echo(
-                    click.style("session_state undefined in NebulaBase", fg="red")
-                )
+                logging.error(f"session_state undefined in NebulaBase")
 
     def setNebulaParams(self):
         """
@@ -175,18 +185,14 @@ class NebulaBase:
         if "REDIS_HOST" in os.environ.keys():
             self.REDIS_IP = os.getenv("REDIS_HOST")
         else:
-            # raise Exception("REDIS_IP undefined in base_config file")
-            click.echo(click.style("REDIS_IP undefined in base_config file", fg="red"))
+            logging.error(f"REDIS_IP undefined in base_config file")
             # sys.exit()
             return {"error": True, "response": "REDIS_IP undefined in base_config file"}
 
         if "REDIS_PORT" in os.environ.keys():
             self.REDIS_PORT = int(os.getenv("REDIS_PORT"))
         else:
-            # raise Exception("REDIS_PORT undefined in base_config file")
-            click.echo(
-                click.style("REDIS_PORT undefined in base_config file", fg="red")
-            )
+            logging.error(f"REDIS_PORT undefined in base_config file")
             # sys.exit()
             return {
                 "error": True,
@@ -196,10 +202,7 @@ class NebulaBase:
         if "REDIS_AUTH_TOKEN" in os.environ.keys():
             self.REDIS_AUTH_TOKEN = os.getenv("REDIS_AUTH_TOKEN")
         else:
-            # raise Exception("REDIS_AUTH_TOKEN undefined in base_config file")
-            click.echo(
-                click.style("REDIS_AUTH_TOKEN undefined in base_config file", fg="red")
-            )
+            logging.error(f"REDIS_AUTH_TOKEN undefined in base_coonfig file")
             # sys.exit()
             return {
                 "error": True,
@@ -209,9 +212,7 @@ class NebulaBase:
         if "REGISTRY_HOST" in os.environ.keys():
             self.REGISTRY_IP = os.getenv("REGISTRY_HOST")
         else:
-            click.echo(
-                click.style("REGISTRY_HOST undefined in base_config file", fg="red")
-            )
+            logging.error(f"REGISTER_HOST undefined in base_config file")
             # sys.exit()
             return {
                 "error": True,
@@ -221,10 +222,7 @@ class NebulaBase:
         if "REGISTRY_PORT" in os.environ.keys():
             self.REGISTRY_PORT = int(os.getenv("REGISTRY_PORT"))
         else:
-            # raise Exception("REGISTRY_PORT undefined in base_config file")
-            click.echo(
-                click.style("REGISTRY_PORT undefined in base_config file", fg="red")
-            )
+            logging.error(f"REGISTER_PORT undefined in base_config file")
             # sys.exit()
             return {
                 "error": True,
@@ -234,10 +232,7 @@ class NebulaBase:
         if "MANAGER_HOST" in os.environ.keys():
             self.MANAGER_IP = os.getenv("MANAGER_HOST")
         else:
-            # raise Exception("MANAGER_IP undefined in base_config file")
-            click.echo(
-                click.style("MANAGER_IP undefined in base_config file", fg="red")
-            )
+            logging.error(f"MANAGER_IP undefined in base_config file")
             # sys.exit()
             return {
                 "error": True,
@@ -247,11 +242,7 @@ class NebulaBase:
         if "MANAGER_PORT" in os.environ.keys():
             self.MANAGER_PORT = os.getenv("MANAGER_PORT")
         else:
-            # raise Exception("MANAGER_PORT undefined in base_config file")
-
-            click.echo(
-                click.style("MANAGER_PORT undefined in base_config file", fg="red")
-            )
+            logging.error(f"MANAGER_PORT undefined in base_config file")
             # sys.exit()
             return {
                 "error": True,
@@ -262,10 +253,7 @@ class NebulaBase:
             self.WORKER_NMODE = os.getenv("WORKER_NMODE")
         else:
             self.WORKER_NMODE = "bridge"
-
-            click.echo(
-                click.style("WORKER_NMODE undefined in base_config file", fg="red")
-            )
+            logging.error(f"WORKER_NMODE undefined in base_config file")
 
         if "NEBULA_USERNAME" in os.environ.keys():
             self.NEBULA_USERNAME = os.getenv("NEBULA_USERNAME")
@@ -289,15 +277,8 @@ class NebulaBase:
         if len(self.DOCKER_HOST.split(":")) == 2:
             self.DOCKER_HOST_SOCKET = self.DOCKER_HOST.split(":")[1]
         else:
-            click.echo(
-                click.style(
-                    "ERROR: DOCKER_HOST={} must be like unix:/var/run/docker.sock .... quitting".format(
-                        self.DOCKER_HOST_SOCKET
-                    ),
-                    fg="red",
-                )
-            )
+            logging.error(f"ERROR: DOCKER_HOST={self.DOCKER_HOST_SOCKET} must be like unix:/var/run/docker.sock .... quitting")
 
-        print(self.NEBULA_USERNAME + "@" + self.MANAGER_IP + ":" + self.MANAGER_PORT)
+        logging.info(f"{self.NEBULA_USERNAME}@{self.MANAGER_IP}:{self.MANAGER_PORT}")
 
-        click.echo(click.style("DOCKER_HOST:{}".format(self.DOCKER_HOST), fg="yellow"))
+        logging.warning(f"DOCKER_HOST: {self.DOCKER_HOST}")

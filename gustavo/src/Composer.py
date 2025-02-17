@@ -1,9 +1,11 @@
 import sys, click, requests, json
 from NebulaPythonSDK import Nebula
 from .NebulaBase import NebulaBase
+from .NebulaBase import setup_logging
+setup_logging()
+import logging
 from urllib.parse import urlparse
 from python_on_whales import docker as dockerow
-
 
 class Composer(NebulaBase):
     """
@@ -98,19 +100,12 @@ class Composer(NebulaBase):
             if "errors" in response_dict.keys():
                 error_msg = response_dict["errors"][0]
                 if "code" in error_msg.keys() and error_msg["code"] == "NAME_UNKNOWN":
-                    click.echo(
-                        click.style(
-                            "{} has not been found in the local repository, add this to the syncer mapping list to pull from remote".format(
-                                name
-                            ),
-                            fg="red",
-                        )
-                    )
+                    logging.error(f"{name} has not been in the local repository, add this to the syncer mapping list to pull from remote")
                     return {"error": True, "response": "{} has not been found in the local repository, add this to the syncer mapping list to pull from remote".format(
                                 name
                             )}
                 else:
-                    click.echo(click.style(str(error_msg), fg="red"))
+                    logging.error(f"{error_msg}")
                 # sys.exit()
                 return {
                     "error": True,
@@ -124,15 +119,7 @@ class Composer(NebulaBase):
                     # sys.exit()
                     return {"error": False, "response": response_dict}
                 elif tag not in response_dict["tags"]:
-                    click.echo(
-                        click.style(
-                            "tag: "
-                            + str(tag)
-                            + " not found among tag list "
-                            + str(response_dict["tags"]),
-                            fg="red",
-                        )
-                    )
+                    logging.error(f"tag: {tag} not found among tag list {response_dict['tags']}")
                     # sys.exit()
                     return {
                         "error": True,
@@ -142,12 +129,7 @@ class Composer(NebulaBase):
                         + str(response_dict["tags"]),
                     }
                 else:
-                    click.echo(
-                        click.style(
-                            "{}:{} have been found in local registry".format(name, tag),
-                            fg="green",
-                        )
-                    )
+                    logging.INFO(f"{name}:{tag} have been found in local registry")
                     return {
                         "error": False,
                         "response": "{}:{} have been found in local registry".format(
@@ -155,8 +137,8 @@ class Composer(NebulaBase):
                         ),
                     }
             else:
-                click.echo(click.style("Unknown error has occured", fg="red"))
-                click.echo(click.style(str(response_dict["errors"][0]), fg="red"))
+                logging.error(f"Unknown error has occured")
+                logging.error(f"{response_dict['errors'][0]}")
                 # sys.exit()
                 return {
                     "error": True,
@@ -196,29 +178,14 @@ class Composer(NebulaBase):
         # print(reply)
         # returnval = False
         if reply["status_code"] == accept_code:
-            click.echo(
-                click.style(
-                    moding + "ed nebula " + asset_type + " : " + asset_name, fg="green"
-                )
-            )
+            logging.info(f"{moding} ed nebula {asset_type} : {asset_name}")
             # returnval = True
             return {
                 "error": False,
                 "response": moding + "ed nebula " + asset_type + " : " + asset_name,
             }
         elif reply["status_code"] == 400:
-            click.echo(
-                click.style(
-                    "error "
-                    + moding
-                    + "ing "
-                    + asset_type
-                    + " : "
-                    + asset_name
-                    + ", missing or incorrect parameters",
-                    fg="red",
-                )
-            )
+            logging.error(f"error {moding}ing {asset_type} : {asset_name}, missing or incorrect parameters")
             return {
                 "error": True,
                 "response": "error "
@@ -232,20 +199,7 @@ class Composer(NebulaBase):
         elif reply["status_code"] == 403:
             if asset_type + "_exists" in reply["reply"].keys():
                 if reply["reply"][asset_type + "_exists"]:
-                    click.echo(
-                        click.style(
-                            "error "
-                            + moding
-                            + "ing "
-                            + asset_type
-                            + " : "
-                            + asset_name
-                            + ", "
-                            + str(asset_type)
-                            + " already exists",
-                            fg="red",
-                        )
-                    )
+                    logging.error(f"error {moding}ing {asset_type} : {asset_type} already exists")
                     return {
                         "error": True,
                         "response": "error "
@@ -259,20 +213,7 @@ class Composer(NebulaBase):
                         + " already exists",
                     }
                 else:
-                    click.echo(
-                        click.style(
-                            "error "
-                            + moding
-                            + "ing "
-                            + asset_type
-                            + " : "
-                            + asset_name
-                            + ", "
-                            + str(asset_type)
-                            + " does not exist",
-                            fg="red",
-                        )
-                    )
+                    logging.error(f"error {moding}ing {asset_name} : {asset_type} dose not exist")
                     return {
                         "error": True,
                         "response": "error "
@@ -286,19 +227,7 @@ class Composer(NebulaBase):
                         + " does not exist",
                     }
             else:
-                click.echo(
-                    click.style(
-                        "error "
-                        + moding
-                        + "ing "
-                        + asset_type
-                        + " : "
-                        + asset_name
-                        + ", server replied with :"
-                        + str(reply["reply"]),
-                        fg="red",
-                    )
-                )
+                logging.error(f"error {moding}ing {asset_type} : {asset_type}, server replied with : {reply['reply']}")
                 return {
                     "error": True,
                     "response": "error "
@@ -311,18 +240,7 @@ class Composer(NebulaBase):
                     + str(reply["reply"]),
                 }
         else:
-            click.echo(
-                click.style(
-                    "error "
-                    + moding
-                    + "ing "
-                    + asset_type
-                    + " : "
-                    + asset_name
-                    + ", are you logged in? did you send the right params & app name?",
-                    fg="red",
-                )
-            )
+            logging.error(f"error {moding}ing {asset_type} : {asset_name}, are yoy logged in? did you send the right params & app name?")
             return {
                 "error": True,
                 "response": "error "
@@ -348,24 +266,13 @@ class Composer(NebulaBase):
         """
         reply = self.nebulaObj.prune__device_group_images(app)
         if reply["status_code"] == 202:
-            click.echo(
-                click.style(
-                    "pruning images on devices running app: " + app, fg="yellow"
-                )
-            )
+            logging.warning(f"pruing image on devices running app: {app}")
             return {
                 "error": False,
                 "response": "pruning images on devices running app: " + app,
             }
         else:
-            click.echo(
-                click.style(
-                    "error pruning images on devices running app:"
-                    + app
-                    + ", are you logged in? did you sent the right app name?",
-                    fg="red",
-                )
-            )
+            logging.error(f"error pruning in? did you send the right app name?")
             return {
                 "error": True,
                 "response": "error pruning images on devices running app: " + app,
@@ -402,12 +309,7 @@ class Composer(NebulaBase):
 
         # retval = False
         if config == None and (mode.lower() == "create" or mode.lower() == "update"):
-            click.echo(
-                click.style(
-                    "config is invlaid for " + asset_type + " : " + asset_name,
-                    fg="green",
-                )
-            )
+            logging.info(f"config is invalid for {asset_type} : {asset_name}")
             return {
                 "error": True,
                 "response": "config is invlaid for " + asset_type + " : " + asset_name,
@@ -423,7 +325,7 @@ class Composer(NebulaBase):
                 reply = self.nebulaObj.create_device_group(asset_name, config)
 
             else:
-                click.echo(click.style("unknown asset type " + asset_type, fg="red"))
+                logging.error(f"unknown asset type {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
             moding = "creat"
 
@@ -437,7 +339,7 @@ class Composer(NebulaBase):
                 reply = self.nebulaObj.update_device_group(asset_name, config)
 
             else:
-                click.echo(click.style("unknown asset type " + asset_type, fg="red"))
+                logging.error(f"unknown asset type {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
             moding = "updat"
 
@@ -450,11 +352,11 @@ class Composer(NebulaBase):
                 reply = self.nebulaObj.delete_device_group(asset_name)
 
             else:
-                click.echo(click.style("unknown asset type " + asset_type, fg="red"))
+                logging.error(f" unknown asset type {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
             moding = "delet"
         else:
-            click.echo(click.style("unknown command " + mode, fg="red"))
+            logging.error(f"unknown command {mode}")
             return {"error": True, "response": "unknown command " + mode}
 
         retval = self.printDiagnosticResponse(
@@ -495,7 +397,7 @@ class Composer(NebulaBase):
             existing_app_list = response["reply"]["apps"]
             apps_to_be_modified = existing_app_list
             if mode != "update" and mode != "delete":
-                click.echo(click.style("unsupported mode " + mode, fg="red"))
+                logging.error("unsupported mode {mode}")
                 return {"error": True, "response": "unsupported mode"}
             for app in new_app_list:
                 if mode == "update" and app not in existing_app_list:
@@ -504,7 +406,7 @@ class Composer(NebulaBase):
                     apps_to_be_modified.remove(app)
 
             device_group_config = dict({"apps": apps_to_be_modified})
-            print(device_group_config)
+            logging.info(f"Device Group Config: {device_group_config}")
             responseDG = self.handleAsset(
                 "device_group", device_group, "update", device_group_config
             )
@@ -517,7 +419,7 @@ class Composer(NebulaBase):
             self.printDiagnosticResponse(
                 response, 200, "check", "app list for", device_group
             )
-            click.echo(response["reply"]["apps"])
+            logging.info(f"Apps: {response['reply']['apps']}")
 
             return {"error": False, "response": response["reply"]["apps"]}
         else:

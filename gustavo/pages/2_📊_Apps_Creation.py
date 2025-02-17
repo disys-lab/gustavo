@@ -2,6 +2,9 @@ import yaml,time, sys,os,copy
 import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
+from gustavo.src.NebulaBase import setup_logging
+setup_logging()
+import logging
 sidebarInit()
 from gustavo.src.Composer import Composer
 from gustavo.pages.config.SyncerConfig import refresh_registry, checkRegistryStatus
@@ -192,7 +195,8 @@ class AppHandler:
 
                                                     }
         #st.session_state[appkeys[0]] = app_config
-        print(st.session_state["create"]["form_values"])
+        # print(st.session_state["create"]["form_values"])
+        logging.info(f"{st.session_state['create']['form_values']}")
         return app_config
 
     def setPorts(self,app_config):
@@ -435,7 +439,8 @@ class AppHandler:
                 # need to convert from form values to config values for data editor
                 if st.session_state[app_name]["app_name"] != app_name:
                     new_app_name = copy.deepcopy(st.session_state[app_name]["app_name"])
-                    print(new_app_name)
+                    # print(new_app_name)
+                    logging.info(f"{new_app_name}")
                     app_index = st.session_state.app_list.index(app_name)
                     st.session_state.app_list[app_index] = new_app_name
 

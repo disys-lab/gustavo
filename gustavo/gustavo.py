@@ -1,13 +1,17 @@
 import click
+import logging
 from gustavo.src.Composer import Composer
 from gustavo.src.NebulaBase import FileUndefined
 from gustavo.src.NebulaBase import PathInvalid
+from gustavo.src.NebulaBase import setup_logging
+setup_logging()
 from gustavo.src.Cache import Cache
 from gustavo.src.Cache import ErrorHandling
 from gustavo.src.Manager import Manager
 from gustavo.utils import *
 from streamlit.web import cli
 import os, pkg_resources
+import logging
 
 try:
     VERSION=pkg_resources.require("gustavo")[0].version
@@ -81,7 +85,7 @@ def utils():
 def gui(port):
     cwd = os.path.dirname(os.path.realpath(__file__))
     gui_runner_file = os.path.join(cwd,"Home.py")
-    print(gui_runner_file)
+    logging.info(f"GUI Runner File: {gui_runner_file}")
     cli.main_run([gui_runner_file, "--server.headless", "true", "--server.port", int(port)])
 
 @utils.command(
@@ -106,7 +110,7 @@ def syncerAuthTokens(username, password):
     raw_content = json.dumps({"username": username, "password": password})
     raw_content_bytes = raw_content.encode("ascii")
     base64_bytes = base64.b64encode(raw_content_bytes)
-    click.echo(click.style("{}".format(str(base64_bytes.decode("utf-8")))))
+    logging.info(f"Generated Auth Token: {base64_bytes.decode('utf-8')}")
 
     return {
         "error": False,
@@ -168,7 +172,7 @@ def getsHosts(device_group, host):
     except Exception as e:
         return {"error": True, "response": e}
     response = cache.getHosts(device_group, host)
-    print(response["response"])
+    logging.info(f"Host response: {response['resonse']}")
     return {"error": False, "response": response["response"]}
 
 @registry.command(help="check images on local registry", name="list")
@@ -238,7 +242,7 @@ def listApp():
     except Exception as e:
         return {"error": True, "response": e}
     existing_app_list = bcmp.nebulaObj.list_apps()
-    print(existing_app_list["reply"]["apps"])
+    logging.info(f"Existing apps: {existing_app_list['reply']['apps']}")
 
 
 @apps.command(help="create a new nebula app", name="create")
@@ -443,14 +447,7 @@ def deleteApps(name):
             retval = bcmp.handleAsset(
                 "device_group", device_group, "update", device_group_config
             )
-
-            if retval:
-                click.echo(
-                    click.style(
-                        "Deleted " + str(app_name) + " from device group" + str(),
-                        fg="yellow",
-                    )
-                )
+            logging.warning(f"Deleted {app_name} from device group")
 
     retval = bcmp.handleAsset("app", app_name, "delete")
 
@@ -485,8 +482,7 @@ def listDeviceGroups(name):
     else:
         existing_device_groups = bcmp.nebulaObj.list_device_group(name)
     print(existing_device_groups["reply"])
-    return existing_device_groups["reply"]
-
+    logging.info(f"Existing device groups: {existing_device_groups['reply']}")
 
 @device_group.command(help="create a new device group", name="create")
 @click.option(
@@ -574,9 +570,7 @@ def updateDeviceGroups(
     if isinstance(apps, str):
 
         app_list = apps.replace(" ", "")
-        click.echo(
-            click.style("The list of apps to be " + str(action) + " are:" + app_list)
-        )
+        logging.info(f"The list of apps to be {action} are: {app_list}")
 
         response = bcmp.handleDeviceGroup(apps, action, name)
         if response["error"]:
@@ -587,7 +581,7 @@ def updateDeviceGroups(
         else:
             return response
     else:
-        click.echo(click.style("APP_NAMES_INVALID: enter a valid app name", fg="red"))
+        logging.error("APP_NAME_INVALID: enter a vlid app name")
         return {
             "error": True,
             "response": "device group not updated - APP_NAMES_INVALID: enter a valid app name",
@@ -620,7 +614,7 @@ def deleteDeviceGroups(name="bca"):
         retval = bcmp.handleAsset("device_group", device_group, "delete")
 
         if retval["error"] == "False":
-            click.echo(click.style("Deleted " + str(device_group), fg="green"))
+            logging.warning(f"Deleted device group: {device_group}")
 
         return retval
     else:
