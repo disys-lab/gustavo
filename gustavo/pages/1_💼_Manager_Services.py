@@ -5,6 +5,9 @@ from gustavo.pages.config.Sidebar import sidebarInit
 from gustavo.pages.config.SyncerConfig import SyncerConfig
 sidebarInit()
 from src.Manager import Manager
+from gustavo.src.NebulaBase import setup_logging
+setup_logging()
+import logging
 
 def load_css(file_name):
     """Load CSS from a file and inject into Streamlit."""

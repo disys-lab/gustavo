@@ -10,6 +10,9 @@ import datetime
 from time import time, sleep
 from gustavo.pages.config.Sidebar import sidebarInit
 sidebarInit()
+from gustavo.src.NebulaBase import setup_logging
+setup_logging()
+import logging
 
 def load_css(file_name):
     """Load CSS from a file and inject into Streamlit."""
@@ -30,10 +33,10 @@ def get_redis_client():
         # Create and return the Redis client
         return redis.Redis(host=redis_ip, port=redis_port, db=0, password=redis_auth_token)
     except KeyError as e:
-        st.error(f"Missing Redis configuration in session state: {e}")
+        logging.error(f"Missing Redis configuration in session state: {e}")
         return None
     except Exception as e:
-        st.error(f"Failed to initialize Redis client: {e}")
+        logging.error(f"Failed to initialize Redis client: {e}")
         return None
 
 
@@ -43,7 +46,7 @@ def get_redis_client():
 # Initialize the Redis client
 client = get_redis_client()
 if not client:
-    st.error("Redis client could not be initialized. Please check your configuration.")
+    logging.error("Redis client could not be initialized. Please check your configuration.")
 
 # @st.cache_resource
 def load_all_data(_redis_client):
@@ -59,9 +62,9 @@ def load_all_data(_redis_client):
                 # st.write(f"Loaded data for key {key.decode('utf-8')}: {data}")  # Debug: Log the data
                 loaded_data.append(data)
             except Exception as e:
-                st.error(f"Error decoding value for key {key.decode('utf-8')}: {e}")
+                logging.error(f"Error decoding value for key {key.decode('utf-8')}: {e}")
     except Exception as e:
-        st.error(f"An error occurred while loading data from Redis: {e}")
+        logging.error(f"An error occurred while loading data from Redis: {e}")
     return loaded_data
 
 # Load data into session state
@@ -86,14 +89,14 @@ class FileMonitoringApp:
             st.session_state.data = load_all_data(client)
             # st.write(f"Data loaded: {st.session_state.data}")  # Debug: Log loaded data
         except Exception as e:
-            st.error(f"An error occurred while refreshing data: {e}")
+            logging.error(f"An error occurred while refreshing data: {e}")
 
 
     def getDeviceGroups(self):
         """Extract unique device groups from the data."""
         try:
             if "data" not in st.session_state or not st.session_state.data:
-                st.warning("No data loaded into session state.")
+                logging.warning("No data loaded into session state.")
                 return []
             # st.write(f"Session data: {st.session_state.data}")  # Debug: Log session data
             device_groups = set()
@@ -102,7 +105,7 @@ class FileMonitoringApp:
                     device_groups.add(entry['device_group'])
             return list(device_groups)
         except Exception as e:
-            st.error(f"An error occurred while retrieving device groups: {e}")
+            logging.error(f"An error occurred while retrieving device groups: {e}")
             return []
 
 
@@ -121,9 +124,9 @@ class FileMonitoringApp:
                     key=selected_group_key
                 )
             else:
-                st.warning("No device groups available to select.")
+                logging.warning("No device groups available to select.")
         except Exception as e:
-            st.error(f"An error occurred while selecting a device group: {e}")
+            logging.error(f"An error occurred while selecting a device group: {e}")
 
     def getHosts(self, filtered_data):
         """Extract unique hosts from the filtered data."""
@@ -134,7 +137,7 @@ class FileMonitoringApp:
                     hosts.add(entry['hostname'])
             return list(hosts)
         except Exception as e:
-            st.error(f"An error occurred while retrieving hosts: {e}")
+            logging.error(f"An error occurred while retrieving hosts: {e}")
             return []
 
     def selectHost(self, filtered_data, iteration):
@@ -152,9 +155,9 @@ class FileMonitoringApp:
                     key=selected_host_key
                 )
             else:
-                st.warning("No hosts available to select.")
+                logging.warning("No hosts available to select.")
         except Exception as e:
-            st.error(f"An error occurred while selecting a host: {e}")
+            logging.error(f"An error occurred while selecting a host: {e}")
 
     def filterDataGroupAndHost(self):
         """Filter data based on the selected device group and host."""
@@ -169,7 +172,7 @@ class FileMonitoringApp:
                 ]
             return []
         except Exception as e:
-            st.error(f"An error occurred while filtering data: {e}")
+            logging.error(f"An error occurred while filtering data: {e}")
             return []
 
     def selectApps(self, filtered_data):
@@ -210,10 +213,10 @@ class FileMonitoringApp:
                 else:
                     self.selected_apps = selected_apps  # Otherwise, use the explicitly selected apps
             else:
-                st.warning("No apps or host metrics available for selection.")
+                logging.warning("No apps or host metrics available for selection.")
                 self.selected_apps = []
         except Exception as e:
-            st.error(f"An error occurred while selecting apps and host metrics: {e}")
+            logging.error(f"An error occurred while selecting apps and host metrics: {e}")
             self.selected_apps = []
 
 
@@ -221,7 +224,7 @@ class FileMonitoringApp:
         """Plot CPU usage percentages for all hosts in the selected device group."""
         try:
             if not filtered_data:
-                st.warning("No data available for CPU usage visualization.")
+                logging.warning("No data available for CPU usage visualization.")
                 return
 
             # Extract CPU usage and host information
@@ -248,9 +251,9 @@ class FileMonitoringApp:
 
                 st.altair_chart(cpu_chart, use_container_width=True)
             else:
-                st.warning("No CPU usage records found for visualization.")
+                logging.warning("No CPU usage records found for visualization.")
         except Exception as e:
-            st.error(f"An error occurred while visualizing CPU usage: {e}")
+            logging.error(f"An error occurred while visualizing CPU usage: {e}")
 
     def selectHostsForPlot(self, filtered_data):
         """Allow the user to select multiple hosts for plotting, including an 'All' option."""
@@ -281,10 +284,10 @@ class FileMonitoringApp:
                 else:
                     self.plot_hosts = selected_hosts  # Otherwise, use selected hosts
             else:
-                st.warning("No hosts available for plotting.")
+                logging.warning("No hosts available for plotting.")
                 self.plot_hosts = []
         except Exception as e:
-            st.error(f"An error occurred while selecting hosts for plotting: {e}")
+            logging.error(f"An error occurred while selecting hosts for plotting: {e}")
             self.plot_hosts = []
 
     def visualizeMemoryUsage(self, filtered_data):
@@ -349,7 +352,7 @@ class FileMonitoringApp:
                 # Fallback to all data if filtered data is empty
                 if filtered_df.empty:
                     filtered_df = df_usage
-                    st.warning("No data found for the last 15 seconds. Displaying all available data.")
+                    logging.warning("No data found for the last 15 seconds. Displaying all available data.")
                 # st.write("plot this ", filtered_df)
 
                 # Memory usage line chart
@@ -365,9 +368,9 @@ class FileMonitoringApp:
                 # Render the chart
                 st.altair_chart(usage_chart, use_container_width=True)
             else:
-                st.warning("No memory usage records found for visualization.")
+                logging.warning("No memory usage records found for visualization.")
         except Exception as e:
-            st.error(f"An error occurred while visualizing memory usage: {e}")
+            logging.error(f"An error occurred while visualizing memory usage: {e}")
 
     def run(self):
         """Run the instance to select device groups and visualize the memory usage."""
@@ -399,7 +402,7 @@ class FileMonitoringApp:
                     # st.write(f"Selected apps and host metrics: {', '.join(self.selected_apps)}")
                     self.visualizeMemoryUsage(final_filtered_data)  # Show visualization
                 else:
-                    st.warning("No apps or host metrics selected for visualization.")
+                    logging.warning("No apps or host metrics selected for visualization.")
 
 
     def run_dashboard(self):
@@ -439,6 +442,7 @@ class FileMonitoringApp:
                         key=f"delete_button_{app_instance.app_id}"
                     ):
                         st.session_state.app_instances.remove(app_instance)
+                        st.rerun()
 
                 # Add "New System" button at the bottom
                 st.markdown("---")
