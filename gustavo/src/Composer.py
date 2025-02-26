@@ -129,7 +129,7 @@ class Composer(NebulaBase):
                         + str(response_dict["tags"]),
                     }
                 else:
-                    logging.INFO(f"{name}:{tag} have been found in local registry")
+                    logging.info(f"{name}:{tag} have been found in local registry")
                     return {
                         "error": False,
                         "response": "{}:{} have been found in local registry".format(
@@ -227,7 +227,7 @@ class Composer(NebulaBase):
                         + " does not exist",
                     }
             else:
-                logging.error(f"error {moding}ing {asset_type} : {asset_type}, server replied with : {reply['reply']}")
+                logging.critical(f"error {moding}ing {asset_type} : {asset_type}, server replied with : {reply['reply']}")
                 return {
                     "error": True,
                     "response": "error "
@@ -240,7 +240,7 @@ class Composer(NebulaBase):
                     + str(reply["reply"]),
                 }
         else:
-            logging.error(f"error {moding}ing {asset_type} : {asset_name}, are yoy logged in? did you send the right params & app name?")
+            logging.error(f"Error {moding}ing {asset_type}: {asset_name}. Are you logged in? Did you send the correct parameters and app name?")
             return {
                 "error": True,
                 "response": "error "
@@ -266,7 +266,7 @@ class Composer(NebulaBase):
         """
         reply = self.nebulaObj.prune__device_group_images(app)
         if reply["status_code"] == 202:
-            logging.warning(f"pruing image on devices running app: {app}")
+            logging.warning(f"Pruning images on devices running app: {app}")
             return {
                 "error": False,
                 "response": "pruning images on devices running app: " + app,
@@ -309,7 +309,7 @@ class Composer(NebulaBase):
 
         # retval = False
         if config == None and (mode.lower() == "create" or mode.lower() == "update"):
-            logging.info(f"config is invalid for {asset_type} : {asset_name}")
+            logging.error(f"Invalid config for {asset_type} : {asset_name}")
             return {
                 "error": True,
                 "response": "config is invlaid for " + asset_type + " : " + asset_name,
@@ -325,7 +325,7 @@ class Composer(NebulaBase):
                 reply = self.nebulaObj.create_device_group(asset_name, config)
 
             else:
-                logging.error(f"unknown asset type {asset_type}")
+                logging.critical(f"Unknown asset type: {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
             moding = "creat"
 
@@ -339,7 +339,7 @@ class Composer(NebulaBase):
                 reply = self.nebulaObj.update_device_group(asset_name, config)
 
             else:
-                logging.error(f"unknown asset type {asset_type}")
+                logging.critical(f"Unknown asset type: {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
             moding = "updat"
 
@@ -352,7 +352,7 @@ class Composer(NebulaBase):
                 reply = self.nebulaObj.delete_device_group(asset_name)
 
             else:
-                logging.error(f" unknown asset type {asset_type}")
+                logging.error(f"Unknown asset type: {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
             moding = "delet"
         else:
@@ -397,7 +397,7 @@ class Composer(NebulaBase):
             existing_app_list = response["reply"]["apps"]
             apps_to_be_modified = existing_app_list
             if mode != "update" and mode != "delete":
-                logging.error("unsupported mode {mode}")
+                logging.critical(f"Unsupported mode: {mode}")
                 return {"error": True, "response": "unsupported mode"}
             for app in new_app_list:
                 if mode == "update" and app not in existing_app_list:
