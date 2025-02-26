@@ -37,7 +37,7 @@ class Cache(NebulaBase):
                 host=self.REDIS_IP, port=self.REDIS_PORT, password=self.REDIS_AUTH_TOKEN
             )
         except Exception as e:
-            logging.error(f"ERROR: {e}")
+            logging.critical(f"ERROR: {e}")
             # sys.exit()
             raise ErrorHandling
 
@@ -227,7 +227,7 @@ class Cache(NebulaBase):
                     "response": data_dict,
                 }, key
             except Exception as e:
-                logging.error(f"ERROR: {e}")
+                logging.critical(f"ERROR: {e}")
                 return {
                     "host_queried": host,
                     "device_group_queried": device_group,
@@ -288,7 +288,7 @@ class Cache(NebulaBase):
                 }
 
             except Exception as e:
-                logging.error(f"ERROR: {e}")
+                logging.critical(f"ERROR: {e}")
                 # sys.exit()
                 raise ErrorHandling
         else:
@@ -329,7 +329,7 @@ class Cache(NebulaBase):
                     + str(containers),
                 }
             except Exception as e:
-                logging.error(f"ERROR: {e}")
+                logging.critical(f"ERROR: {e}")
                 # sys.exit()
                 raise ErrorHandling
         else:
