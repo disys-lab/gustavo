@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 import docker
 import time
+import logging
 from .NebulaBase import NebulaBase
 from .NebulaBase import setup_logging
 setup_logging()
@@ -85,6 +86,7 @@ class Manager(NebulaBase):
         self.REGISTRY_IMAGE = None
         self.SYNCER_IMAGE = None
         self.REDIS_IMAGE = None
+        self.REDIS_BKP_DIR = "/tmp/"
         self.MONGO_IMAGE = None
         self.MANAGER_IMAGE = None
 
@@ -195,6 +197,24 @@ class Manager(NebulaBase):
                 "error": True,
                 "response": "REDIS_IMAGE undefined in base_config file",
             }
+
+        if "REDIS_BKP_DIR" in os.environ.keys():
+            REDIS_BKP_DIR = os.getenv("REDIS_BKP_DIR")
+            if not (os.path.exists(REDIS_BKP_DIR) and os.path.isdir(REDIS_BKP_DIR)):
+                logging.error(f"{REDIS_BKP_DIR} does not exist, defaulting to /tmp/")
+                REDIS_BKP_DIR = "/tmp/"
+            self.REDIS_BKP_DIR = REDIS_BKP_DIR
+        else:
+
+            click.echo(
+                click.style("REDIS_IMAGE undefined in base_config file", fg="red")
+            )
+
+            return {
+                "error": True,
+                "response": "REDIS_IMAGE undefined in base_config file",
+            }
+
         if "MONGO_IMAGE" in os.environ.keys():
             self.MONGO_IMAGE = os.getenv("MONGO_IMAGE")
         else:
@@ -393,6 +413,7 @@ class Manager(NebulaBase):
             # success = True
             dockerow.pull(self.REDIS_IMAGE)
             try:
+                print(f"REDIS_ARGS= --requirepass {str(self.REDIS_AUTH_TOKEN)}")
                 client.containers.run(
                     image=self.REDIS_IMAGE,
                     detach=True,
@@ -400,7 +421,9 @@ class Manager(NebulaBase):
                     name="redis",
                     ports={"6379": str(self.REDIS_PORT)},
                     restart_policy={"Name": "always"},
-                    environment=["AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN)],
+                    volumes = {f"{self.REDIS_BKP_DIR}": {'bind': '/data/', 'mode': 'rw'}},
+                    environment=[f"REDIS_ARGS=--requirepass {str(self.REDIS_AUTH_TOKEN)}"],
+                    #environment=[f"REDIS_PASSWORD={str(self.REDIS_AUTH_TOKEN)}"],
                 )
             except docker.errors.ImageNotFound as e:
                 logging.error(f"{e}")
@@ -516,6 +539,7 @@ class Manager(NebulaBase):
         if self.MANAGER_IMAGE:
             # success = True
             dockerow.pull(self.MANAGER_IMAGE)
+
             try:
                 logging.info(f"Spinning up Manager in {self.MANAGER_NMODE} network mode")
                 if self.MANAGER_NMODE == "host":
@@ -542,6 +566,9 @@ class Manager(NebulaBase):
                             "BASIC_AUTH_USER=" + str(self.NEBULA_USERNAME),
                             "BASIC_AUTH_PASSWORD=" + str(self.NEBULA_PASSWORD),
                             "AUTH_TOKEN=" + str(self.NEBULA_AUTH_TOKEN),
+                            "REDIS_HOST=" + str(self.REDIS_IP),
+                            "REDIS_PORT=" + str(self.REDIS_PORT),
+                            "REDIS_AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN)
                         ],
                     )
                 else:
@@ -553,6 +580,7 @@ class Manager(NebulaBase):
                         hostname="manager",
                         ports={"80": self.MANAGER_PORT},
                         restart_policy={"Name": "always"},
+                        sysctls={"net.ipv4.conf.all.forwarding":"1"},
                         environment=[
                             "MONGO_URL=mongodb://"
                             + str(self.MONGO_USERNAME)
@@ -568,6 +596,9 @@ class Manager(NebulaBase):
                             "BASIC_AUTH_USER=" + str(self.NEBULA_USERNAME),
                             "BASIC_AUTH_PASSWORD=" + str(self.NEBULA_PASSWORD),
                             "AUTH_TOKEN=" + str(self.NEBULA_AUTH_TOKEN),
+                            "REDIS_HOST=" + str(self.REDIS_IP),
+                            "REDIS_PORT=" + str(self.REDIS_PORT),
+                            "REDIS_AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN)
                         ],
                     )
 
@@ -624,12 +655,16 @@ class Manager(NebulaBase):
         try:
             response = requests.get(
                 url.geturl(),
-                headers={"Authorization": "Basic " + self.NEBULA_AUTH_TOKEN},
+                headers={"Authorization": "Basic " + str(self.NEBULA_AUTH_TOKEN)},
             )
             if response.status_code == 200:
                 logging.info(f"Manager Up")
                 # return True
                 return {"error": False, "response": "Manager up successfully"}
+            else:
+                click.echo(click.style("Manager Up", fg="red"))
+                # return True
+                return {"error": True, "response": "Manager not reachable"}
         except Exception as e:
             logging.error(f"Unexpected error {e}")
             return {"error": True, "response": e}

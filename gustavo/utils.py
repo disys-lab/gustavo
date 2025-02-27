@@ -90,10 +90,10 @@ def handleMultipleApp(file, name, mode, fileType, device_groups=None):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
 
@@ -254,10 +254,10 @@ def createWorker(name, device_group, image, prefix, expire_time):
     except PathInvalid:
         return {
             "error": True,
-            "response": "BLOCKALYTICS_CONFIG_FILE: {} path not valid",
+            "response": "GUSTAVO_CONFIG_FILE: {} path not valid",
         }
     except FileUndefined:
-        return {"error": True, "response": "BLOCKALYTICS_CONFIG_FILE not defined"}
+        return {"error": True, "response": "GUSTAVO_CONFIG_FILE not defined"}
     except Exception as e:
         return {"error": True, "response": e}
 

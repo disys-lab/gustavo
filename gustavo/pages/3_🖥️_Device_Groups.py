@@ -14,12 +14,16 @@ def load_css(file_name):
         css = f.read()
         st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
 
-load_css("gustavo/pages/styles/style.css")
+parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+css_url = os.path.join(parent,"styles","style.css")
+load_css(css_url)
 
 
 class DGHandler:
     def __init__(self):
-        """Initialize session state variables."""
+        self.error_container = None
+        self.log_placeholder = None
+
         if "app_list" not in st.session_state:
             st.session_state.app_list = []
 
@@ -32,7 +36,7 @@ class DGHandler:
                 "selected_apps": []
             }
 
-        self.listAllDeviceGroups()  # ✅ Ensures device groups load at startup
+
 
     def createDeviceGroup(self, group_name, apps):
         try:
@@ -82,10 +86,11 @@ class DGHandler:
         """Fetch device groups and their apps from the backend."""
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
+            response = bcmp.nebulaObj.list_device_groups()
         except Exception as e:
             return {"error": True, "response": e}
 
-        response = bcmp.nebulaObj.list_device_groups()
+
         device_group_list = []
 
         if response["status_code"] == 200:
@@ -102,9 +107,17 @@ class DGHandler:
 
     def deviceGroups(self):
         st.header("Device Group Handler")
+        self.error_container = st.container()
+        self.log_placeholder = st.empty()
 
+        try:
+            self.listAllDeviceGroups()  # ✅ Ensures device groups load at startup
+        except Exception as e:
+            with self.error_container:
+                st.error(f"Error listing device groups, exception {e}")
         if not st.session_state.device_groups:
-            st.warning("No device groups found. Try refreshing!")
+            with self.error_container:
+                st.warning("No device groups found. Try refreshing!")
 
         with st.container():
             def add_group():
@@ -112,24 +125,30 @@ class DGHandler:
                 selected_apps = st.session_state["create_dg"]["selected_apps"]
 
                 if not group_name:
-                    st.error("Device Group Name is blank")
+                    with self.error_container:
+                        st.error("Device Group Name is blank")
                     return
 
                 elif any(dg["name"] == group_name for dg in st.session_state.device_groups):
-                    st.error("Device Group already exists")
+                    with self.error_container:
+                        st.error("Device Group already exists")
                     return
                 else :
-                    st.session_state.device_groups.append(group_name)
+                    #st.session_state.device_groups.append(group_name)
                     st.session_state.latest_group_name= group_name
                     st.session_state[group_name] = {}
                     st.session_state[group_name]["group_name"] = group_name
+                    try:
+                        response = self.createDeviceGroup(group_name, selected_apps)
 
-                    response = self.createDeviceGroup(group_name, selected_apps)
-
-                    if response["error"]:
-                        st.error(f"Error creating device group '{group_name}': {response['response']}")
-                    else:
-                        st.session_state.device_groups.append({"name": group_name, "apps": selected_apps})
+                        if response["error"]:
+                            with self.error_container:
+                                st.error(f"Error creating device group '{group_name}': {response['response']}")
+                        else:
+                            st.session_state.device_groups.append({"name": group_name, "apps": selected_apps})
+                    except Exception as e:
+                        with self.error_container:
+                            st.error(f"Error creating device group {group_name}, exception {e}")
                         # st.success(f"Device group '{group_name}' created successfully!")
                 
             for i, group_info in enumerate(st.session_state.device_groups):
@@ -147,13 +166,20 @@ class DGHandler:
                     col1, col2 = st.columns(2)
                     with col1:
                         if st.button(f"Update {group_name}", key=f"update_button_{i}"):
-                            self.updateDeviceGroup(group_name, selected_apps)
+                            try:
+                                self.updateDeviceGroup(group_name, selected_apps)
+                            except Exception as e:
+                                with self.error_container:
+                                    st.error(f"Error updating device group {group_name}, exception {e}")
                     with col2:
                         if st.button(f"Delete {group_name}", key=f"delete_button_{i}"):
-                            self.deleteDeviceGroup(group_name, i)
-                            st.session_state.device_groups.pop(i)  # ✅ Remove from UI
-                            return  # ✅ Prevent further execution after deletion
-
+                            try:
+                                self.deleteDeviceGroup(group_name, i)
+                                st.session_state.device_groups.pop(i)  # ✅ Remove from UI
+                                return  # ✅ Prevent further execution after deletion
+                            except Exception as e:
+                                with self.error_container:
+                                    st.error(f"Error deleting device group {group_name}, exception {e}")
             # self.refreshDeviceGroupList()
 
             create_dg_expander = st.expander("Create New Device Group", expanded=False)

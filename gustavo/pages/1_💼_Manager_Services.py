@@ -14,7 +14,10 @@ def load_css(file_name):
     with open(file_name) as f:
         css = f.read()
         st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
-load_css("gustavo/pages/styles/style.css")
+
+parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+css_url = os.path.join(parent,"styles","style.css")
+load_css(css_url)
 
 class ManagerService:
     def __init__(self):
@@ -22,7 +25,8 @@ class ManagerService:
         self.redis_conf = {"REDIS_HOST": "",
                       "REDIS_PORT": "",
                       "REDIS_AUTH_TOKEN": "",
-                      "REDIS_IMAGE": ""
+                      "REDIS_IMAGE": "",
+                      "REDIS_BKP_DIR": "/tmp/"
                       }
         st.session_state["Redis_status"] = "Unknown"
         self.mongo_conf = {
@@ -85,8 +89,7 @@ class ManagerService:
             return '<div style="background-color: #f37e7a; color: white; border-radius: 12px; padding: 5px 10px;">Down</div>'
         else:
             return '<div style="background-color: #ffcc49; color: black; border-radius: 12px; padding: 5px 10px;">Unknown</div>'
-    
-    
+
     def obtainManagerConf(self):
         if "MANAGER_HOST" not in st.session_state.keys():
             self.manager_conf["MANAGER_HOST"] = "Undefined"
@@ -244,6 +247,19 @@ class ManagerService:
         else:
             self.redis_conf["REDIS_IMAGE"] = st.session_state.REDIS_IMAGE
             self.man.REDIS_IMAGE = st.session_state.REDIS_IMAGE
+
+        if "REDIS_BKP_DIR" not in st.session_state.keys():
+            self.redis_conf["REDIS_BKP_DIR"] = "/tmp/"
+        else:
+            REDIS_BKP_DIR = st.session_state.REDIS_BKP_DIR
+            if not (os.path.exists(REDIS_BKP_DIR) and os.path.isdir(REDIS_BKP_DIR)):
+                logging.error(f"{REDIS_BKP_DIR} does not exist, defaulting to /tmp/")
+                st.toast(f"{REDIS_BKP_DIR} does not exist, defaulting to /tmp/")
+                REDIS_BKP_DIR = "/tmp/"
+
+            #self.REDIS_BKP_DIR = REDIS_BKP_DIR
+            self.redis_conf["REDIS_BKP_DIR"] = REDIS_BKP_DIR
+            self.man.REDIS_BKP_DIR = st.session_state.REDIS_BKP_DIR
 
         return [self.redis_conf]
 
@@ -416,7 +432,7 @@ class ManagerService:
 
                         # Ensure the host and port are not None before proceeding
                         if manager_host is None or manager_port is None or not auth_token:
-                            st.section_state[service_name_status] ="Up"
+                            st.session_state[service_name_status] ="Up"
                             # status_container.markdown(f":red[Manager configuration is incomplete 🚨]")
                         else:
                             # Safeguard the token and host before assigning to self.man
@@ -474,7 +490,6 @@ class ManagerService:
                         f"{self.status_pill(st.session_state[service_name_status])}",
                         unsafe_allow_html=True
                     )
-    
 
     def manager(self):
         # Header for the detailed services
