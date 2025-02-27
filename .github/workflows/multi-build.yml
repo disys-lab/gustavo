@@ -10,6 +10,8 @@ on:
 
 
 jobs:
+  test:
+
   bumpversion:
     if: "contains(github.event.head_commit.message, '#bump')"
     runs-on: [ ubuntu-24.04 ]
@@ -25,6 +27,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         WITH_V: true
         PRERELEASE: true
+
+
   linuxbuild:
     needs: bumpversion
     runs-on: ${{ matrix.os }}

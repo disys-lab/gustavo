@@ -1,10 +1,11 @@
 import yaml,time, sys,os,copy
 import streamlit as st
-import socket
+import socket, logging
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
 sidebarInit()
 from gustavo.src.Composer import Composer
+from gustavo.src.Manager import Manager
 from gustavo.pages.config.SyncerConfig import refresh_registry, checkRegistryStatus
 from gustavo.utils import *
 
@@ -76,7 +77,7 @@ class AppHandler:
             bcmp = Composer(mode="streamlit", params=st.session_state)
             response = bcmp.nebulaObj.list_device_groups()
         except Exception as e:
-            return {"error": True, "response": f"error occured listing device_groups {e}"}
+            return {"error": True, "response": f"error occured listing device_groups, please check Nebula object"}
 
         for device_group in response["reply"]["device_groups"]:
 
@@ -111,38 +112,67 @@ class AppHandler:
             return {"error": True, "response": "delete app failed"}
 
     def listAllDeviceGroups(self):
+        manager_reply = Manager(mode="streamlit",params=st.session_state).checkManager()
+
+        if manager_reply.get("error", True):
+            reply = manager_reply.get("response", "manager not accessible")
+            return {"error": True, "response": f"error occured listing device groups, please check manager connection"}
+
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
             response = bcmp.nebulaObj.list_device_groups()
         except Exception as e:
-            return {"error": True, "response": f"error occured listing device groups {e}"}
+            return {"error": True, "response": f"error occured listing device groups, please check Nebula object"}
 
-        device_group_list = []
+        #device_group_list = []
+        #bcmp = None
         if response["status_code"] == 200:
             device_group_list = response["reply"]["device_groups"]
-        return device_group_list,bcmp
+            return {"error": False, "response": {"device_group_list":device_group_list,"bcmp":bcmp}}
+        else:
+            return {"error": True, "response": f"error occured listing device groups, Nebula object creation failed"}
+        #return device_group_list,bcmp
 
     def listDeviceGroups(self,app_name):
         dg_list = []
-        device_group_list,bcmp = self.listAllDeviceGroups()
+
+        #device_group_list,bcmp = self.listAllDeviceGroups()
+        listdg_reply = self.listAllDeviceGroups()
+        listdg_fail = listdg_reply.get("error",True)
+        listdg_response = listdg_reply.get("response", {})
+        if listdg_fail:
+            return {"error": True, "response": f"error occured while listing device_group {listdg_response}"}
+
+        device_group_list = listdg_response.get("device_group_list",[])
+        bcmp = listdg_response.get("bcmp",None)
+
         for device_group in device_group_list:
             try:
                 response = bcmp.nebulaObj.list_device_group(device_group)
             except Exception as e:
-                return {"error": True, "response": f"error occured while listing device_group {device_group}"}
+                return {"error": True, "response": f"error occured while listing device_group {device_group}, exception {e}"}
 
             if response["status_code"] == 200:
                 dg_app_list = response["reply"]["apps"]
                 if app_name in dg_app_list:
                     dg_list.append(device_group)
-        return dg_list
+
+        return {"error":False,"response":dg_list}
 
     def listAllApps(self):
+
+        manager_reply = Manager(mode="streamlit",params=st.session_state).checkManager()
+
+        if manager_reply.get("error",True):
+            reply = manager_reply.get("response","manager not accessible")
+            logging.error(reply)
+            return {"error": True, "response": f"error occured listing apps, please check manager connection"}
+
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
             response = bcmp.nebulaObj.list_apps()
         except Exception as e:
-            return {"error": True, "response": f"error occured listing apps {e}"}
+            return {"error": True, "response": f"error occured listing apps, please check MongoDB connection"}
 
         if response["status_code"] == 200:
             existing_app_list = response["reply"]["apps"]
@@ -156,7 +186,14 @@ class AppHandler:
                     return {"error": True, "response": f"error occured while listing app {app_name}"}
 
                 if app_response["status_code"] == 200:
-                    dg_list = self.listDeviceGroups(app_name)
+                    listdg_reply = self.listDeviceGroups(app_name)
+                    listdg_fail = listdg_reply.get("error",True)
+                    if listdg_fail:
+                        logging.error(f"failed to list device groups, error {listdg_reply}")
+                        continue
+                    else:
+                        dg_list = listdg_reply.get("response")
+
                     if app_name not in st.session_state:
                         st.session_state[app_name] = {}
                     st.session_state[app_name]["app_name"] = app_name
@@ -428,7 +465,16 @@ class AppHandler:
             else:
                 check = False
                 try:
-                    dg_list, _ = self.listAllDeviceGroups()
+                    #dg_list, _ = self.listAllDeviceGroups()
+                    listdg_reply = self.listAllDeviceGroups()
+                    listdg_fail = listdg_reply.get("error", True)
+                    listdg_response = listdg_reply.get("response", {})
+                    if listdg_fail:
+                        with self.error_container:
+                            st.error(f"Error listing device groups, exception {listdg_response}")
+                        dg_list = []
+                    else:
+                        dg_list = listdg_response.get("device_group_list",[])
                 except Exception as e:
                     with self.error_container:
                         st.error(f"Error listing device groups, exception {e}")
@@ -441,8 +487,9 @@ class AppHandler:
                     st.error("Could not decipher device groups, received: {}".format(dg_option_list))
                 dg_option_list = []
 
-            if "gustavodg1" not in dg_option_list:
-                dg_option_list.append("gustavodg1")
+            if name == "create":
+                if "gustavodg1" not in dg_option_list:
+                    dg_option_list.append("gustavodg1")
 
             device_groups = st.multiselect("Device Group (leave blank for default)", options=dg_option_list,default=dg_option_list,
                                            key=dg_key,
@@ -532,7 +579,15 @@ class AppHandler:
                     st.error(f"Error updating app {app_name}, exception :{e}")
 
         try:
-            self.listAllApps()
+            listapps_reply = self.listAllApps()
+            listapps_fail = listapps_reply.get("error",True)
+            listapps_response = listapps_reply.get("response","failure listing apps")
+            if listapps_fail:
+                with self.error_container:
+                    st.error(f"Error listing existing apps, exception {listapps_response}")
+            else:
+                self.app_list =  listapps_response
+
         except Exception as e:
             with self.error_container:
                 st.error(f"Error listing existing apps, exception {e}")
@@ -580,7 +635,13 @@ class AppHandler:
         self.log_placeholder = st.empty()
 
         try:
-            self.listAllApps()
+            listapps_reply = self.listAllApps()
+            listapps_fail = listapps_reply.get("error", True)
+            listapps_response = listapps_reply.get("response", "failure listing apps")
+            if listapps_fail:
+                with self.error_container:
+                    st.error(f"Error listing existing apps, exception {listapps_response}")
+
         except Exception as e:
             with self.error_container:
                 st.error(f"Error listing all apps, exception :{e}")
