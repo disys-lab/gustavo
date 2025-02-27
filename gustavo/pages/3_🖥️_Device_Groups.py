@@ -1,10 +1,12 @@
 import yaml, time, sys, os, copy
 import streamlit as st
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
 sidebarInit()
 from gustavo.src.Composer import Composer
+from gustavo.src.NebulaBase import setup_logging
+setup_logging()
+import logging
 
 def load_css(file_name):
     """Load CSS from a file and inject into Streamlit."""

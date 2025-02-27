@@ -1,6 +1,9 @@
 import redis, click, pickle, sys
 from .NebulaBase import NebulaBase
-
+from .NebulaBase import setup_logging
+setup_logging()
+import logging
+    
 """
 CAUTION: This module relies on the Redis in memory data store with expiry of cache enabled.
 The code will work for small cases but might break at scale. This needs to be fixed.
@@ -26,23 +29,15 @@ class Cache(NebulaBase):
         Inorder to make Cache rest friendly replaced sys.exit() with raising exceptions which will get excepted
         in gustavo.py and eventually return a dictionary there {"error": True, "response": reason for error}
         """
-
-        click.echo(
-            click.style(
-                "WARNING:This is an experimental feature and is not optimized for scale. Results might vary.",
-                fg="red",
-            )
-        )
+        logging.error(f"WARNING: This is an ecperimental feature and is not optimized for scale. Results might vary.")
         NebulaBase.__init__(self)
         try:
-            click.echo(
-                click.style("CACHE_PREFIX:" + str(self.CACHE_PREFIX), fg="yellow")
-            )
+            logging.warning(f"CACHE_PREFIX {self.CACHE_PREFIX}")
             self.redisObj = redis.StrictRedis(
                 host=self.REDIS_IP, port=self.REDIS_PORT, password=self.REDIS_AUTH_TOKEN
             )
         except Exception as e:
-            click.echo(click.style(e, fg="red"))
+            logging.critical(f"ERROR: {e}")
             # sys.exit()
             raise ErrorHandling
 
@@ -232,16 +227,14 @@ class Cache(NebulaBase):
                     "response": data_dict,
                 }, key
             except Exception as e:
-                click.echo(click.style(e, fg="red"))
+                logging.critical(f"ERROR: {e}")
                 return {
                     "host_queried": host,
                     "device_group_queried": device_group,
                     "response": {},
                 }, key
         else:
-            click.echo(
-                click.style("{} not found in cache reports".format(key), fg="red")
-            )
+            logging.error(f"{key} not found in cache reports")
             return {
                 "host_queried": host,
                 "device_group_queried": device_group,
@@ -275,25 +268,7 @@ class Cache(NebulaBase):
                 cpu_core_use = str(data_dict["cpu_usage"]["cores"])
                 cpu_pct_use = str(data_dict["cpu_usage"]["used_percent"])
                 time = str(data_dict["report_creation_time"])
-                click.echo(
-                    click.style(
-                        key
-                        + "at time:"
-                        + time
-                        + "\t mem:"
-                        + mem
-                        + "\t"
-                        + "disk:"
-                        + disk
-                        + "\t"
-                        + "cpu_cores:"
-                        + cpu_core_use
-                        + "\t"
-                        + "cpu_percent:"
-                        + cpu_pct_use,
-                        fg="blue",
-                    )
-                )
+                logging.info(f"{key} at time: {time}\t mem: {mem}\t disk: {disk}\t cpu_cores: {cpu_core_use}\t cpu_percent {cpu_pct_use}")
                 return {
                     "error": False,
                     "response": key
@@ -313,11 +288,11 @@ class Cache(NebulaBase):
                 }
 
             except Exception as e:
-                click.echo(click.style(e, fg="red"))
+                logging.critical(f"ERROR: {e}")
                 # sys.exit()
                 raise ErrorHandling
         else:
-            click.echo(click.style("No key matches {}".format(key), fg="red"))
+            logging.error(f"No key matches {key}")
             return {"error": True, "response": "no key matches {}".format(key)}
 
     def getIndividualContainers(self, device_group, host):
@@ -344,12 +319,7 @@ class Cache(NebulaBase):
             try:
                 containers = str(data_dict["apps_containers"])
                 time = str(data_dict["report_creation_time"])
-                click.echo(
-                    click.style(
-                        key + " at time:" + time + " containers:" + str(containers),
-                        fg="blue",
-                    )
-                )
+                logging.info(f"{key} at time: {time} containers: {containers}")
                 return {
                     "error": False,
                     "response": key
@@ -359,11 +329,11 @@ class Cache(NebulaBase):
                     + str(containers),
                 }
             except Exception as e:
-                click.echo(click.style(e, fg="red"))
+                logging.critical(f"ERROR: {e}")
                 # sys.exit()
                 raise ErrorHandling
         else:
-            click.echo(click.style("No key matches {}".format(key), fg="red"))
+            logging.error(f"No key matches {key}")
             return {"error": True, "response": "no key matches {}".format(key)}
 
     # not optimized at all
@@ -398,14 +368,7 @@ class Cache(NebulaBase):
         host_dict = self.scanLatest()
 
         if len(host_dict.keys()) == 0:
-            click.echo(
-                click.style(
-                    "No data matches the query device_group:{},hosts:{}".format(
-                        device_group_id, host_id
-                    ),
-                    fg="red",
-                )
-            )
+            logging.error(f"No data matches the query device_group:{device_group_id},host:{host_id}")
             return {
                 "error": False,
                 "response": "No data matches the query device_group:{},hosts:{}".format(
