@@ -7,10 +7,12 @@ import docker
 import time
 import logging
 from .NebulaBase import NebulaBase
+from .NebulaBase import setup_logging
+setup_logging()
+import logging
 from python_on_whales import docker as dockerow
 import sys
 from NebulaPythonSDK import Nebula
-
 
 class Manager(NebulaBase):
     """
@@ -104,17 +106,11 @@ class Manager(NebulaBase):
             if os.path.isfile(os.environ["DREGSY_CONFIG_FILE_PATH"]):
                 self.DREGSY_CONFIG_FILE_PATH = os.getenv("DREGSY_CONFIG_FILE_PATH")
             else:
-                # raise Exception("DREGSY_CONFIG_FILE_PATH invalid")
-                click.echo(click.style("DREGSY_CONFIG_FILE_PATH invalid", fg="red"))
+                logging.error(f"DREGSY_CONFIG_FILE_PATH invalid")
 
                 return {"error": True, "response": "DREGSY_CONFIG_FILE_PATH invalid"}
         else:
-            # raise Exception("DREGSY_CONFIG_FILE_PATH undefined in base_config file")
-            click.echo(
-                click.style(
-                    "DREGSY_CONFIG_FILE_PATH undefined in base_config file", fg="red"
-                )
-            )
+            logging.error(f"DREGSY_CONFIG_PATH undefined in base_config file")
 
             return {
                 "error": True,
@@ -125,18 +121,12 @@ class Manager(NebulaBase):
             if os.path.isfile(os.environ["DREGSY_MAPPING_FILE_PATH"]):
                 self.DREGSY_MAPPING_FILE_PATH = os.getenv("DREGSY_MAPPING_FILE_PATH")
             else:
-                # raise Exception("DREGSY_MAPPING_FILE_PATH invalid")
-                click.echo(click.style("DREGSY_MAPPING_FILE_PATH invalid", fg="red"))
+                logging.error(f"DREGSY_MAPPING_PATH invalid")
 
                 return {"error": True, "response": "DREGSY_MAPPING_FILE_PATH invalid"}
 
         else:
-            # raise Exception("DREGSY_MAPPING_FILE_PATH undefined in base_config file")
-            click.echo(
-                click.style(
-                    "DREGSY_MAPPING_FILE_PATH undefined in base_config file", fg="red"
-                )
-            )
+            logging.error(f"DREGSY_MAPPING_FILE_PATH undefined in base_config file")
 
             return {
                 "error": True,
@@ -146,10 +136,7 @@ class Manager(NebulaBase):
         if "MONGO_USERNAME" in os.environ.keys():
             self.MONGO_USERNAME = os.getenv("MONGO_USERNAME")
         else:
-            # raise Exception("MONGO_USERNAME undefined in base_config file")
-            click.echo(
-                click.style("MONGO_USERNAME undefined in base_config file", fg="red")
-            )
+            logging.error(f"MONGO_USERNAME undefined in base_config file")
 
             return {
                 "error": True,
@@ -159,10 +146,7 @@ class Manager(NebulaBase):
         if "MONGO_PASSWORD" in os.environ.keys():
             self.MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
         else:
-            # raise Exception("MONGO_PASSWORD undefined in base_config file")
-            click.echo(
-                click.style("MONGO_PASSWORD undefined in base_config file", fg="red")
-            )
+            logging.error(f"MONGO_PASSOWRD undefined in base_config file")
 
             return {
                 "error": True,
@@ -172,18 +156,14 @@ class Manager(NebulaBase):
         if "MONGO_HOST" in os.environ.keys():
             self.MONGO_IP = os.getenv("MONGO_HOST")
         else:
-            # raise Exception("MONGO_IP undefined in base_config file")
-            click.echo(click.style("MONGO_IP undefined in base_config file", fg="red"))
+            logging.error(f"MONGO_IP undefined in base_config file")
 
             return {"error": True, "response": "MONGO_IP undefined in base_config file"}
 
         if "MONGO_PORT" in os.environ.keys():
             self.MONGO_PORT = int(os.getenv("MONGO_PORT"))
         else:
-            # raise Exception("MONGO_PORT undefined in base_config file")
-            click.echo(
-                click.style("MONGO_PORT undefined in base_config file", fg="red")
-            )
+            logging.error(f"MONGO_PORT undefined in base_config file")
 
             return {
                 "error": True,
@@ -193,9 +173,7 @@ class Manager(NebulaBase):
         if "REGISTRY_IMAGE" in os.environ.keys():
             self.REGISTRY_IMAGE = os.getenv("REGISTRY_IMAGE")
         else:
-            click.echo(
-                click.style("REGISTRY_IMAGE undefined in base_config file", fg="red")
-            )
+            logging.error(f"REGISTER_IMAGE undefined in base_config file")
             return {
                 "error": True,
                 "response": "REGISTRY_IMAGE undefined in base_config file",
@@ -204,10 +182,7 @@ class Manager(NebulaBase):
         if "SYNCER_IMAGE" in os.environ.keys():
             self.SYNCER_IMAGE = os.getenv("SYNCER_IMAGE")
         else:
-
-            click.echo(
-                click.style("SYNCER_IMAGE undefined in base_config file", fg="red")
-            )
+            logging.error("SYNCER_IMAGE undefined in bse_config file")
 
             return {
                 "error": True,
@@ -216,10 +191,7 @@ class Manager(NebulaBase):
         if "REDIS_IMAGE" in os.environ.keys():
             self.REDIS_IMAGE = os.getenv("REDIS_IMAGE")
         else:
-
-            click.echo(
-                click.style("REDIS_IMAGE undefined in base_config file", fg="red")
-            )
+            logging.error(f"REDIS_IMAGE undefined in base_config file")
 
             return {
                 "error": True,
@@ -246,10 +218,7 @@ class Manager(NebulaBase):
         if "MONGO_IMAGE" in os.environ.keys():
             self.MONGO_IMAGE = os.getenv("MONGO_IMAGE")
         else:
-
-            click.echo(
-                click.style("MONGO_IMAGE undefined in base_config file", fg="red")
-            )
+            logging.error(f"MONGO_IMAGE undefined in base_config file")
 
             return {
                 "error": True,
@@ -258,10 +227,7 @@ class Manager(NebulaBase):
         if "MANAGER_IMAGE" in os.environ.keys():
             self.MANAGER_IMAGE = os.getenv("MANAGER_IMAGE")
         else:
-
-            click.echo(
-                click.style("MANAGER_IMAGE undefined in base_config file", fg="red")
-            )
+            logging.error(f"MANAGER_IMAGE undefined in base_config file")
 
             return {
                 "error": True,
@@ -272,18 +238,13 @@ class Manager(NebulaBase):
             self.MANAGER_NMODE = os.getenv("MANAGER_NMODE")
         else:
             self.MANAGER_NMODE = "bridge"
-            click.echo(
-                click.style("MANAGER_NMODE undefined in base_config file", fg="red")
-            )
+            logging.error(f"MANAGER_NMODE undefined in base_config file")
 
         if "SYNCER_NMODE" in os.environ.keys():
             self.SYNCER_NMODE = os.getenv("SYNCER_NMODE")
         else:
             self.SYNCER_NMODE = "bridge"
-
-            click.echo(
-                click.style("SYNCER_NMODE undefined in base_config file", fg="red")
-            )
+            logging.error(f"SYNCE_NMODE undefined in base_config file")
 
         return {"error": False, "response": "Manager Params set successfully"}
 
@@ -329,25 +290,19 @@ class Manager(NebulaBase):
                 )
                 # return {"error": False, "response": {"ipfs_bootnodes": redisRet}}
             except docker.errors.ImageNotFound as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(click.style("Registry image not found", fg="red"))
-                # return False
+                logging.error(f"ERROR: {e}")
+                logging.error(f"Register image not found")
                 return {"error": True, "response": "Registry image not found"}
             except docker.errors.APIError as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(
-                    click.style("Registry:Trouble reaching the docker API", fg="red")
-                )
-                # return False
+                logging.error(f"ERROR: {e}")
+                logging.error(f"Register:Troble reaching the docker API")
                 return {
                     "error": True,
                     "response": "Registry:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
-
-            # return success
             return {"error": False, "response": "Registry ran successfully"}
         else:
-            print("Registry Image Not defined in config files")
+            logging.error(f"Register Image Not defined in config files")
             return {
                 "error": True,
                 "response": "Registry Image Not defined in config files",
@@ -410,25 +365,19 @@ class Manager(NebulaBase):
                         ],
                     )
             except docker.errors.ImageNotFound as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(click.style("Syncer (Dregsy) image not found", fg="red"))
-                # return False
+                logging.error(f"{e}")
+                logging.error("Syncer (Dregsy) image not found ")
                 return {"error": True, "response": "Syncer (Dregsy) image not found"}
             except docker.errors.APIError as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(
-                    click.style("Syncer:Trouble reaching the docker API", fg="red")
-                )
-                # return False
+                logging.error(f"{e}")
+                logging.error(f"Syncer:Troble reaching the docker API")
                 return {
                     "error": True,
                     "response": "Syncer:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
-
-            # return success
             return {"error": False, "response": "Syncer run successfully"}
         else:
-            print("Syncer Image Not defined in config files")
+            logging.error(f"Syncer Image defined in config files")
             return {
                 "error": True,
                 "response": "Syncer Image Not defined in config files",
@@ -477,25 +426,19 @@ class Manager(NebulaBase):
                     #environment=[f"REDIS_PASSWORD={str(self.REDIS_AUTH_TOKEN)}"],
                 )
             except docker.errors.ImageNotFound as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(click.style("Redis image not found", fg="red"))
-                # return False
+                logging.error(f"{e}")
+                logging.error(f"Redis image not found")
                 return {"error": True, "response": "Redis image not found"}
             except docker.errors.APIError as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(
-                    click.style("Redis:Trouble reaching the docker API", fg="red")
-                )
-                # return False
+                logging.error(f"{e}")
+                logging.error(f"Redis:Troble reaching the docker API")
                 return {
                     "error": True,
                     "response": "Redis:Trouble reaching the docker API, exception:{}".format(str(e)),
                 }
-
-            # return success
             return {"error": False, "response": "Redis run successfully"}
         else:
-            print("Redis Image Not defined in config files")
+            logging.error(f"Redis Image Not defined in config files")
             return {
                 "error": True,
                 "response": "Redis Image Not defined in config files",
@@ -545,15 +488,13 @@ class Manager(NebulaBase):
                     ],
                 )
             except docker.errors.ImageNotFound as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(click.style("Mongo image not found", fg="red"))
+                logging.error(f"{e}")
+                logging.error(f"Mongo image not found")
                 # return False
                 return {"error": True, "response": "Mongo image not found"}
             except docker.errors.APIError as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(
-                    click.style("Mongo:Trouble reaching the docker API", fg="red")
-                )
+                logging.error(f"{e}")
+                logging.error(f"Mongo:Trouble reaching the docker API")
                 # return False
                 return {
                     "error": True,
@@ -563,7 +504,7 @@ class Manager(NebulaBase):
             # return success
             return {"error": False, "response": "Mongo run successfully"}
         else:
-            print("Mongo Image Not defined in config files")
+            logging.error(f"Mongo Image Not defined in config files")
             return {
                 "error": True,
                 "response": "Mongo Image Not defined in config files",
@@ -600,7 +541,7 @@ class Manager(NebulaBase):
             dockerow.pull(self.MANAGER_IMAGE)
 
             try:
-                print("Spinning up Manager in " + self.MANAGER_NMODE + " network mode")
+                logging.info(f"Spinning up Manager in {self.MANAGER_NMODE} network mode")
                 if self.MANAGER_NMODE == "host":
                     client.containers.run(
                         image=self.MANAGER_IMAGE,
@@ -662,15 +603,13 @@ class Manager(NebulaBase):
                     )
 
             except docker.errors.ImageNotFound as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(click.style("Manager image not found", fg="red"))
+                logging.error(f"{e}")
+                logging.error("Manager image not found")
                 # return False
                 return {"error": True, "response": "Manager image not found"}
             except docker.errors.APIError as e:
-                click.echo(click.style(e, fg="red"))
-                click.echo(
-                    click.style("Manager:Trouble reaching the docker API", fg="red")
-                )
+                logging.error(f"{e}")
+                logging.error(f"Manager:Troble reaching the docker API")
                 # return False
                 return {
                     "error": True,
@@ -680,7 +619,7 @@ class Manager(NebulaBase):
             # return success
             return {"error": False, "response": "Manager run successfully"}
         else:
-            print("Manager Image Not defined in config files")
+            logging.error(f"Manager Image Not defined in config files")
             return {
                 "error": True,
                 "response": "Manager Image Not defined in config files",
@@ -719,7 +658,7 @@ class Manager(NebulaBase):
                 headers={"Authorization": "Basic " + str(self.NEBULA_AUTH_TOKEN)},
             )
             if response.status_code == 200:
-                click.echo(click.style("Manager Up", fg="green"))
+                logging.info(f"Manager Up")
                 # return True
                 return {"error": False, "response": "Manager up successfully"}
             else:
@@ -727,7 +666,7 @@ class Manager(NebulaBase):
                 # return True
                 return {"error": True, "response": "Manager not reachable"}
         except Exception as e:
-            print("Unexpected error:", e)
+            logging.error(f"Unexpected error {e}")
             return {"error": True, "response": e}
 
         # return False
@@ -748,7 +687,7 @@ class Manager(NebulaBase):
         response = None
         while not managerUp:
             time.sleep(3)
-            click.echo(click.style("Waiting for manager to come alive..", fg="yellow"))
+            logging.warning(f"Waiting for manager to come alive..")
             response = self.checkManager()
             if not response["error"]:
                 managerUp = True
@@ -781,7 +720,7 @@ class Manager(NebulaBase):
         if service_name == "registry":
             success = self.runRegistry(client)
             if not success["error"]:
-                click.echo(click.style("Registry Up", fg="green"))
+                logging.info(f"Register Up")
                 return {
                     "error": False,
                     "response": "Registry Up",
@@ -795,7 +734,7 @@ class Manager(NebulaBase):
         elif service_name == "redis":
             success = self.runRedis(client)
             if not success["error"]:
-                click.echo(click.style("Redis Up", fg="green"))
+                logging.info(f"Redis Up")
                 return {
                     "error": False,
                     "response": "Redis Up",
@@ -808,7 +747,7 @@ class Manager(NebulaBase):
         elif service_name == "syncer":
             success = self.runSyncer(client)
             if not success["error"]:
-                click.echo(click.style("Syncer Up", fg="green"))
+                logging.info(f"Syncer Up")
                 return {
                     "error": False,
                     "response": "Syncer Up",
@@ -821,7 +760,7 @@ class Manager(NebulaBase):
         elif service_name == "mongo":
             success = self.runMongo(client)
             if not success["error"]:
-                click.echo(click.style("Mongo Up", fg="green"))
+                logging.info(f"Mongo Up")
                 return {
                     "error": False,
                     "response": "Mongo Up",
@@ -847,7 +786,7 @@ class Manager(NebulaBase):
         elif service_name == "all":
             success = self.runRegistry(client)
             if not success["error"]:
-                click.echo(click.style("Registry Up", fg="green"))
+                logging.info(f"Registry Up")
             else:
                 return {
                     "error": True,
@@ -856,7 +795,7 @@ class Manager(NebulaBase):
 
             success = self.runRedis(client)
             if not success["error"]:
-                click.echo(click.style("Redis Up", fg="green"))
+                logging.info(f"Redis Up")
             else:
                 return {
                     "error": True,
@@ -864,7 +803,7 @@ class Manager(NebulaBase):
                 }
             success = self.runSyncer(client)
             if not success["error"]:
-                click.echo(click.style("Syncer Up", fg="green"))
+                logging.info("Syncer Up")
             else:
                 return {
                     "error": True,
@@ -872,7 +811,7 @@ class Manager(NebulaBase):
                 }
             success = self.runMongo(client)
             if not success["error"]:
-                click.echo(click.style("Mongo Up", fg="green"))
+                logging.info(f"Mongo Up")
             else:
                 return {
                     "error": True,
@@ -880,7 +819,7 @@ class Manager(NebulaBase):
                 }
             success = self.runManager(client)
             if not success["error"]:
-                click.echo(click.style("Manager Up", fg="green"))
+                logging.info(f"Manager Up")
             else:
                 return {
                     "error": True,
@@ -894,7 +833,7 @@ class Manager(NebulaBase):
             }
 
         else:
-            click.echo(click.style("service_name is not valid", fg="red"))
+            logging.error(f"service_name is not valid")
             return {
                 "error": True,
                 "response": "service_name is not valid",
@@ -906,10 +845,10 @@ class Manager(NebulaBase):
             client.containers.get(service_name)
             return {"error": False, "response": "Container {} is running".format(service_name)}
         except docker.errors.NotFound:
-            click.echo(click.style("Service {} does not exist".format(service_name), fg="red"))
+            logging.error(f"Service {service_name} does not exist")
             return {"error": True, "response": "Container {} does not exist".format(service_name)}
         except docker.errors.APIError:
-            click.echo(click.style("Trouble reaching the docker API", fg="red"))
+            logging.error(f"Trouble reaching the docker API")
             return {"error": True, "response": "Trouble reaching the docker API"}
 
     def handleService(self, service_name, action):
@@ -947,65 +886,53 @@ class Manager(NebulaBase):
         """
 
         if not isinstance(service_name, str):
-            click.echo(click.style("service_name is not valid", fg="red"))
+            logging.error(f"service_name is not valid")
 
         client = docker.from_env()
         try:
             container_obj = client.containers.get(service_name)
         except docker.errors.NotFound:
-            click.echo(click.style("No container called " + service_name, fg="red"))
+            logging.error(f"No container called {service_name}")
             # return False
             return {"error": True, "response": "No container called"}
 
         except docker.errors.APIError:
-            click.echo(click.style("Trouble reaching the docker API", fg="red"))
+            logging.error(f"Troble reaching the docker API")
             # return False
             return {"error": True, "response": "Trouble reaching the docker API"}
         try:
             if action == "stop":
-                click.echo(click.style("Stopping " + str(service_name), fg="yellow"))
+                logging.warning(f"Stopping {service_name}")
                 container_obj.stop()
-                click.echo(
-                    click.style("{} has been stopped".format(service_name), fg="green")
-                )
+                logging.info(f"{service_name} has been stopped")
 
             elif action == "start":
-                click.echo(click.style("Starting " + str(service_name), fg="yellow"))
+                logging.warning(f"Starting {service_name}")
                 container_obj.start()
-                click.echo(
-                    click.style("{} has been started".format(service_name), fg="green")
-                )
+                logging.info(f"{service_name} has been started")
 
             elif action == "kill":
-                click.echo(click.style("Killing " + str(service_name), fg="yellow"))
+                logging.warning(f"Killing {service_name}")
                 container_obj.kill()
-                click.echo(
-                    click.style("{} has been killed".format(service_name), fg="green")
-                )
+                logging.info(f"{service_name} has been killed")
 
             elif action == "remove":
-                click.echo(click.style("Removing " + str(service_name), fg="yellow"))
+                logging.warning(f"Removing {service_name}")
                 container_obj.remove(force=True)
-                click.echo(
-                    click.style("{} has been removed".format(service_name), fg="green")
-                )
+                logging.info(f"{service_name} has been removed")
 
             elif action == "restart":
-                click.echo(click.style("Restarting " + str(service_name), fg="yellow"))
+                logging.warning(f"Restarting {service_name}")
                 container_obj.restart()
-                click.echo(
-                    click.style(
-                        "{} has been restarted".format(service_name), fg="green"
-                    )
-                )
+                logging.info(f"{service_name} has been restarted")
 
             else:
-                click.echo(click.style("action is not valid", fg="red"))
+                logging.error(f"action is not valid")
                 # return False
                 return {"error": True, "response": "action is not valid"}
 
         except docker.errors.APIError:
-            click.echo(click.style("Trouble reaching the docker API", fg="red"))
+            logging.error("Trouble reaching the docker API")
             # return False
             return {"error": True, "response": "Trouble reaching the docker API"}
 

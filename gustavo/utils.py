@@ -6,6 +6,8 @@ from gustavo.src.Composer import Composer
 from gustavo.src.Composer import Composer
 from gustavo.src.NebulaBase import FileUndefined
 from gustavo.src.NebulaBase import PathInvalid
+from gustavo.src.NebulaBase import setup_logging
+setup_logging()
 from gustavo.src.Cache import Cache
 from gustavo.src.Cache import ErrorHandling
 from gustavo.src.Manager import Manager
@@ -14,8 +16,7 @@ import socket, sys
 import base64
 import json
 from re import search
-
-
+import logging
 
 def readConfigFile(config_file):
     """
@@ -39,14 +40,7 @@ def readConfigFile(config_file):
     try:
         stream = open(config_file, "r")
     except Exception as exception:
-        click.echo(
-            click.style(
-                "failure opening file : {} with exception: {}".format(
-                    config_file, exception
-                ),
-                fg="red",
-            )
-        )
+        logging.error(f"failure openingfile : {config_file} with exception: {exception}")
         return {
             "error": True,
             "response": "failure opening file : {} with exception: {}".format(
@@ -56,14 +50,7 @@ def readConfigFile(config_file):
     try:
         app_config = yaml.safe_load(stream)
     except yaml.YAMLError as exception:
-        click.echo(
-            click.style(
-                "failure opening file : {} with exception: {}".format(
-                    config_file, exception
-                ),
-                fg="red",
-            )
-        )
+        logging.error(f"failure opening file : {config_file} : with exception: {exception}")
         return {
             "error": True,
             "response": "failure opening file : {} with exception: {}".format(
@@ -128,7 +115,6 @@ def handleMultipleApp(file, name, mode, fileType, device_groups=None):
                         }
                     )
                 else:
-                    # if device group is valid, then create the app
                     response = handleCreateApp(
                         bcmp, app_name, app_config, device_groups
                     )
@@ -256,11 +242,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
     """
 
     if not isinstance(name, str):
-        click.echo(
-            click.style(
-                "DEVICE_GROUP_NAME_INVALID: enter a valid device group name", fg="red"
-            )
-        )
+        logging.error(f"DEVICE_GROUP_NAME_INVALID: enter a valid device group name")
         return {
             "error": True,
             "response": "DEVICE_GROUP_NAME_INVALID: enter a valid device group name",
@@ -348,10 +330,10 @@ def createWorker(name, device_group, image, prefix, expire_time):
                 restart_policy={"Name": "always"},
                 volumes=[str(bcmp.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],
             )
-        click.echo(click.style("Worker Up", fg="green"))
+        logging.info(f"Worker Up")
         return {"error": False, "response": "Worker Up"}
     except Exception as e:
-        click.echo(click.style(e, fg="red"))
+        logging.error(f"Error: {e}")
         return {"error": True, "response": e}
 
 
@@ -368,29 +350,24 @@ def removeWorker(name):
     try:
         container_obj = client.containers.get(name)
     except docker.errors.NotFound:
-        click.echo(
-            click.style("No worker container called {} found".format(name), fg="red")
-        )
+        logging.error(f"No worker caontainer ccalled {name} found")
         return {"error": True, "response": "No worker container found"}
     except docker.errors.APIError:
-        click.echo(click.style("Trouble reaching the docker API", fg="red"))
+        logging.error(f"Trouble reaching the docker API")
         return {"error": True, "response": "Trouble reaching the docker API"}
 
     try:
         container_obj.stop()
     except docker.errors.APIError:
-        click.echo(click.style("Trouble reaching the docker API", fg="red"))
+        logging.error(f"Trouble reaching the docker API")
         return {"error": True, "response": "Trouble reaching the docker API"}
 
     try:
         container_obj.remove()
     except docker.errors.APIError:
-        click.echo(click.style("Trouble reaching the docker API", fg="red"))
+        logging.error(f"Trouble reaching the docker API")
         return {"error": True, "response": "Trouble reaching the docker API"}
-
-    click.echo(
-        click.style("Worker named: {} has been brought down".format(name), fg="yellow")
-    )
+    logging.error(f"Worker named: {name} has been brought down")
     return {"error": False, "response": "Worker has been brought down"}
 
 
