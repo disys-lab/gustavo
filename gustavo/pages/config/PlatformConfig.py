@@ -23,7 +23,8 @@ class PlatformConfig:
                             "REDIS_IP_DISABLED": True,
                             "REDIS_PORT":"6379",
                             "REDIS_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
-                            "REDIS_IMAGE":"homert2admin/redis",
+                            "REDIS_IMAGE":"redis/redis-stack:7.4.0-v1",
+                            "REDIS_BKP_DIR":"/tmp/",
                             "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
@@ -69,8 +70,7 @@ class PlatformConfig:
             st.session_state.REDIS_PORT = "6379"
             st.session_state.REDIS_IP_DISABLED = True
             st.session_state.REDIS_AUTH_TOKEN = "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
-            # st.session_state.REDIS_EXPIRE_TIME=10
-            # st.session_state.REDIS_KEY_PREFIX="nebula-reports"
+            st.session_state.REDIS_BKP_DIR = "/tmp/"
 
             st.session_state.CACHE_EXPIRE_TIME = "120"
 
@@ -86,16 +86,11 @@ class PlatformConfig:
             st.session_state.NEBULA_AUTH_TOKEN = "bmVidWxhOm5lYnVsYQ=="
             st.session_state.NEBULA_PROTOCOL = "http"
 
-            # KEYGEN_ADD_ACC_ID=34b683d0-6121-4a5a-ac92-ee6320611484
-            # KEYGEN_USER_ID=0cf72126-2151-4f14-a960-bd72d33f5716
-            # KEYGEN_USER_TOKEN=user-5881c1fac7b8e6242a0c2b4558d89d03f78f08dff96980d7a4fc72980b7c53eav3
-            # KEYGEN_PUBLIC_KEY=06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc
-
             # docker image details
 
             st.session_state.REGISTRY_IMAGE = "registry:2"
             st.session_state.SYNCER_IMAGE = "homert2admin/dregsy:latest"
-            st.session_state.REDIS_IMAGE = "homert2admin/redis"
+            st.session_state.REDIS_IMAGE = "redis/redis-stack:7.4.0-v1"
             st.session_state.MONGO_IMAGE = "mongo:4.0.19"
             st.session_state.MANAGER_IMAGE = "homert2admin/manager"
 
@@ -105,8 +100,6 @@ class PlatformConfig:
             st.session_state.WORKER_NMODE = "host"
             st.session_state.SYNCER_NMODE = "host"
 
-        # for key in st.session_state.keys():
-        #     print("PC:",key,st.session_state[key])
 
     def textChange(self,key):
         self.platform_config[key]=st.session_state[key]
@@ -117,6 +110,7 @@ class PlatformConfig:
             #st.session_state[config_var] = self.platform_config[config_var]
             file_str=file_str+"{}={}\n".format(config_var,st.session_state[config_var])
             self.platform_config[config_var] = st.session_state[config_var]
+
         return file_str
 
     def process_uploaded_file(self,uploaded_file):
@@ -131,8 +125,6 @@ class PlatformConfig:
 
     def platform(self):
 
-       # st.header("Platform Configuration")
-       # st.divider()
        with st.container():
         load_config, save_config, download_config = st.columns([50,50,50])
         with load_config:
@@ -167,7 +159,6 @@ class PlatformConfig:
             def set_dn_config_clicked():
                 st.session_state.dn_config_clicked = not (st.session_state.dn_config_clicked)
 
-            #st.button('Upload Configuration File', on_click=set_dn_config_clicked)
 
             st.download_button(
                 label="Download Configuration File",
@@ -177,7 +168,6 @@ class PlatformConfig:
                 on_click=set_dn_config_clicked,
                 key="download_pc_conf_button_widget_key"
             )
-            #if st.session_state.dn_config_clicked:
 
 
        manager_col, mongo_col, redis_col, registry_col = st.columns(4)
@@ -269,16 +259,7 @@ class PlatformConfig:
             st.session_state.SYNCER_IMAGE,
             key="KEY_SYNCER_IMAGE",
         )
-        # self.platform_config["DREGSY_CONFIG_PATH"] = st.text_input(
-        #     "Syncer Container Image",
-        #     st.session_state.SYNCER_IMAGE,
-        #     key="KEY_SYNCER_IMAGE",
-        # )
-        # self.platform_config["SYNCER_IMAGE"] = st.text_input(
-        #     "Syncer Container Image",
-        #     st.session_state.SYNCER_IMAGE,
-        #     key="KEY_SYNCER_IMAGE",
-        # )
+
 
        with mongo_col:
         st.subheader("Mongo")
@@ -358,21 +339,13 @@ class PlatformConfig:
             key="KEY_REDIS_IMAGE",
         )
 
+        self.platform_config["REDIS_BKP_DIR"] = st.text_input(
+            "Redis Backup Directory",
+            st.session_state.REDIS_BKP_DIR,
+            key="KEY_REDIS_BKP_DIR",
+        )
+
        for config_var in self.platform_config.keys():
            st.session_state[config_var] = self.platform_config[config_var]
-
-# st.set_page_config(
-#
-#             page_title="Gustavo Admin Console",
-#             page_icon="",
-#             layout="wide",
-#             initial_sidebar_state="expanded"
-#
-#         )
-#
-# sb = Sidebar()
-# pc = PlatformConfig()
-# pc.platform()
-#
 
 

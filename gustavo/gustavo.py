@@ -86,6 +86,7 @@ def gui(port):
     cwd = os.path.dirname(os.path.realpath(__file__))
     gui_runner_file = os.path.join(cwd,"Home.py")
     logging.info(f"GUI Runner File: {gui_runner_file}")
+
     cli.main_run([gui_runner_file, "--server.headless", "true", "--server.port", int(port)])
 
 @utils.command(

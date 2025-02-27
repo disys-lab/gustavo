@@ -22,7 +22,8 @@ def removeArgs():
 
 
 removeArgs()
-
+major, minor = sys.version_info[:2]
+    # return f"Programming Language :: Python :: {major}.{minor}"
 
 setup(
     name="gustavo",
@@ -47,8 +48,9 @@ setup(
         }
     },
     classifiers=[
-        "Programming Language :: Python :: {}".format(python_version),
-        "Operating System :: Linux"
+        f"Programming Language :: Python :: {major}.{minor}",
+        #"Programming Language :: Python :: {}".format(python_version),
+        "Operating System :: OS Independent"
     ],
     install_requires=[
         "NebulaPythonSDK==2.8.0",

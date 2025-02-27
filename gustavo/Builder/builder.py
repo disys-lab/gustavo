@@ -14,9 +14,11 @@ gitRepo = str(sys.argv[1])
 if len(sys.argv)>2:
     mode = "prod"
     GEMFURY_TOKEN = str(sys.argv[2])
+    GEMFURY_TOKEN2 = str(sys.argv[3])
 else:
     mode = "dev"
     GEMFURY_TOKEN = ""
+    GEMFURY_TOKEN2 = ""
 
 if gitRepo:
 
@@ -68,14 +70,27 @@ if gitRepo:
     packageInfo = os.listdir(distpath)[0]
 
     if mode == "prod":
+        # subprocess.run(
+        #     [
+        #         "curl",
+        #         "-F",
+        #         "package=@" + str(packageInfo),
+        #         "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
+        #     ],
+        #     capture_output=True
+        # )
+
         subprocess.run(
             [
                 "curl",
                 "-F",
                 "package=@" + str(packageInfo),
-                "https://{}@push.fury.io/osu-home-stri/".format(GEMFURY_TOKEN),
-            ]
+                f"{GEMFURY_TOKEN2}",
+            ],
+            capture_output=True
         )
+
+
 
         os.chdir(currentDir)
 
