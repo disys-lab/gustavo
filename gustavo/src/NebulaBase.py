@@ -131,6 +131,7 @@ class NebulaBase:
                 self.REDIS_PORT = session_state["REDIS_PORT"]
                 self.REDIS_AUTH_TOKEN = session_state["REDIS_AUTH_TOKEN"]
 
+
                 self.MANAGER_PORT = session_state["MANAGER_PORT"]
                 self.NEBULA_USERNAME = session_state["NEBULA_USERNAME"]
                 self.NEBULA_PASSWORD = session_state["NEBULA_PASSWORD"]

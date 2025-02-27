@@ -23,7 +23,8 @@ class PlatformConfig:
                             "REDIS_IP_DISABLED": True,
                             "REDIS_PORT":"6379",
                             "REDIS_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
-                            "REDIS_IMAGE":"redis:7.4.0",
+                            "REDIS_IMAGE":"redis/redis-stack:7.4.0-v1",
+                            "REDIS_BKP_DIR":"/tmp/",
                             "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
@@ -69,8 +70,7 @@ class PlatformConfig:
             st.session_state.REDIS_PORT = "6379"
             st.session_state.REDIS_IP_DISABLED = True
             st.session_state.REDIS_AUTH_TOKEN = "e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs"
-            # st.session_state.REDIS_EXPIRE_TIME=10
-            # st.session_state.REDIS_KEY_PREFIX="nebula-reports"
+            st.session_state.REDIS_BKP_DIR = "/tmp/"
 
             st.session_state.CACHE_EXPIRE_TIME = "120"
 
@@ -90,7 +90,7 @@ class PlatformConfig:
 
             st.session_state.REGISTRY_IMAGE = "registry:2"
             st.session_state.SYNCER_IMAGE = "homert2admin/dregsy:latest"
-            st.session_state.REDIS_IMAGE = "redis:7.4.0"
+            st.session_state.REDIS_IMAGE = "redis/redis-stack:7.4.0-v1"
             st.session_state.MONGO_IMAGE = "mongo:4.0.19"
             st.session_state.MANAGER_IMAGE = "homert2admin/manager"
 
@@ -337,6 +337,12 @@ class PlatformConfig:
             "Redis Container Image",
             st.session_state.REDIS_IMAGE,
             key="KEY_REDIS_IMAGE",
+        )
+
+        self.platform_config["REDIS_BKP_DIR"] = st.text_input(
+            "Redis Backup Directory",
+            st.session_state.REDIS_BKP_DIR,
+            key="KEY_REDIS_BKP_DIR",
         )
 
        for config_var in self.platform_config.keys():
