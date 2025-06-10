@@ -209,6 +209,7 @@ class Manager(NebulaBase):
             logging.error(f"REDIS_BKP_DIR undefined in os.environ, defaulting to {self.REDIS_BKP_DIR}")
 
 
+
         if "MONGO_IMAGE" in os.environ.keys():
             self.MONGO_IMAGE = os.getenv("MONGO_IMAGE")
         else:
