@@ -13,6 +13,7 @@ sidebarInit()
 from gustavo.src.NebulaBase import setup_logging
 setup_logging()
 import logging
+from streamlit.runtime.scriptrunner.exceptions import RerunException
 
 def load_css(file_name):
     """Load CSS from a file and inject into Streamlit."""
@@ -82,6 +83,33 @@ class FileMonitoringApp:
         self.selected_group = None
         self.hosts = []
         self.selected_host = None
+
+    def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        if result_container_key not in st.session_state:
+            st.session_state[result_container_key] = ""
+
+        with st.spinner(label):
+            result = action_fn()
+
+        if result is None:
+            message = "No response received ❌"
+            color_class = "tooltip-text"
+        elif result.get("error"):
+            message = result.get("response", "Something went wrong ❌")
+            color_class = "tooltip-text"
+        else:
+            message = result.get("response", "Success ✅")
+            color_class = "tooltip-text"
+
+        tooltip_html = f"""
+        <div class="mouse-tooltip">
+            <span class="{color_class}">{message}</span>
+        </div>
+        """
+        st.markdown(tooltip_html, unsafe_allow_html=True)
+        st.session_state[result_container_key] = result
+        return result
+
 
     def refreshData(self):
         """Refresh data from Redis."""
@@ -434,23 +462,35 @@ class FileMonitoringApp:
                 # Add Refresh and Delete buttons for each plot
                 col1, col2 = st.columns([1, 1])
                 with col1:
-                    if st.button(
-                        f"Refresh Plot {app_instance.app_id}",
-                        key=f"refresh_button_{app_instance.app_id}"
-                    ):
-                        app_instance.refreshData()
+                    if st.button(f"Refresh Plot {app_instance.app_id}", key=f"refresh_button_{app_instance.app_id}"):
+                        # from gustavo.utils.spinner import handle_with_spinner
+                        self.handleTask(
+                            label=f"Refreshing Plot {app_instance.app_id}...",
+                            action_fn=app_instance.refreshData,
+                            result_container_key=f"refresh_{app_instance.app_id}"
+                        )
+
                 with col2:
-                    if st.button(
-                        f"Delete Plot {app_instance.app_id}",
-                        key=f"delete_button_{app_instance.app_id}"
-                    ):
-                        st.session_state.app_instances.remove(app_instance)
+                    if st.button(f"Delete Plot {app_instance.app_id}", key=f"delete_button_{app_instance.app_id}"):
+                        self.handleTask(
+                            label=f"Deleting Plot {app_instance.app_id}...",
+                            action_fn=lambda: st.session_state.app_instances.remove(app_instance),
+                            result_container_key=f"delete_{app_instance.app_id}"
+                        )
                         st.rerun()
+
 
                 # Add "New System" button at the bottom
                 st.markdown("---")
         if st.button("New System"):
             # Create a new instance with the next available sequential ID
+            self.handleTask(
+                label="Adding new plot...",
+                action_fn=lambda: st.session_state.app_instances.append(
+                    FileMonitoringApp()
+                ),
+                result_container_key="new_system"
+            )
             new_app = FileMonitoringApp()
             new_app.app_id = len(st.session_state.app_instances) + 1
             st.session_state.app_instances.append(new_app)

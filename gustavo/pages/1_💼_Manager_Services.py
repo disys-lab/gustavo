@@ -61,26 +61,31 @@ class ManagerService:
         }
         st.session_state["Manager_status"] = "Unknown"
 
-    def status_circle(self, status):
-        """Returns an HTML string that applies the correct CSS class based on the status."""
-        css_class = "status-unknown"  # Default for Unknown
-        if status == "Up":
-            css_class = "status-up"
-        elif status == "Down":
-            css_class = "status-down"
-        
-        # Return the HTML that uses the CSS class for the circle
-        return f'<span class="status-circle {css_class}"></span>'
+    def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        if result_container_key not in st.session_state:
+            st.session_state[result_container_key] = ""
 
+        with st.spinner(label):
+            result = action_fn()
 
-    def statusUpdate(self):
-        with st.container():
-            redis, mongo, registry, manager, syncer = st.columns([50, 50, 50, 50, 50], gap="large")
-            with redis:
-                if st.session_state["Redis_status"] == "Up":
-                    st.success("Up")
-                else:
-                    st.error("Down")
+        if result is None:
+            message = "No response received ❌"
+            color_class = "tooltip-text"
+        elif result.get("error"):
+            message = result.get("response", "Something went wrong ❌")
+            color_class = "tooltip-text"
+        else:
+            message = result.get("response", "Success ✅")
+            color_class = "tooltip-text"
+
+        tooltip_html = f"""
+        <div class="mouse-tooltip">
+            <span class="{color_class}">{message}</span>
+        </div>
+        """
+        st.markdown(tooltip_html, unsafe_allow_html=True)
+        st.session_state[result_container_key] = result
+        return result
 
     def status_pill(self, status):
         if status == "Up":
@@ -153,7 +158,6 @@ class ManagerService:
         else:
             self.syncer_conf["DREGSY_CONFIG_FILE_PATH"] = st.session_state.DREGSY_CONFIG_FILE_PATH
             self.man.DREGSY_CONFIG_FILE_PATH = st.session_state.DREGSY_CONFIG_FILE_PATH
-
 
         if "DREGSY_MAPPING_FILE_PATH" not in st.session_state.keys():
             self.syncer_conf["DREGSY_MAPPING_FILE_PATH"] = "Undefined"
@@ -265,8 +269,6 @@ class ManagerService:
 
     def serviceExpander(self, service_name, status_container):
         """Renders the expander for a given service, including status, launch, and remove buttons."""
-        
-        
         # Define the session key for service status at the top
         service_name_status = f'{service_name}_status'
         
@@ -340,7 +342,7 @@ class ManagerService:
             with status:
                 self.statusButton(service_name, status_container, suffix="")
                 
-            # Launch button logic
+            # Update the status pill at the top of the expander
             with launch:
                 launch_session_key = f'{service_name}_launch_clicked'
                 if launch_session_key not in st.session_state:
@@ -352,16 +354,18 @@ class ManagerService:
                 st.button("Launch 🚀", on_click=set_launch_clicked, key=f"{service_name}_launch_button")
 
                 if st.session_state[launch_session_key]:
-                    with status_container:
-                        status_container.write(f"Launching {service_name}...")
-                        result = self.man.run(service_name.lower())
-                        if not result["error"]:
-                            st.session_state[service_name_status] = "Up"
-                            status_container.markdown(f":green[{service_name} is Up]")
-                        else:
-                            st.session_state[service_name_status] = "Down"
-                            # st.write(result["response"])
-                            status_container.markdown(f":red[Error while launching {service_name}]")
+                    def launch_action():
+                        with status_container:
+                            status_container.write(f"Launching {service_name}...")
+                            result = self.man.run(service_name.lower())
+                            if not result["error"]:
+                                st.session_state[service_name_status] = "Up"
+                                status_container.markdown(f":green[{service_name} is Up]")
+                            else:
+                                st.session_state[service_name_status] = "Down"
+                                status_container.markdown(f":red[Error while launching {service_name}]")
+                            return result  # ✅ Add this line
+                    self.handleTask(f"Launching {service_name}...", launch_action, f"{service_name}_launch_result")
                     st.session_state[launch_session_key] = False
 
             # Remove button logic
@@ -376,16 +380,19 @@ class ManagerService:
                 st.button("Remove 🛑", on_click=set_kill_clicked, key=f"{service_name}_remove_button")
 
                 if st.session_state[remove_session_key]:
-                    with status_container:
-                        status_container.write(f"Removing {service_name}...")
-                        result = self.man.handleService(service_name.lower(), "remove")
-                        if not result["error"]:
-                            st.session_state[service_name_status] = "Down"
-                            st.write(result["response"])
-                            status_container.markdown(f":green[{service_name} is brought down]")
-                        elif "error" in result.keys():
-                            st.write(result["response"])
-                            status_container.markdown(f":red[Error encountered while removing {service_name}]")
+                    def remove_action():
+                        with status_container:
+                            status_container.write(f"Removing {service_name}...")
+                            result = self.man.handleService(service_name.lower(), "remove")
+                            if not result["error"]:
+                                st.session_state[service_name_status] = "Down"
+                                st.write(result["response"])
+                                status_container.markdown(f":green[{service_name} is brought down]")
+                            elif "error" in result.keys():
+                                st.write(result["response"])
+                                status_container.markdown(f":red[Error encountered while removing {service_name}]")
+                            return result
+                    self.handleTask(f"Removing {service_name}...", remove_action, f"{service_name}_remove_result")
                     st.session_state[remove_session_key] = False
 
     def statusButton(self, service_name, status_container, suffix=""):
@@ -408,56 +415,46 @@ class ManagerService:
         
         # If the status button is clicked
         if st.session_state[status_session_key]:
-            with status_container:
+            def status_action():
+                with status_container:
 
-                # Check the service status
-                result = self.man.serviceStatus(service_name.lower())
-                if result["error"]:
-                    st.session_state[service_name_status] = "Down"
-                    # st.write(result["response"])
-                    # status_container.markdown(f":red[{service_name} is not running 🚨]")  # Use markdown to format text in color
-                else:
-                    # st.section_state[service_name_status] = "Up"
-                    # st.write(result["response"])
-                    # status_container.markdown(f":green[{service_name} is running ✅]")
-
-                    # Additional check for Manager API if it's the Manager service
-                    if service_name == "Manager":
-                        # st.write("Checking if Manager API is available")
+                    # Check the service status
+                    result = self.man.serviceStatus(service_name.lower())
+                    if result["error"]:
+                        st.session_state[service_name_status] = "Down"
                         
-                        # Safely fetch the configuration from session state with defaults
-                        manager_host = st.session_state.get("MANAGER_HOST", None)
-                        manager_port = st.session_state.get("MANAGER_PORT", None)
-                        auth_token = st.session_state.get("NEBULA_AUTH_TOKEN", "")
-
-                        # Ensure the host and port are not None before proceeding
-                        if manager_host is None or manager_port is None or not auth_token:
-                            st.session_state[service_name_status] ="Up"
-                            # status_container.markdown(f":red[Manager configuration is incomplete 🚨]")
-                        else:
-                            # Safeguard the token and host before assigning to self.man
-                            self.man.MANAGER_IP = manager_host
-                            self.man.MANAGER_PORT = manager_port
-                            self.man.NEBULA_AUTH_TOKEN = auth_token if auth_token else ""
-
-                            # Now proceed to check the Manager API
-                            result = self.man.checkManager()
-                            if result["error"]:
-                                st.session_state["Manager_status"] = "Down"
-                                # st.write(result["response"])
-                                # status_container.markdown(f":red[Manager API is not available 🚨]")
-                            elif 'status' in result and result["status"] == "unknown":
-                                st.session_state["Manager_status"] = "Unknown"
-                                # status_container.markdown(f":orange[Manager API status is unknown ❓]")
-                            else:
-                                st.session_state["Manager_status"] = "Up"
-                                # st.write(result["response"])
-                                # status_container.markdown(f":green[Manager API Live! 🚀]")
-
-
                     else:
-                        st.session_state[service_name_status] = "Up"
-                        # status_container.markdown(f":green[{service_name} is running ✅]")
+                        # Additional check for Manager API if it's the Manager service
+                        if service_name == "Manager":
+                            # Safely fetch the configuration from session state with defaults
+                            manager_host = st.session_state.get("MANAGER_HOST", None)
+                            manager_port = st.session_state.get("MANAGER_PORT", None)
+                            auth_token = st.session_state.get("NEBULA_AUTH_TOKEN", "")
+
+                            # Ensure the host and port are not None before proceeding
+                            if manager_host is None or manager_port is None or not auth_token:
+                                st.session_state[service_name_status] ="Up"
+                                # status_container.markdown(f":red[Manager configuration is incomplete 🚨]")
+                            else:
+                                # Safeguard the token and host before assigning to self.man
+                                self.man.MANAGER_IP = manager_host
+                                self.man.MANAGER_PORT = manager_port
+                                self.man.NEBULA_AUTH_TOKEN = auth_token if auth_token else ""
+
+                                # Now proceed to check the Manager API
+                                result = self.man.checkManager()
+                                if result["error"]:
+                                    st.session_state["Manager_status"] = "Down"
+                                elif 'status' in result and result["status"] == "unknown":
+                                    st.session_state["Manager_status"] = "Unknown"
+                                    # status_container.markdown(f":orange[Manager API status is unknown ❓]")
+                                else:
+                                    st.session_state["Manager_status"] = "Up"
+                        else:
+                            st.session_state[service_name_status] = "Up"
+                            # status_container.markdown(f":green[{service_name} is running ✅]")
+                        return result
+            self.handleTask(f"Checking {service_name} status...", status_action, f"{service_name}_status_result")
 
     def statusButtonTop(self):
         """Renders the top status buttons with individual boxes for each service."""
@@ -506,7 +503,6 @@ class ManagerService:
             self.serviceExpander("Registry", status_container)
             self.serviceExpander("Syncer", status_container)
             self.serviceExpander("Manager", status_container)
-
 
 mn = ManagerService()
 mn.manager()
