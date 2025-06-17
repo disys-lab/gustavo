@@ -7,6 +7,8 @@ from gustavo.src.Composer import Composer
 from gustavo.src.NebulaBase import setup_logging
 setup_logging()
 import logging
+from streamlit.runtime.scriptrunner.exceptions import RerunException
+
 
 def load_css(file_name):
     """Load CSS from a file and inject into Streamlit."""
@@ -36,6 +38,32 @@ class DGHandler:
                 "selected_apps": []
             }
 
+
+    def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        if result_container_key not in st.session_state:
+            st.session_state[result_container_key] = ""
+
+        with st.spinner(label):
+            result = action_fn()
+
+        if result is None:
+            message = "No response received ❌"
+            color_class = "tooltip-text"
+        elif result.get("error"):
+            message = result.get("response", "Something went wrong ❌")
+            color_class = "tooltip-text"
+        else:
+            message = result.get("response", "Success ✅")
+            color_class = "tooltip-text"
+
+        tooltip_html = f"""
+        <div class="mouse-tooltip">
+            <span class="{color_class}">{message}</span>
+        </div>
+        """
+        st.markdown(tooltip_html, unsafe_allow_html=True)
+        st.session_state[result_container_key] = result
+        return result
 
 
     def createDeviceGroup(self, group_name, apps):
@@ -139,8 +167,12 @@ class DGHandler:
                     st.session_state[group_name] = {}
                     st.session_state[group_name]["group_name"] = group_name
                     try:
-                        response = self.createDeviceGroup(group_name, selected_apps)
-
+                        response = self.handleTask(
+                        label=f"Creating {group_name}...",
+                        action_fn=lambda: self.createDeviceGroup(group_name, selected_apps),
+                        result_container_key=f"{group_name}_create_result"
+                    )
+                        # response = self.createDeviceGroup(group_name, selected_apps)
                         if response["error"]:
                             with self.error_container:
                                 st.error(f"Error creating device group '{group_name}': {response['response']}")
@@ -167,20 +199,31 @@ class DGHandler:
                     with col1:
                         if st.button(f"Update {group_name}", key=f"update_button_{i}"):
                             try:
-                                self.updateDeviceGroup(group_name, selected_apps)
+                                self.handleTask(
+                                label=f"Updating {group_name}...",
+                                action_fn=lambda: self.updateDeviceGroup(group_name, selected_apps),
+                                result_container_key=f"{group_name}_update_result"
+                            )
+
+                                # self.updateDeviceGroup(group_name, selected_apps)
                             except Exception as e:
                                 with self.error_container:
                                     st.error(f"Error updating device group {group_name}, exception {e}")
                     with col2:
                         if st.button(f"Delete {group_name}", key=f"delete_button_{i}"):
                             try:
-                                self.deleteDeviceGroup(group_name, i)
-                                st.session_state.device_groups.pop(i)  # ✅ Remove from UI
-                                return  # ✅ Prevent further execution after deletion
+                                self.handleTask(
+                                label=f"Deleting {group_name}...",
+                                action_fn=lambda: self.deleteDeviceGroup(group_name, i),
+                                result_container_key=f"{group_name}_delete_result"
+                            )
+                                return  # (Still keep this return after spinner because rerun will happen)
+                                # ✅ Prevent further execution after deletion
+                            except RerunException:
+                                raise
                             except Exception as e:
                                 with self.error_container:
                                     st.error(f"Error deleting device group {group_name}, exception {e}")
-            # self.refreshDeviceGroupList()
 
             create_dg_expander = st.expander("Create New Device Group", expanded=False)
 

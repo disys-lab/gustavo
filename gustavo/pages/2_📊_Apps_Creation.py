@@ -39,6 +39,32 @@ class AppHandler:
             st.session_state.fields = [app for app in self.app_list]
             st.session_state.deletes = []
 
+    def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        if result_container_key not in st.session_state:
+            st.session_state[result_container_key] = ""
+
+        with st.spinner(label):
+            result = action_fn()
+
+        if result is None:
+            message = "No response received ❌"
+            color_class = "tooltip-text"
+        elif result.get("error"):
+            message = result.get("response", "Something went wrong ❌")
+            color_class = "tooltip-text"
+        else:
+            message = result.get("response", "Success ✅")
+            color_class = "tooltip-text"
+
+        tooltip_html = f"""
+        <div class="mouse-tooltip">
+            <span class="{color_class}">{message}</span>
+        </div>
+        """
+        st.markdown(tooltip_html, unsafe_allow_html=True)
+        st.session_state[result_container_key] = result
+        return result
+
 
     def createApp(self,app_name,device_groups):
         if len(device_groups)==0:
@@ -538,7 +564,7 @@ class AppHandler:
         def delete_field(index):
             app_name = st.session_state.app_list[index]
             try:
-                response = self.deleteApp(app_name)
+                response = self.handleTask(f"Deleting {app_name}...",lambda: self.deleteApp(app_name),f"{app_name}_delete_result")
                 if response["error"]:
                     with self.error_container:
                         st.error("Error deleting app {}, response was {}".format(app_name,response["response"]))
@@ -557,7 +583,8 @@ class AppHandler:
         def update_app(app_name):
             try:
 
-                response = self.updateApp(app_name)
+                response = self.handleTask(f"Updating {app_name}...", lambda: self.updateApp(app_name), f"{app_name}_update_result")
+
                 if response["error"]:
                     st.error("Error updating app {}, response was {}".format(app_name,response["response"]))
                 else:
@@ -685,7 +712,7 @@ class AppHandler:
                         # st.session_state[app_name]["form_values"]["env_vars"] = self.setEnvVars(st.session_state[app_name]["config"])
 
                         try:
-                            response = self.createApp(app_name,st.session_state[app_name]["config"]["device_groups"])
+                            response = self.handleTask( f"Creating {app_name}...", lambda: self.createApp(app_name, st.session_state[app_name]["config"]["device_groups"]), f"{app_name}_create_result")
 
                             if response["error"]:
                                 with self.error_container:
@@ -719,7 +746,7 @@ class AppHandler:
                 if st.session_state.load_config_clicked:
                     uploaded_env_file = st.file_uploader("Upload Configuration File", type=[".yaml", ".yml"])
                     if uploaded_env_file is not None:
-                        app_config = self.process_uploaded_file(uploaded_env_file)
+                        app_config = self.handleTask("Processing config...", lambda: self.process_uploaded_file(uploaded_env_file), "config_upload_result")
 
             with save_config:
                 st.button("Submit", on_click=add_field)
