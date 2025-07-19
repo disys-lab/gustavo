@@ -17,6 +17,7 @@ class PlatformConfig:
                             "REGISTRY_PORT":"5000",
                             "REGISTRY_IP_DISABLED": True,
                             "REGISTRY_IMAGE":"registry:2",
+                            "REGISTRY_BKP_DIR": "/tmp/registry_backups",
                             "SYNCER_IMAGE":"homert2admin/dregsy:latest",
                             "SYNCER_NMODE":"host",
                             "REDIS_HOST":netwIPAddr,
@@ -40,6 +41,10 @@ class PlatformConfig:
                             "NEBULA_USERNAME":"nebula",
                             "NEBULA_PASSWORD":"nebula",
                             "NEBULA_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
+                            "redis_backups":{},
+                            "registry_backups":{},
+                            "selected_redis_backups": True,
+                            "selected_registry_backups": True
                         }
 
         self.platform_config_keys = self.platform_config.keys()
@@ -169,7 +174,6 @@ class PlatformConfig:
                 key="download_pc_conf_button_widget_key"
             )
 
-
        manager_col, mongo_col, redis_col, registry_col = st.columns(4)
 
        with manager_col:
@@ -260,7 +264,6 @@ class PlatformConfig:
             key="KEY_SYNCER_IMAGE",
         )
 
-
        with mongo_col:
         st.subheader("Mongo")
         mongo_eq_manager = st.toggle('Same as Manager IP',key="KEY_MONGO_EQ_MANAGER",value=st.session_state.MONGO_IP_DISABLED)
@@ -345,7 +348,93 @@ class PlatformConfig:
             key="KEY_REDIS_BKP_DIR",
         )
 
+    # --- Backup Management Section ---
        for config_var in self.platform_config.keys():
            st.session_state[config_var] = self.platform_config[config_var]
+
+
+       st.markdown("---")
+
+       with st.container():
+        st.header("Manage Redis and Registry Backups")
+        backup_tab_redis, backup_tab_registry = st.tabs(["Redis Backups", "Registry Backups"])
+
+        with backup_tab_redis:
+            st.subheader("Redis Backups")
+            redis_backup_status_placeholder = st.empty()
+
+            def create_redis_backup_callback():
+                # This will trigger the ManagerService to create a backup
+                st.session_state.create_redis_backup_triggered = True
+
+            if st.button("Create Redis Backup", key="create_redis_backup_btn"):
+                create_redis_backup_callback()
+
+            # Display existing Redis backups
+            if st.session_state.redis_backups:
+                df_redis_backups = pd.DataFrame(st.session_state.redis_backups)
+                st.dataframe(
+                    df_redis_backups,
+                    use_container_width=True,
+                    hide_index=True,
+                    key="redis_backups_table"
+                )
+                # Get selected rows for deletion
+                selected_rows = st.session_state.redis_backups_table["selection"]["rows"]
+                st.session_state.selected_redis_backups = [
+                    st.session_state.redis_backups[i]["filename"] for i in selected_rows
+                ]
+            else:
+                st.info("No Redis backups found.")
+
+            def delete_redis_backups_callback():
+                if st.session_state.selected_redis_backups:
+                    st.session_state.delete_redis_backups_triggered = True
+                else:
+                    redis_backup_status_placeholder.warning("Please select backups to delete.")
+
+            if st.button("Delete Selected Redis Backups", key="delete_redis_backup_btn",
+                         disabled=not st.session_state.selected_redis_backups):
+                delete_redis_backups_callback()
+
+        with backup_tab_registry:
+            st.subheader("Registry Backups")
+            registry_backup_status_placeholder = st.empty()
+
+            def create_registry_backup_callback():
+                # This will trigger the ManagerService to create a backup
+                st.session_state.create_registry_backup_triggered = True
+
+            if st.button("Create Registry Backup", key="create_registry_backup_btn"):
+                create_registry_backup_callback()
+
+            # Display existing Registry backups
+            if st.session_state.registry_backups:
+                df_registry_backups = pd.DataFrame(st.session_state.registry_backups)
+                st.dataframe(
+                    df_registry_backups,
+                    use_container_width=True,
+                    hide_index=True,
+                    key="registry_backups_table"
+                )
+                # Get selected rows for deletion
+                selected_rows = st.session_state.registry_backups_table["selection"]["rows"]
+                st.session_state.selected_registry_backups = [
+                    st.session_state.registry_backups[i]["filename"] for i in selected_rows
+                ]
+            else:
+                st.info("No Registry backups found.")
+
+            def delete_registry_backups_callback():
+                if st.session_state.selected_registry_backups:
+                    st.session_state.delete_registry_backups_triggered = True
+                else:
+                    registry_backup_status_placeholder.warning("Please select backups to delete.")
+
+            if st.button("Delete Selected Registry Backups", key="delete_registry_backup_btn",
+                         disabled=not st.session_state.selected_registry_backups):
+                delete_registry_backups_callback()
+
+
 
 
