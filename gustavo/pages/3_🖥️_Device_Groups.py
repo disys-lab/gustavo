@@ -4,25 +4,37 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
 sidebarInit()
 from gustavo.src.Composer import Composer
-from gustavo.src.NebulaBase import setup_logging
+from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
 from streamlit.runtime.scriptrunner.exceptions import RerunException
-
-
-def load_css(file_name):
-    """Load CSS from a file and inject into Streamlit."""
-    with open(file_name) as f:
-        css = f.read()
-        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
-
-parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-css_url = os.path.join(parent,"styles","style.css")
-load_css(css_url)
-
+from gustavo.pages.config.loadCss import load_css
+load_css()
 
 class DGHandler:
+    """
+    The `DGHandler` class provides a UI and logic wrapper for managing device groups in a Streamlit application.
+    It interacts with a backend through the `Composer` class and manages session state updates and UI feedback
+    via spinners and tooltips.
+
+    Features:
+    - List all device groups
+    - Create a new group with selected apps
+    - Update or delete existing groups
+    - Provide real-time feedback with visual spinners and status tooltips
+    - Dynamically reflect changes in the Streamlit interface using session state and reruns
+    """
     def __init__(self):
+        """
+        Initializes session state variables needed for group creation and tracking device groups.
+
+        Logic:
+        - Initializes:
+            - `app_list`: list of available apps for selection
+            - `device_groups`: current state of all known device groups
+            - `create_dg`: dict holding in-progress group creation inputs (name and selected apps)
+        - Also sets placeholders for error and logging containers in the UI
+        """
         self.error_container = None
         self.log_placeholder = None
 
@@ -40,6 +52,24 @@ class DGHandler:
 
 
     def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        """
+        Wraps an asynchronous or time-consuming operation with a loading spinner and tooltip feedback.
+
+        Args:
+            label (str): Message shown while the spinner is active
+            action_fn (Callable): A function to call (e.g. create or update operation)
+            result_container_key (str): A key to store the result in Streamlit's session state
+
+        Logic:
+        - Shows a loading spinner with the given label
+        - Executes `action_fn()`
+        - Determines message to display based on result (success, failure, or error)
+        - Renders tooltip HTML near the mouse cursor
+        - Updates the result in session state for traceability
+
+        Returns:
+            dict: Result returned by `action_fn()`
+        """
         if result_container_key not in st.session_state:
             st.session_state[result_container_key] = ""
 
@@ -67,6 +97,21 @@ class DGHandler:
 
 
     def createDeviceGroup(self, group_name, apps):
+        """
+        Creates a device group with the specified name and selected apps.
+
+        Args:
+            group_name (str): Name for the new device group
+            apps (list): List of apps to include in the group
+
+        Logic:
+        - Instantiates a `Composer` with session state context
+        - Prepares a group configuration dictionary
+        - Sends a `create` request using the Composer’s asset handling API
+
+        Returns:
+            dict: Response from the Composer service (with error flag and message)
+        """
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
         except Exception as e:
@@ -78,6 +123,16 @@ class DGHandler:
         return response
 
     def updateDeviceGroup(self, group_name, apps):
+        """
+        Updates an existing device group by replacing its associated apps.
+
+        Args:
+            group_name (str): Existing group name to update
+            apps (list): New app list for the group
+
+        Returns:
+            dict: Response from Composer’s update API
+        """
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
         except Exception as e:
@@ -89,6 +144,23 @@ class DGHandler:
         return response
 
     def deleteDeviceGroup(self, group_name, index):
+        """
+        Deletes the specified device group from both backend and Streamlit state.
+
+        Args:
+            group_name (str): The name of the group to delete
+            index (int): Index in session state's `device_groups` list for removal
+
+        Logic:
+        - Fetches device group details (for diagnostic logging)
+        - Calls `handleAsset(..., "delete")` on Composer
+        - If successful:
+            - Removes group from session state
+            - Calls `st.rerun()` to refresh UI immediately
+
+        Returns:
+            dict: Response object indicating success or failure
+        """
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
         except Exception as e:
@@ -111,7 +183,18 @@ class DGHandler:
         return retval if retval else {"error": True, "response": f"Failed to delete device group '{group_name}'"}
 
     def listAllDeviceGroups(self):
-        """Fetch device groups and their apps from the backend."""
+        """
+        Retrieves all device groups from the backend and updates Streamlit session state.
+
+        Logic:
+        - Calls `list_device_groups()` from the Composer API
+        - For each returned group:
+            - Calls `list_device_group()` to get its apps
+            - Adds result to `session_state.device_groups`
+
+        Returns:
+            dict: {error: bool, response: device_group_list}
+        """
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
             response = bcmp.nebulaObj.list_device_groups()
@@ -134,6 +217,26 @@ class DGHandler:
         return {"error": False, "response": device_group_list}
 
     def deviceGroups(self):
+        """
+        Main method that renders the full device group management UI in Streamlit.
+
+        Logic:
+        1. Loads all existing device groups
+        2. Displays warning if none are found
+        3. For each group:
+            - Shows an expander block
+            - Lets the user update app selection or delete the group
+        4. Provides a UI section to create a new device group
+            - Validates name and uniqueness
+            - Shows app selector
+            - Uses `add_group()` function to create the group
+        5. Uses `handleTask()` to wrap each operation with spinner/tooltip feedback
+
+        UI Structure:
+        - Header and error containers
+        - List of expanders for each group
+        - Expander for creating new group
+        """
         st.header("Device Group Handler")
         self.error_container = st.container()
         self.log_placeholder = st.empty()

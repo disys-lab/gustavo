@@ -3,7 +3,7 @@ import streamlit as st
 import socket, logging
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
-from gustavo.src.NebulaBase import setup_logging
+from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
 sidebarInit()
@@ -11,21 +11,51 @@ from gustavo.src.Composer import Composer
 from gustavo.src.Manager import Manager
 from gustavo.pages.config.SyncerConfig import refresh_registry, checkRegistryStatus
 from gustavo.utils import *
-
-def load_css(file_name):
-    """Load CSS from a file and inject into Streamlit."""
-    with open(file_name) as f:
-        css = f.read()
-        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
-
-parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-css_url = os.path.join(parent,"styles","style.css")
-load_css(css_url)
-
+from gustavo.pages.config.loadCss import load_css
+load_css()
 
 class AppHandler:
-    def __init__(self):
+    """
+    The `AppHandler` class is responsible for rendering and managing application lifecycle operations 
+    within a Streamlit-based interface, leveraging Gustavo’s Composer, Manager, and registry services.
 
+    Core Responsibilities:
+    - List all apps and their configurations from Nebula
+    - Render dynamic UI to create, update, or delete apps
+    - Manage form-based app configurations (env vars, volumes, ports)
+    - Sync app states with associated device groups
+    - Handle YAML upload/download for app configurations
+    - Display tooltip-based feedback for operations
+
+    Session State:
+    - Dynamically reads/writes app configs under session keys (e.g., `st.session_state["myapp"]`)
+    - Maintains auxiliary keys like `app_list`, `fields_size`, `deletes`, `create`, etc.
+
+    Dependencies:
+    - Requires `Composer` and `Manager` objects for backend communication
+    - Uses helper functions for transforming and validating YAML and UI data
+
+    UI Components:
+    - Main app handler UI (`apps()`)
+    - Per-app expander UI (`appExpander()`)
+    - Feedback containers (`error_container`, `log_placeholder`)
+    """
+    def __init__(self):
+        """
+    Initializes the `AppHandler` class and sets up session state for managing applications.
+
+    Purpose:
+    - Prepares app listing context (`app_list`)
+    - Initializes default fields and field counters for the app management UI
+
+    Logic:
+    - If "app_list" is missing in session state, initializes it as an empty list
+    - If "fields_size" is not present, sets it based on `app_list` length and 
+      initializes fields and delete button tracking structures
+
+    Returns:
+        None
+    """
         self.error_container = None
         self.log_placeholder = None
         if "app_list" in st.session_state:
@@ -40,6 +70,27 @@ class AppHandler:
             st.session_state.deletes = []
 
     def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        """
+    Wraps an operation with a spinner and shows mouse-based tooltip feedback in Streamlit.
+
+    Purpose:
+    - Enhance UX with progress spinners and tooltip status messages
+    - Track result state via a unique session state key
+
+    Args:
+        label (str): Label shown inside the Streamlit spinner
+        action_fn (Callable): A function representing the action to be performed (create/update/delete)
+        result_container_key (str): Unique session key to store the result
+
+    Logic:
+    - Runs the action function inside a Streamlit spinner
+    - Based on result:
+        - Displays success/failure tooltip message
+        - Saves response in session state for traceability
+
+    Returns:
+        dict: Result of the invoked action (with `error` and `response` keys)
+    """
         if result_container_key not in st.session_state:
             st.session_state[result_container_key] = ""
 
@@ -67,6 +118,27 @@ class AppHandler:
 
 
     def createApp(self,app_name,device_groups):
+        """
+    Creates a new application with configuration based on form inputs and device group bindings.
+
+    Purpose:
+    - Aggregate form values (env vars, ports, volumes) into a valid config
+    - Assign default device group if none is selected
+    - Submit creation request to Composer
+
+    Args:
+        app_name (str): Name of the application to be created
+        device_groups (list): List of device groups to associate with the app
+
+    Logic:
+    - If no device group is selected, default to `gustavodg1`
+    - Use `getEnvVars`, `getVolumes`, and `getPorts` to process inputs
+    - Compose final config with `APP_ID` set
+    - Call `handleCreateApp()` to initiate creation
+
+    Returns:
+        dict: Response object containing `error` and `response` keys
+    """
         if len(device_groups)==0:
             dg_str = "gustavodg1"
         else:
@@ -86,6 +158,24 @@ class AppHandler:
         return response
 
     def updateApp(self,app_name):
+        """
+        Updates an existing app by re-submitting its configuration to the backend.
+
+        Purpose:
+        - Convert edited form inputs into backend-compatible format
+        - Submit update via Composer
+
+        Args:
+            app_name (str): Name of the application to update
+
+        Logic:
+        - Transform UI data (env vars, volumes, ports) to backend format
+        - Set the `APP_ID` in the env vars
+        - Submit updated configuration via `Composer.handleAsset(...)`
+
+        Returns:
+            dict: Backend response object with status info
+        """
         # print(st.session_state.edited_env_vars)
         # st.session_state[app_name]["config"]["env_vars"] = self.getEnvVars(st.session_state.edited_env_vars)
         # print(st.session_state[app_name]["config"]["env_vars"])
@@ -102,6 +192,24 @@ class AppHandler:
         return response
 
     def deleteApp(self,app_name):
+        """
+        Deletes an application from both the backend and all associated device groups.
+
+        Purpose:
+        - Ensure app is removed from every device group before full deletion
+        - Clean up app references from UI state
+
+        Args:
+            app_name (str): Name of the application to delete
+
+        Logic:
+        - Use Composer to list all device groups
+        - For each group, remove the app and submit an updated config
+        - After cleanup, delete the app using `handleAsset("app", ..., "delete")`
+
+        Returns:
+            dict: Result of the deletion (success/failure)
+        """
         try:
             bcmp = Composer(mode="streamlit", params=st.session_state)
             response = bcmp.nebulaObj.list_device_groups()
@@ -141,6 +249,28 @@ class AppHandler:
             return {"error": True, "response": "delete app failed"}
 
     def listAllDeviceGroups(self):
+        """
+        Retrieves all existing device groups from the backend using the Manager and Composer services.
+
+        Purpose:
+        - Validate backend Manager connection
+        - Fetch a list of all registered device groups via Nebula
+
+        Logic:
+        - Calls `Manager.checkManager()` to verify backend health
+        - Instantiates a `Composer` object and calls `nebulaObj.list_device_groups()`
+        - Returns the list of group names and the Composer instance
+
+        Returns:
+            dict: 
+                {
+                    "error": bool, 
+                    "response": {
+                        "device_group_list": list of device group names,
+                        "bcmp": Composer instance
+                    } or str (error message)
+                }
+        """
         manager_reply = Manager(mode="streamlit",params=st.session_state).checkManager()
 
         if manager_reply.get("error", True):
@@ -163,6 +293,26 @@ class AppHandler:
         #return device_group_list,bcmp
 
     def listDeviceGroups(self,app_name):
+        """
+        Lists all device groups associated with a given app.
+
+        Purpose:
+        - Determine which device groups currently contain the specified app
+
+        Args:
+            app_name (str): Application name to search for within device groups
+
+        Logic:
+        - Fetch all device groups using `listAllDeviceGroups()`
+        - For each group, call `nebulaObj.list_device_group()` to get its app list
+        - If the app appears in a group, add that group to the results
+
+        Returns:
+            dict: {
+                "error": bool,
+                "response": list of device group names containing the app or an error message
+            }
+        """
         dg_list = []
 
         #device_group_list,bcmp = self.listAllDeviceGroups()
@@ -189,7 +339,32 @@ class AppHandler:
         return {"error":False,"response":dg_list}
 
     def listAllApps(self):
+        """
+        Retrieves all existing apps and their configurations from the backend, and updates session state.
 
+        Purpose:
+        - Load complete app metadata for all apps managed by Nebula
+        - Build Streamlit-compatible form values for each app
+        - Store configuration under individual `st.session_state[app_name]`
+
+        Logic:
+        - Calls `Manager.checkManager()` to confirm backend health
+        - Uses `Composer.nebulaObj.list_apps()` to get list of app names
+        - For each app:
+            - Fetches config using `list_app_info`
+            - Calls `listDeviceGroups(app_name)` to find group bindings
+            - Constructs config and form values for rendering in Streamlit UI
+
+        Updates:
+            - `st.session_state.app_list`: list of all app names
+            - `st.session_state[app_name]`: stores both form-friendly and backend-ready config for each app
+
+        Returns:
+            dict: {
+                "error": bool,
+                "response": list of app names or error message
+            }
+        """
         manager_reply = Manager(mode="streamlit",params=st.session_state).checkManager()
 
         if manager_reply.get("error",True):
@@ -260,6 +435,24 @@ class AppHandler:
             return {"error":True, "response": response}
 
     def process_uploaded_file(self,uploaded_file):
+        """
+        Loads an uploaded YAML file and parses it into the internal app configuration format.
+
+        Purpose:
+        - Allow users to import an app config via drag-and-drop or file upload
+        - Populate session state under `"create"` key for further editing or submission
+
+        Args:
+            uploaded_file (BytesIO): A YAML file object uploaded by the user
+
+        Logic:
+        - Parses YAML using PyYAML
+        - Extracts the first app name and config block
+        - Stores config and transformed form values in `st.session_state["create"]`
+
+        Returns:
+            dict: Parsed app configuration
+        """
         app_config = yaml.load(uploaded_file,Loader=yaml.Loader)
         appkeys = list(app_config.keys())
         app_name = appkeys[0]
@@ -285,6 +478,22 @@ class AppHandler:
         return app_config
 
     def setPorts(self,app_config):
+        """
+        Transforms raw port dictionary list into editable dicts for Streamlit data editor.
+
+        Purpose:
+        - Prepare port configuration (from backend format) for display/edit in UI
+
+        Args:
+            app_config (dict): App configuration containing `starting_ports`
+
+        Logic:
+        - If `starting_ports` is empty or not present, return a blank row
+        - Each port mapping `{from: to}` is converted to a dict with `from` and `to` keys
+
+        Returns:
+            list[dict]: List of editable port rows (e.g., [{"from": "8000", "to": "80"}])
+        """
         if "starting_ports" not in app_config:
             return [{"from":"","to":""}]
         ports_dict_list = []
@@ -304,6 +513,22 @@ class AppHandler:
         return ports_dict_list
 
     def getPorts(self,edited_ports):
+        """
+        Converts edited port input from UI into backend-compatible format.
+
+        Purpose:
+        - Clean and validate port input data for submission
+
+        Args:
+            edited_ports (list[dict]): UI-formatted list of port maps (with 'from' and 'to' keys)
+
+        Logic:
+        - Filters out incomplete/invalid entries
+        - Converts to format: [{from_port: to_port}]
+
+        Returns:
+            list[dict]: List of validated port mappings for backend
+        """
         port_list = []
         for p in edited_ports:
             if p["from"] is not None and p["to"] is not None:
@@ -312,6 +537,22 @@ class AppHandler:
         return port_list
 
     def setVolumes(self,app_config):
+        """
+        Converts the 'volumes' list from backend format into editable dict format for the UI.
+
+        Purpose:
+        - Prepare volume mount paths for user editing in Streamlit's data editor
+
+        Args:
+            app_config (dict): Configuration containing a `volumes` key (list of "src:dest" strings)
+
+        Logic:
+        - If no volumes are present, returns a default empty row
+        - Splits each string like "/host:/container" into a dict with "from" and "to"
+
+        Returns:
+            list[dict]: Volume entries formatted as [{"from": "/host", "to": "/container"}, ...]
+        """
         if "volumes" not in app_config:
             return [{"from":"","to":""}]
         volume_dict_list = []
@@ -327,6 +568,22 @@ class AppHandler:
         return volume_dict_list
 
     def getVolumes(self,edited_volumes):
+        """
+        Converts edited volume mappings from UI back into backend format.
+
+        Purpose:
+        - Transform user-edited volume data into "host:container" strings
+
+        Args:
+            edited_volumes (list[dict]): List of dicts with keys "from" and "to"
+
+        Logic:
+        - Filters out incomplete/empty mappings
+        - Joins valid entries as strings: "from:to"
+
+        Returns:
+            list[str]: List of volume mount strings (e.g., ["/data:/mnt/data"])
+        """
         volume_list = [] #[v["from"] + ":" + v["to"] for v in edited_volumes]
         for v in edited_volumes:
             if v["from"] is not None and v["to"] is not None:
@@ -335,6 +592,22 @@ class AppHandler:
         return volume_list
 
     def getEnvVars(self,edited_env_vars):
+        """
+        Transforms a dictionary of environment variables into an editable list for Streamlit.
+
+        Purpose:
+        - Convert a dict like {"KEY": "VALUE"} into a list of {"key": ..., "value": ...} for UI
+
+        Args:
+            app_config (dict): Configuration containing `env_vars` key
+
+        Logic:
+        - Iterates over the dict and creates a list of dicts
+        - Provides a blank row if no env vars exist
+
+        Returns:
+            list[dict]: [{"key": "ENV_KEY", "value": "ENV_VALUE"}, ...]
+        """
         env_var_dict = {}
         for ev in edited_env_vars:
             if ev["key"] is not None:
@@ -343,6 +616,22 @@ class AppHandler:
         return env_var_dict
 
     def setEnvVars(self,app_config):
+        """
+        Converts edited environment variables from UI format back to a dictionary.
+
+        Purpose:
+        - Clean and filter env var inputs from the UI before submission
+
+        Args:
+            edited_env_vars (list[dict]): List of dicts with "key" and "value" entries
+
+        Logic:
+        - Filters out entries with empty keys
+        - Returns a dictionary of {key: value}
+
+        Returns:
+            dict: Final environment variable dictionary
+        """
         if "env_vars" not in app_config:
             return [{"key":"","value":""}]
         env_var_dict = app_config["env_vars"]
@@ -355,6 +644,31 @@ class AppHandler:
         return edited_env_vars
 
     def getLatestEnvVars(self):
+        """
+        Collects the latest environment values from session state, used to auto-fill new app creation forms.
+
+        Purpose:
+        - Construct default `env_vars` based on infrastructure variables (e.g., Redis, Manager, Auth)
+
+        Logic:
+        - Reads known session keys (`REDIS_HOST`, `MANAGER_PORT`, etc.)
+        - Fills in default env vars including constants like `SLEEP_SECS` and a hardcoded public key
+
+        Returns:
+            dict: {
+                "env_vars": {
+                    "REDIS_DB_HOST": "...",
+                    "NEBULA_AUTH_TOKEN": "...",
+                    "REDIS_DB_PWD": "...",
+                    "MANAGER_HOST": "...",
+                    "MANAGER_PORT": "...",
+                    "NEBULA_AUTH_TOKEN": "...",
+                    "MANAGER_AUTH": "...",
+                    "SLEEP_SECS": "...",
+                    "KEYGEN_PUBLIC_KEY":"..."
+                }
+            }
+        """
         redis_host = st.session_state["REDIS_HOST"] if "REDIS_HOST" in st.session_state else ""
         redis_port = st.session_state["REDIS_PORT"] if "REDIS_PORT" in st.session_state else ""
         redis_auth_token = st.session_state["REDIS_AUTH_TOKEN"] if "REDIS_AUTH_TOKEN" in st.session_state else ""
@@ -376,6 +690,26 @@ class AppHandler:
         return env_vars
 
     def appExpander(self,name,form_name):
+        """
+        Renders an expandable Streamlit form to view or configure an app.
+
+        Purpose:
+        - Central method for creating or editing an app
+        - Supports form-based configuration: name, image, network, device groups, env vars, volumes, ports
+
+        Args:
+            name (str): Session key for this app (e.g., "create", or the app name)
+            form_name (str): Title shown on the expander block
+
+        Logic:
+        - Initializes form state if missing
+        - Pulls default values from session or registry
+        - Renders inputs: App name, image (selectbox), network, device groups, editable tables for env vars, volumes, ports
+        - Disables device group selection for existing apps
+
+        Returns:
+            Streamlit expander object (reference for interaction or layout)
+        """
         if "visibility" not in st.session_state:
             st.session_state.visibility = "visible"
             st.session_state.disabled = False
@@ -561,7 +895,57 @@ class AppHandler:
         return app_expander
 
     def refreshAppListForm(self):
+        """
+        Refreshes the entire list of app forms, rendering UI components for each existing app.
+
+        Purpose:
+        - Sync current apps from the backend
+        - Display update/delete buttons and YAML download for each app
+        - Regenerate `fields`, `deletes`, and `fields_size` session entries
+
+        Logic:
+        - Calls `listAllApps()` to refresh `app_list` and configurations
+        - Initializes `fields_size`, `fields`, and `deletes`
+        - For each app in `app_list`:
+            - Calls `appExpander()` to render its config editor
+            - Adds Update, Download, and Delete buttons with appropriate callbacks:
+                - `update_app(app_name)` updates app config
+                - `delete_field(index)` deletes the app and updates state
+
+        UI Elements:
+        - App expanders (editable form)
+        - YAML config download buttons
+        - Inline delete buttons with `❌` icons
+
+        Returns:
+            None
+        """
         def delete_field(index):
+            """
+            Deletes the app at the specified index from both the backend and local session state.
+
+            Purpose:
+            - Allow users to delete an app from the UI with a single button click
+            - Updates the UI and session state immediately upon deletion
+
+            Args:
+                index (int): Index of the app in `st.session_state.app_list`
+
+            Logic:
+            - Gets the app name from the list using the index
+            - Calls `handleTask()` to show spinner and call `deleteApp()`
+            - If deletion succeeds:
+                - Decrements `fields_size`
+                - Removes corresponding entries from `fields`, `deletes`, and `app_list`
+                - Deletes the app's config from session state
+                - Resets `latest_app_name` to "create"
+            - If deletion fails:
+                - Shows an error in `error_container`
+
+            Returns:
+                None
+            """
+
             app_name = st.session_state.app_list[index]
             try:
                 response = self.handleTask(f"Deleting {app_name}...",lambda: self.deleteApp(app_name),f"{app_name}_delete_result")
@@ -581,6 +965,28 @@ class AppHandler:
 
 
         def update_app(app_name):
+            """
+            Updates the configuration of an app based on current form values.
+
+            Purpose:
+            - Allow users to submit updates to an app's config directly from the UI
+
+            Args:
+                app_name (str): Name of the app being updated
+
+            Logic:
+            - Calls `handleTask()` to invoke `updateApp()` and wrap the operation in a spinner
+            - If the app's name was changed in the form:
+                - Updates the session state and `app_list` to reflect the new name
+                - Copies the configuration to the new name and deletes the old one
+            - Syncs form values (`env_vars`, `volumes`, `ports`) from updated config to UI
+
+            Error Handling:
+            - Shows exception messages in the error container if update fails
+
+            Returns:
+                None
+            """
             try:
 
                 response = self.handleTask(f"Updating {app_name}...", lambda: self.updateApp(app_name), f"{app_name}_update_result")
@@ -661,6 +1067,37 @@ class AppHandler:
                                      args=(i,)))
 
     def apps(self):
+        """
+        Top-level UI method that renders the complete Application Handler page in Streamlit.
+
+        Purpose:
+        - Provides a unified interface for creating, viewing, editing, and deleting apps
+
+        Logic:
+        - Calls `listAllApps()` on startup to populate the app list
+        - Initializes session structures if not present
+        - Renders:
+            - List of existing apps via `refreshAppListForm()`
+            - Expander for new app creation (`appExpander("create", ...)`)
+                - Includes Upload (YAML) and Submit (Create) buttons
+                - Supports pre-filling form using `process_uploaded_file()`
+                - Submits via `add_field()` which validates and invokes `createApp()`
+
+        UI Components:
+        - Header: "Application Handler"
+        - Error container (Streamlit container)
+        - Create New App expander:
+            - YAML upload
+            - Submit button (calls `add_field`)
+        - Existing apps listed with:
+            - Update button
+            - Download config
+            - Delete button
+
+        Returns:
+            None
+        """
+
         st.header("Application Handler")
 
         self.error_container = st.container()

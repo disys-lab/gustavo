@@ -5,23 +5,57 @@ from gustavo.pages.config.Sidebar import sidebarInit
 from gustavo.pages.config.SyncerConfig import SyncerConfig
 sidebarInit()
 from src.Manager import Manager
-from gustavo.src.NebulaBase import setup_logging
+from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
-
-def load_css(file_name):
-    """Load CSS from a file and inject into Streamlit."""
-    with open(file_name) as f:
-        css = f.read()
-        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
-
-parent = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-css_url = os.path.join(parent,"styles","style.css")
-load_css(css_url)
+from gustavo.pages.config.loadCss import load_css
+load_css()
 
 class ManagerService:
+    """
+    The `ManagerService` class provides a Streamlit-based interface to control and monitor backend services 
+    such as Redis, Mongo, Registry, Syncer, and Manager.
+
+    Core Responsibilities:
+    - Retrieve configurations from Streamlit session state
+    - Render UI forms and status displays for each service
+    - Support service lifecycle operations: status check, launch, remove
+    - Display interactive feedback using tooltips and status pills
+
+    Backend Dependencies:
+    - Interfaces with the `Manager` class to execute service operations
+    - Relies on accurate session state setup for all configuration variables
+
+    UI Elements:
+    - Top-level service status indicators (`statusButtonTop`)
+    - Detailed control panels per service (`serviceExpander`)
+    - Async feedback via `handleTask` spinners and tooltips
+
+    Supported Services:
+    - Redis
+    - Mongo
+    - Registry
+    - Syncer
+    - Manager
+    """
     def __init__(self):
-        self.man = Manager(mode="streamlit")
+        """
+        Initializes the `ManagerService` interface and pre-loads configuration structures for all services.
+
+        Purpose:
+        - Prepares internal data structures to hold service configurations
+        - Initializes status values in Streamlit session state
+        - Instantiates the `Manager` controller object with session context
+
+        Logic:
+        - Sets empty/default values for Redis, Mongo, Registry, Syncer, and Manager configuration dictionaries
+        - Adds session state status entries for all services (`"Redis_status"`, etc.)
+        - Prepares default Redis backup directory
+
+        Returns:
+            None
+        """
+        self.man = Manager(mode="streamlit", params=st.session_state)
         self.redis_conf = {"REDIS_HOST": "",
                       "REDIS_PORT": "",
                       "REDIS_AUTH_TOKEN": "",
@@ -62,6 +96,22 @@ class ManagerService:
         st.session_state["Manager_status"] = "Unknown"
 
     def handleTask(self, label, action_fn, result_container_key="action_result_placeholder"):
+        """
+        Executes a task with spinner feedback and tooltip messaging in the UI.
+
+        Purpose:
+        - Show a loading spinner during long operations (launch/remove/status)
+        - Display a tooltip message based on the task result
+        - Store the result in session state for traceability
+
+        Args:
+            label (str): Spinner message during execution
+            action_fn (Callable): The task to run (typically a lambda or method call)
+            result_container_key (str): Session key for saving the result
+
+        Returns:
+            dict: Task result with keys `error` and `response`
+        """
         if result_container_key not in st.session_state:
             st.session_state[result_container_key] = ""
 
@@ -88,6 +138,18 @@ class ManagerService:
         return result
 
     def status_pill(self, status):
+        """
+        Returns a styled HTML badge (pill) for the current status of a service.
+
+        Purpose:
+        - Provide visual feedback of service status (Up, Down, Unknown)
+
+        Args:
+            status (str): One of "Up", "Down", or "Unknown"
+
+        Returns:
+            str: HTML markup string for the status badge
+        """
         if status == "Up":
             return '<div style="background-color: #9beba1; color: white; border-radius: 12px; padding: 5px 10px;">Up</div>'
         elif status == "Down":
@@ -96,6 +158,25 @@ class ManagerService:
             return '<div style="background-color: #ffcc49; color: black; border-radius: 12px; padding: 5px 10px;">Unknown</div>'
 
     def obtainManagerConf(self):
+        """
+        Retrieves and stores Manager service configuration from session state.
+
+        Purpose:
+        - Populate `self.manager_conf` with manager-related fields
+        - Update the `Manager` instance's attributes accordingly
+
+        Logic:
+        - For each expected manager configuration key (e.g., MANAGER_HOST, NEBULA_AUTH_TOKEN, etc.):
+            - Check if it exists in `st.session_state`
+            - If yes: assign value to both the internal `manager_conf` and `self.man`
+            - If not: set "Undefined" or an empty string
+
+        Side Effects:
+        - Disables `wait_for_manager_enabled` for the `Manager` instance
+
+        Returns:
+            list[dict]: A single-element list containing the updated `manager_conf` dictionary
+        """
         if "MANAGER_HOST" not in st.session_state.keys():
             self.manager_conf["MANAGER_HOST"] = "Undefined"
         else:
@@ -147,6 +228,20 @@ class ManagerService:
         return [self.manager_conf]
     
     def obtainSyncerConf(self):
+        """
+        Retrieves and stores Syncer service configuration from session state.
+
+        Purpose:
+        - Populate `self.syncer_conf` with values like SYNCER_IMAGE and config/mapping file paths
+        - Update the same values in the `Manager` instance
+
+        Logic:
+        - Checks for each expected session key (e.g., SYNCER_IMAGE, DREGSY_CONFIG_FILE_PATH)
+        - Populates internal and external configuration values with the current session state
+
+        Returns:
+            list[dict]: A single-element list containing the `syncer_conf` dictionary
+        """
         if "SYNCER_IMAGE" not in st.session_state.keys():
             self.syncer_conf["SYNCER_IMAGE"] = "Undefined"
         else:
@@ -168,6 +263,20 @@ class ManagerService:
         return [self.syncer_conf]
     
     def obtainRegistryConf(self):
+        """
+        Retrieves and stores Registry service configuration from session state.
+
+        Purpose:
+        - Load and store registry IP, port, and image information
+        - Propagate this information to the associated `Manager` instance
+
+        Logic:
+        - Checks and assigns REGISTRY_HOST, REGISTRY_PORT, and REGISTRY_IMAGE
+        - Defaults to "Undefined" if any key is missing
+
+        Returns:
+            list[dict]: A single-element list with `registry_conf` values
+        """
         if "REGISTRY_HOST" not in st.session_state.keys():
             self.registry_conf["REGISTRY_HOST"] = "Undefined"
         else:
@@ -189,6 +298,20 @@ class ManagerService:
         return [self.registry_conf]
 
     def obtainMongoConf(self):
+        """
+        Retrieves and stores MongoDB service configuration from session state.
+
+        Purpose:
+        - Read and assign all required MongoDB parameters (host, port, user, pass, cert path, image)
+        - Mirror values to the corresponding `Manager` attributes
+
+        Logic:
+        - Uses `st.session_state` to populate `self.mongo_conf`
+        - Assigns to both internal dictionary and `self.man` attributes
+
+        Returns:
+            list[dict]: A single-element list with the MongoDB configuration
+        """
         if "MONGO_HOST" not in st.session_state.keys():
             self.mongo_conf["MONGO_HOST"] = "Undefined"
         else:
@@ -228,6 +351,22 @@ class ManagerService:
         return [self.mongo_conf]
 
     def obtainRedisConf(self):
+        """
+        Retrieves and stores Redis service configuration from session state, with validation.
+
+        Purpose:
+        - Gather Redis host, port, token, image, and backup directory
+        - Validate backup directory path
+        - Sync values to the `Manager` instance
+
+        Logic:
+        - Checks all expected Redis keys
+        - Validates `REDIS_BKP_DIR` using `os.path.exists()` and falls back to `/tmp/` if invalid
+        - Logs fallback conditions for visibility
+
+        Returns:
+            list[dict]: A single-element list with Redis configuration
+        """
         if "REDIS_HOST" not in st.session_state.keys():
             self.redis_conf["REDIS_HOST"] = "Undefined"
         else:
@@ -268,6 +407,31 @@ class ManagerService:
         return [self.redis_conf]
 
     def serviceExpander(self, service_name, status_container):
+        """
+        Renders an interactive UI panel (expander) for managing a specific service.
+
+        Purpose:
+        - Display service configuration
+        - Provide buttons for checking status, launching, and removing the service
+        - Dynamically update configuration paths (for Syncer)
+
+        Args:
+            service_name (str): Name of the service to render (e.g., "Redis", "Mongo")
+            status_container (st.status): Streamlit status context used for feedback
+
+        Logic:
+        - Determines which `obtain...Conf()` method to call based on service_name
+        - For Syncer:
+            - Displays editable text inputs for config and mapping file paths
+            - Validates paths and calls `syncerConfigs()` and `syncerMappings()`
+        - Renders:
+            - Read-only config table using `st.data_editor()`
+            - Status, Launch 🚀, and Remove 🛑 buttons
+        - Each button triggers corresponding logic via `handleTask()` with wrapped actions
+
+        Returns:
+            None
+        """
         """Renders the expander for a given service, including status, launch, and remove buttons."""
         # Define the session key for service status at the top
         service_name_status = f'{service_name}_status'
@@ -396,8 +560,28 @@ class ManagerService:
                     st.session_state[remove_session_key] = False
 
     def statusButton(self, service_name, status_container, suffix=""):
-        """Encapsulates the status button logic and status circle update, with a unique key suffix."""
-        
+        """
+        Displays and manages the "Status" button for a given service.
+
+        Purpose:
+        - Allow user to manually check if a service is currently running
+        - Update the status pill in session state
+
+        Args:
+            service_name (str): Name of the service (e.g., "Mongo", "Manager")
+            status_container (st.container): UI placeholder for writing status updates
+            suffix (str): Optional suffix to distinguish button keys (used in top bar vs. expander)
+
+        Logic:
+        - Defines a `status_action()` to call `self.man.serviceStatus(...)`
+        - For Manager:
+            - Performs additional health check via `checkManager()` API
+        - Updates corresponding `..._status` session state field
+        - Wraps the operation in `handleTask()` for spinner and tooltip feedback
+
+        Returns:
+            None
+        """ 
         # Ensure that the service name status is correctly initialized in session_state
         service_name_status = f'{service_name}_status'
         status_button_widget_key = f"{service_name}_status_button_{suffix}"  # Add suffix to make the key unique
@@ -457,7 +641,23 @@ class ManagerService:
             self.handleTask(f"Checking {service_name} status...", status_action, f"{service_name}_status_result")
 
     def statusButtonTop(self):
-        """Renders the top status buttons with individual boxes for each service."""
+        """
+        Renders a row of top-level status indicators and buttons for all services.
+
+        Purpose:
+        - Provide quick access to status check buttons at the top of the page
+        - Visually indicate current service states with colored pills
+
+        Logic:
+        - Creates 5 columns for: Redis, Mongo, Registry, Syncer, Manager
+        - For each service:
+            - Displays status pill using `status_pill(...)`
+            - Adds button via `statusButton(...)` with suffix to keep keys unique
+            - Refreshes the pill after status is updated
+
+        Returns:
+            None
+        """
         # Create columns for each button box
         cols = st.columns([1, 1, 1, 1, 1])  # Adjust the column proportions as needed
         services = ["Redis", "Mongo", "Registry", "Syncer", "Manager"]
@@ -489,6 +689,26 @@ class ManagerService:
                     )
 
     def manager(self):
+        """
+        Main UI method that renders the entire Manager Services dashboard.
+
+        Purpose:
+        - Display service lifecycle controls and configurations for all system services
+
+        Logic:
+        - Renders a header ("Manager Services")
+        - Creates a status container for feedback
+        - Calls `statusButtonTop()` to show top-row service pills and status buttons
+        - Renders detailed service expanders for:
+            - Redis
+            - Mongo
+            - Registry
+            - Syncer
+            - Manager
+
+        Returns:
+            None
+        """
         # Header for the detailed services
         st.header("Manager Services")
 
