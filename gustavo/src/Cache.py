@@ -1,6 +1,6 @@
 import redis, click, pickle, sys
 from .NebulaBase import NebulaBase
-from .NebulaBase import setup_logging
+from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
     
@@ -24,13 +24,14 @@ class Cache(NebulaBase):
 
     def __init__(
         self,
+        session_state=None,
     ):
         """
         Inorder to make Cache rest friendly replaced sys.exit() with raising exceptions which will get excepted
         in gustavo.py and eventually return a dictionary there {"error": True, "response": reason for error}
         """
         logging.error(f"WARNING: This is an ecperimental feature and is not optimized for scale. Results might vary.")
-        NebulaBase.__init__(self)
+        NebulaBase.__init__(self, mode="CLI", session_state=session_state)
         try:
             logging.warning(f"CACHE_PREFIX {self.CACHE_PREFIX}")
             self.redisObj = redis.StrictRedis(

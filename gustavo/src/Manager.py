@@ -7,7 +7,7 @@ import docker
 import time
 import logging
 from .NebulaBase import NebulaBase
-from .NebulaBase import setup_logging
+from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
 from python_on_whales import docker as dockerow
