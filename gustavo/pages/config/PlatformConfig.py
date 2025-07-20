@@ -62,6 +62,7 @@ class PlatformConfig:
             st.session_state.SYNCER_HOST = netwIPAddr
             st.session_state.SYNCER_PORT = "5000"
             st.session_state.REGISTRY_IP_DISABLED = True
+            st.session_state.REGISTRY_BKP_DIR = "/tmp/"
             #
             # DREGSY_CONFIG_FILE_PATH=/home/ubuntu/workshop_demo/dregsy_conf.yml
             # DREGSY_MAPPING_FILE_PATH=/home/ubuntu/workshop_demo/mappings_list.yml
@@ -257,6 +258,11 @@ class PlatformConfig:
             "Syncer Container Image",
             st.session_state.SYNCER_IMAGE,
             key="KEY_SYNCER_IMAGE",
+        )
+        self.platform_config["REGISTRY_BKP_DIR"] = st.text_input(
+            "Registry Backup Directory",
+            st.session_state.REGISTRY_BKP_DIR,
+            key="KEY_REGISTRY_BKP_DIR",
         )
 
        with mongo_col:

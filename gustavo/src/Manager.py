@@ -13,7 +13,8 @@ import logging
 from python_on_whales import docker as dockerow
 import sys
 from NebulaPythonSDK import Nebula
-
+import datetime
+import shutil
 
 class Manager(NebulaBase):
     """
@@ -285,6 +286,16 @@ class Manager(NebulaBase):
 
             # success = True
             dockerow.pull(self.REGISTRY_IMAGE)
+
+            self.REGISTRY_BKP_DIR = st.session_state.get("REGISTRY_BKP_DIR", "/tmp/")
+            if not os.path.exists(self.REDIS_BKP_DIR):
+                try:
+                    os.makedirs(self.REDIS_BKP_DIR,exist_ok=True)
+                except Exception as e:
+                    logging.error(f"{e}")
+                    logging.error(f"Could not create directory: {self.REDIS_BKP_DIR} ")
+                    return {"error": False, "response": f"Could not create directory: {self.REDIS_BKP_DIR} "}
+
             try:
                 client.containers.run(
                     image=self.REGISTRY_IMAGE,
@@ -423,7 +434,16 @@ class Manager(NebulaBase):
         if self.REDIS_IMAGE:
             # success = True
             dockerow.pull(self.REDIS_IMAGE)
+            self.REDIS_BKP_DIR = st.session_state.get("REDIS_BKP_DIR", "/tmp/")
+            if not os.path.exists(self.REDIS_BKP_DIR):
+                try:
+                    os.makedirs(self.REDIS_BKP_DIR,exist_ok=True)
+                except Exception as e:
+                    logging.error(f"{e}")
+                    logging.error(f"Could not create directory: {self.REDIS_BKP_DIR} ")
+                    return {"error": False, "response": f"Could not create directory: {self.REDIS_BKP_DIR} "}
             try:
+
                 print(f"REDIS_ARGS= --requirepass {str(self.REDIS_AUTH_TOKEN)}")
                 client.containers.run(
                     image=self.REDIS_IMAGE,
@@ -434,7 +454,6 @@ class Manager(NebulaBase):
                     restart_policy={"Name": "always"},
                     volumes = {f"{self.REDIS_BKP_DIR}": {'bind': '/data/', 'mode': 'rw'}},
                     environment=[f"REDIS_ARGS=--requirepass {str(self.REDIS_AUTH_TOKEN)}"],
-                    #environment=[f"REDIS_PASSWORD={str(self.REDIS_AUTH_TOKEN)}"],
                 )
             except docker.errors.ImageNotFound as e:
                 logging.error(f"{e}")
@@ -949,5 +968,4 @@ class Manager(NebulaBase):
 
         # return True
         return {"error": False, "response": "Service handled successfully"}
-
 

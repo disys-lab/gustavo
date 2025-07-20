@@ -41,7 +41,7 @@ class ManagerService:
             "REGISTRY_HOST":"",
             "REGISTRY_PORT":"",
             "REGISTRY_IMAGE":"",
-            "REGISTRY_BKP_DIR": "/tmp/gustavo_registry_backups"
+            "REGISTRY_BKP_DIR": "/tmp/"
         }
         st.session_state["Registry_status"] = "Unknown"
         self.syncer_conf = {
