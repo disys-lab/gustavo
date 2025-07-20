@@ -286,15 +286,13 @@ class Manager(NebulaBase):
 
             # success = True
             dockerow.pull(self.REGISTRY_IMAGE)
-
-            self.REGISTRY_BKP_DIR = st.session_state.get("REGISTRY_BKP_DIR", "/tmp/")
-            if not os.path.exists(self.REDIS_BKP_DIR):
+            if not os.path.exists(self.REGISTRY_BKP_DIR):
                 try:
-                    os.makedirs(self.REDIS_BKP_DIR,exist_ok=True)
+                    os.makedirs(self.REGISTRY_BKP_DIR,exist_ok=True)
                 except Exception as e:
                     logging.error(f"{e}")
-                    logging.error(f"Could not create directory: {self.REDIS_BKP_DIR} ")
-                    return {"error": False, "response": f"Could not create directory: {self.REDIS_BKP_DIR} "}
+                    logging.error(f"Could not create directory: {self.REGISTRY_BKP_DIR} ")
+                    return {"error": False, "response": f"Could not create directory: {self.REGISTRY_BKP_DIR} "}
 
             try:
                 client.containers.run(
@@ -434,7 +432,6 @@ class Manager(NebulaBase):
         if self.REDIS_IMAGE:
             # success = True
             dockerow.pull(self.REDIS_IMAGE)
-            self.REDIS_BKP_DIR = st.session_state.get("REDIS_BKP_DIR", "/tmp/")
             if not os.path.exists(self.REDIS_BKP_DIR):
                 try:
                     os.makedirs(self.REDIS_BKP_DIR,exist_ok=True)
