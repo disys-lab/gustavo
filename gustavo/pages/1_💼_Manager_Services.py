@@ -492,75 +492,6 @@ class ManagerService:
                         unsafe_allow_html=True
                     )
 
-    # def manager(self):
-    #     # Header for the detailed services
-    #     st.header("Manager Services")
-    #
-    #     # Create the status container for the services
-    #     status_container = st.status("Manager Services", expanded=False, state="complete")
-    #     # with st.expander("Manager Services Status", expanded=False):
-    #     self.statusButtonTop()
-    #     # Call the serviceExpander for each service
-    #     with st.container():
-    #         self.serviceExpander("Redis", status_container)
-    #         self.serviceExpander("Mongo", status_container)
-    #         self.serviceExpander("Registry", status_container)
-    #         self.serviceExpander("Syncer", status_container)
-    #         self.serviceExpander("Manager", status_container)
-
-    # --- New Backup Management Methods ---
-    def create_redis_backup(self):
-        result = self.man.create_redis_backup()
-        if not result["error"]:
-            st.success(result["response"])
-            self.list_redis_backups()  # Refresh list after creation
-        else:
-            st.error(result["response"])
-
-    def list_redis_backups(self):
-        result = self.man.list_redis_backups()
-        if not result["error"]:
-            st.session_state.redis_backups = result["response"]
-        else:
-            st.error(f"Error listing Redis backups: {result['response']}")
-            st.session_state.redis_backups = []  # Clear list on error
-
-    def delete_redis_backups(self, filenames):
-        for filename in filenames:
-            result = self.man.delete_redis_backup(filename)
-            if not result["error"]:
-                st.success(result["response"])
-            else:
-                st.error(result["response"])
-        self.list_redis_backups()  # Refresh list after deletion
-        st.session_state.selected_redis_backups = []  # Clear selection
-
-    def create_registry_backup(self):
-        result = self.man.create_registry_backup()
-        if not result["error"]:
-            st.success(result["response"])
-            self.list_registry_backups()  # Refresh list after creation
-        else:
-            st.error(result["response"])
-
-    def list_registry_backups(self):
-        result = self.man.list_registry_backups()
-        if not result["error"]:
-            st.session_state.registry_backups = result["response"]
-        else:
-            st.error(f"Error listing Registry backups: {result['response']}")
-            st.session_state.registry_backups = []  # Clear list on error
-
-    def delete_registry_backups(self, filenames):
-        for filename in filenames:
-            result = self.man.delete_registry_backup(filename)
-            if not result["error"]:
-                st.success(result["response"])
-            else:
-                st.error(result["response"])
-        self.list_registry_backups()  # Refresh list after deletion
-        st.session_state.selected_registry_backups = []  # Clear selection
-
     def manager(self):
         # Header for the detailed services
         st.header("Manager Services")
@@ -577,28 +508,8 @@ class ManagerService:
             self.serviceExpander("Syncer", status_container)
             self.serviceExpander("Manager", status_container)
 
-        # --- Backup Management Logic (called after all services are rendered) ---
-        # Initialize backup lists on first run or after a change
-        if "initial_backup_load" not in st.session_state:
-            self.list_redis_backups()
-            self.list_registry_backups()
-            st.session_state.initial_backup_load = True
 
-        # Handle Redis backup actions
-        if st.session_state.get("create_redis_backup_triggered"):
-            self.create_redis_backup()
-            st.session_state.create_redis_backup_triggered = False
-        if st.session_state.get("delete_redis_backups_triggered"):
-            self.delete_redis_backups(st.session_state.selected_redis_backups)
-            st.session_state.delete_redis_backups_triggered = False
 
-        # Handle Registry backup actions
-        if st.session_state.get("create_registry_backup_triggered"):
-            self.create_registry_backup()
-            st.session_state.create_registry_backup_triggered = False
-        if st.session_state.get("delete_registry_backups_triggered"):
-            self.delete_registry_backups(st.session_state.selected_registry_backups)
-            st.session_state.delete_registry_backups_triggered = False
 
 
 mn = ManagerService()
