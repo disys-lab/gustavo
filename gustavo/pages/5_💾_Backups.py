@@ -3,6 +3,7 @@ import streamlit as st
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from gustavo.pages.config.Sidebar import sidebarInit
 from gustavo.pages.config.SyncerConfig import SyncerConfig
+from gustavo.src.Manager import Manager
 sidebarInit()
 import docker
 import datetime
@@ -32,6 +33,7 @@ class BackupService:
         # Initialize backup directories from session state or use defaults
         self.REDIS_BKP_DIR = st.session_state.get("REDIS_BKP_DIR", "/tmp/redis_backups")
         self.REGISTRY_BKP_DIR = st.session_state.get("REGISTRY_BKP_DIR", "/tmp/registry_backups")
+
 
         # Initialize all necessary session state variables to prevent KeyError
         if "redis_backups" not in st.session_state:
@@ -86,6 +88,150 @@ class BackupService:
         # No need to call list_redis_backups here, it will be called at the end of backup()
         st.session_state.selected_redis_backups = []  # Clear selection
 
+    def restore_redis_backup_handler(self, filename):
+        client = docker.from_env()
+
+        self.REDIS_BKP_DIR = st.session_state.get("REDIS_BKP_DIR", "/tmp/")
+        self.REGISTRY_BKP_DIR = st.session_state.get("REGISTRY_BKP_DIR", "/tmp/")
+
+        backup_file_path = os.path.join(self.REDIS_BKP_DIR, filename)
+        redis_data_path = os.path.join(self.REDIS_BKP_DIR, "dump.rdb")  # This is the file Redis loads
+
+        if not os.path.exists(backup_file_path):
+            logging.error(f"Redis backup file not found: {backup_file_path}")
+            return {"error": True, "response": f"Redis backup file not found: {filename}"}
+
+        try:
+            # 1. Stop Redis container
+            try:
+                redis_container = client.containers.get("redis")
+                logging.info("Stopping Redis container for restoration...")
+                redis_container.stop()
+                logging.info("Redis container stopped.")
+            except docker.errors.NotFound:
+                logging.warning("Redis container not found, proceeding with file copy.")
+            except docker.errors.APIError as e:
+                logging.error(f"Docker API error stopping Redis: {e}")
+                return {"error": True, "response": f"Docker API error stopping Redis: {e}"}
+
+            # 2. Replace current dump.rdb with the selected backup
+            if os.path.exists(redis_data_path):
+                os.remove(redis_data_path)
+                logging.info(f"Removed existing dump.rdb at {redis_data_path}")
+
+            shutil.copyfile(backup_file_path, redis_data_path)
+            logging.info(f"Copied {filename} to {redis_data_path}")
+
+            # 3. Start Redis container
+            try:
+                # Attempt to get the container again in case it was removed or recreated
+                redis_container = client.containers.get("redis")
+                logging.info("Starting Redis container after restoration...")
+                redis_container.start()
+                logging.info("Redis container started successfully.")
+                return {"error": False, "response": f"Redis restored from {filename} and restarted."}
+            except docker.errors.NotFound:
+                # If container was removed, try to run it again (assuming it's configured to mount the volume)
+                logging.warning("Redis container not found after stop, attempting to run it.")
+                run_result = self.runRedis(client)  # Use the existing runRedis method
+                if run_result["error"]:
+                    return {"error": True,
+                            "response": f"Failed to restart Redis after restore: {run_result['response']}"}
+                return {"error": False, "response": f"Redis restored from {filename} and restarted."}
+            except docker.errors.APIError as e:
+                logging.error(f"Docker API error starting Redis: {e}")
+                return {"error": True, "response": f"Docker API error starting Redis: {e}"}
+
+        except Exception as e:
+            logging.error(f"Unexpected error during Redis restore: {e}")
+            return {"error": True, "response": f"Unexpected error during Redis restore: {e}"}
+
+
+    def restore_redis_backup(self,filename):
+
+        logging.info(f"Redis Backup: Using {filename}")
+        # Import Manager here to avoid circular dependency if ManagerService also imports BackupService
+
+        result =self.restore_redis_backup_handler(filename) # Call the Manager's method
+        if not result["error"]:
+            st.toast(result["response"])
+        else:
+            st.error(result["response"])
+
+    def restore_registry_backup_handler(self, dirname):
+        client = docker.from_env()
+        backup_dir_path = os.path.join(self.REGISTRY_BKP_DIR, dirname)
+        live_registry_data_path = self.REGISTRY_BKP_DIR  # This is the host path mounted to /var/lib/registry
+
+        if not os.path.exists(backup_dir_path) or not os.path.isdir(backup_dir_path):
+            logging.error(f"Registry backup directory not found or is not a directory: {backup_dir_path}")
+            return {"error": True, "response": f"Registry backup directory not found: {dirname}"}
+
+        try:
+            # 1. Stop Registry container
+            try:
+                registry_container = client.containers.get("registry")
+                logging.info("Stopping Registry container for restoration...")
+                registry_container.stop()
+                logging.info("Registry container stopped.")
+            except docker.errors.NotFound:
+                logging.warning("Registry container not found, proceeding with directory replacement.")
+            except docker.errors.APIError as e:
+                logging.error(f"Docker API error stopping Registry: {e}")
+                return {"error": True, "response": f"Docker API error stopping Registry: {e}"}
+
+            # # 2. Clear current live registry data directory contents
+            # # Iterate and remove contents, but not the directory itself
+            # for item in os.listdir(live_registry_data_path):
+            #     item_path = os.path.join(live_registry_data_path, item)
+            #     if os.path.isfile(item_path) or os.path.islink(item_path):
+            #         os.remove(item_path)
+            #     elif os.path.isdir(item_path):
+            #         shutil.rmtree(item_path)
+            # logging.info(f"Cleared contents of live registry data directory: {live_registry_data_path}")
+
+            # 3. Copy contents of the selected backup into the live registry data directory
+            # Copy contents from backup_dir_path to live_registry_data_path
+            for item in os.listdir(backup_dir_path):
+                s = os.path.join(backup_dir_path, item)
+                d = os.path.join(live_registry_data_path, item)
+                if os.path.isdir(s):
+                    shutil.copytree(s, d, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(s, d)
+            logging.info(f"Copied contents from {dirname} to {live_registry_data_path}")
+
+            # 4. Start Registry container
+            try:
+                # Attempt to get the container again in case it was removed or recreated
+                registry_container = client.containers.get("registry")
+                logging.info("Starting Registry container after restoration...")
+                registry_container.start()
+                logging.info("Registry container started successfully.")
+                return {"error": False, "response": f"Registry restored from {dirname} and restarted."}
+            except docker.errors.NotFound:
+                # If container was removed, try to run it again (assuming it's configured to mount the volume)
+                logging.warning("Registry container not found after stop, attempting to run it.")
+                run_result = self.runRegistry(client)  # Use the existing runRegistry method
+                if run_result["error"]:
+                    return {"error": True,
+                            "response": f"Failed to restart Registry after restore: {run_result['response']}"}
+                return {"error": False, "response": f"Registry restored from {dirname} and restarted."}
+            except docker.errors.APIError as e:
+                logging.error(f"Docker API error starting Registry: {e}")
+                return {"error": True, "response": f"Docker API error starting Registry: {e}"}
+
+        except Exception as e:
+            logging.error(f"Unexpected error during Registry restore: {e}")
+            return {"error": True, "response": f"Unexpected error during Registry restore: {e}"}
+
+    def restore_registry_backup(self, dirname):
+        result = self.restore_registry_backup_handler(dirname)
+        if not result["error"]:
+            st.toast(result["response"])
+        else:
+            st.error(result["response"])
+
     def create_registry_backup(self):
         result = self.create_registry_backup_handler()
         if not result["error"]:
@@ -115,6 +261,7 @@ class BackupService:
     def create_redis_backup_handler(self):
         client = docker.from_env()
         try:
+
             redis_container = client.containers.get("redis")
 
             # Get Redis auth token from session state
@@ -143,12 +290,18 @@ class BackupService:
             backup_filename = f"redis_backup_{timestamp}.rdb"
             new_path = os.path.join(self.REDIS_BKP_DIR, backup_filename)
 
+
             if os.path.exists(original_path):
                 os.rename(original_path, new_path)
                 logging.info(f"Created Redis backup: {backup_filename}")
                 return {"error": False, "response": f"Redis backup created: {backup_filename}"}
             else:
-                logging.error(f"Redis dump.rdb not found at {original_path} after BGSAVE.")
+                # try:
+                #     os.makedirs(self.REGISTRY_BKP_DIR, exist_ok=True)
+                # except Exception as e:
+                #     #os.makedirs(self.REDIS_BKP_DIR, exist_ok=True)
+                logging.error(f"Failed to create backup at {original_path}.")
+                st.toast(f"Failed to create backup at {original_path}.")
                 return {"error": True, "response": "Redis dump.rdb not found after BGSAVE."}
 
         except docker.errors.NotFound:
@@ -270,8 +423,8 @@ class BackupService:
 
     def backup(self):
         # Update backup directories from session state in case they changed via PlatformConfig
-        self.REDIS_BKP_DIR = st.session_state.get("REDIS_BKP_DIR", "/tmp/redis_backups")
-        self.REGISTRY_BKP_DIR = st.session_state.get("REGISTRY_BKP_DIR", "/tmp/registry_backups")
+        self.REDIS_BKP_DIR = st.session_state.get("REDIS_BKP_DIR", "/tmp/")
+        self.REGISTRY_BKP_DIR = st.session_state.get("REGISTRY_BKP_DIR", "/tmp/")
 
         # Always list backups at the start of the `backup` method to refresh the display
         self.list_redis_backups()
@@ -285,21 +438,38 @@ class BackupService:
                 st.subheader("Redis Backups")
                 redis_backup_status_placeholder = st.empty()
 
-                def create_redis_backup_callback():
-                    logging.info("Creating Redis backup triggered.")
-                    st.session_state.create_redis_backup_triggered = True
+                col1, col2 = st.columns(2) # Use columns for buttons
+                with col1:
+                    def create_redis_backup_callback():
+                        logging.info("Creating Redis backup triggered.")
+                        st.session_state.create_redis_backup_triggered = True
+                    if st.button("Create Redis Backup", key="create_redis_backup_btn"):
+                        create_redis_backup_callback()
+                with col2:
+                    # def restore_redis_backup_callback():
+                    #     logging.info("Restore Redis backup triggered.")
+                    #     st.session_state.restore_redis_backup_triggered = True
+                    if st.button("Restore Selected Redis Backup", key="restore_redis_backup_btn",
+                                 disabled=False):
+                        if len(st.session_state.selected_redis_backups) > 1:
+                            st.error("Multiple redis backup files selected")
+                        elif len(st.session_state.selected_redis_backups) ==0:
+                            st.error("No redis backup files selected")
+                        else:
+                            filename = st.session_state.selected_redis_backups[0]
+                            self.restore_redis_backup(filename)
 
-                if st.button("Create Redis Backup", key="create_redis_backup_btn"):
-                    create_redis_backup_callback()
 
                 # Display existing Redis backups
                 if st.session_state.redis_backups:
                     df_redis_backups = pd.DataFrame(st.session_state.redis_backups)
-                    st.dataframe(
+                    redis_selection_data = st.dataframe(
                         df_redis_backups,
                         use_container_width=True,
                         hide_index=True,
-                        key="redis_backups_table"
+                        key="redis_backups_table",
+                        on_select="rerun",
+                        selection_mode="single-row"  # Added selection_mode
                     )
                     # Get selected rows for deletion
                     # Only try to get selection if the dataframe key exists in session state
@@ -317,26 +487,28 @@ class BackupService:
                     st.info("No Redis backups found.")
                     st.session_state.selected_redis_backups = []  # Ensure it's empty if no backups
 
-                def delete_redis_backups_callback():
-                    if st.session_state.selected_redis_backups:
-                        st.session_state.delete_redis_backups_triggered = True
-                    else:
-                        redis_backup_status_placeholder.warning("Please select backups to delete.")
-
-                if st.button("Delete Selected Redis Backups", key="delete_redis_backup_btn",
-                             disabled=not st.session_state.selected_redis_backups):
-                    delete_redis_backups_callback()
-
             with backup_tab_registry:
                 st.subheader("Registry Backups")
                 registry_backup_status_placeholder = st.empty()
 
-                def create_registry_backup_callback():
-                    logging.info("Creating Registry backup triggered.")
-                    st.session_state.create_registry_backup_triggered = True
+                col1, col2, = st.columns(2)  # Added a third column for restore button
+                with col1:
+                    def create_registry_backup_callback():
+                        logging.info("Creating Registry backup triggered.")
+                        st.session_state.create_registry_backup_triggered = True
 
-                if st.button("Create Registry Backup", key="create_registry_backup_btn"):
-                    create_registry_backup_callback()
+                    if st.button("Create Registry Backup", key="create_registry_backup_btn"):
+                        create_registry_backup_callback()
+
+                with col2:  # New restore button for Registry
+                    if st.button("Restore Selected Registry Backup", key="restore_registry_backup_btn",disabled=False):
+                        if len(st.session_state.selected_registry_backups) > 1:
+                            st.error("Multiple registry backup files selected")
+                        elif len(st.session_state.selected_registry_backups) == 0:
+                            st.error("No registry backup files selected")
+                        else:
+                            filename = st.session_state.selected_registry_backups[0]
+                            self.restore_registry_backup(filename)
 
                 # Display existing Registry backups
                 if st.session_state.registry_backups:
@@ -345,7 +517,9 @@ class BackupService:
                         df_registry_backups,
                         use_container_width=True,
                         hide_index=True,
-                        key="registry_backups_table"
+                        key="registry_backups_table",
+                        on_select="rerun",
+                        selection_mode="single-row"  # Added selection_mode
                     )
                     # Get selected rows for deletion
                     # Only try to get selection if the dataframe key exists in session state
@@ -363,15 +537,15 @@ class BackupService:
                     st.info("No Registry backups found.")
                     st.session_state.selected_registry_backups = []  # Ensure it's empty if no backups
 
-            def delete_registry_backups_callback():
-                    if st.session_state.selected_registry_backups:
-                        st.session_state.delete_registry_backups_triggered = True
-                    else:
-                        registry_backup_status_placeholder.warning("Please select backups to delete.")
-
-            if st.button("Delete Selected Registry Backups", key="delete_registry_backup_btn",
-                         disabled=not st.session_state.selected_registry_backups):
-                delete_registry_backups_callback()
+            # def delete_registry_backups_callback():
+            #         if st.session_state.selected_registry_backups:
+            #             st.session_state.delete_registry_backups_triggered = True
+            #         else:
+            #             registry_backup_status_placeholder.warning("Please select backups to delete.")
+            #
+            # # if st.button("Delete Selected Registry Backups", key="delete_registry_backup_btn",
+            # #              disabled=not st.session_state.selected_registry_backups):
+            # #     delete_registry_backups_callback()
 
         # Process triggered actions after all UI elements are rendered
         if st.session_state.get("create_redis_backup_triggered"):
