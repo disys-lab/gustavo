@@ -298,9 +298,10 @@ class FileMonitoringApp:
         try:
             if "data" not in st.session_state or not st.session_state.data:
                 logging.warning("No data loaded into session state.")
-                st.warning("No data loaded.")
+                # st.warning("No data loaded.")
                 return []
             device_groups = set(entry.get('device_group') for entry in st.session_state.data if 'device_group' in entry)
+            # st.write(f'device_groups: {device_groups}')
             return list(device_groups)
         except Exception as e:
             logging.error(f"Error retrieving device groups: {e}")
@@ -343,7 +344,7 @@ class FileMonitoringApp:
                 )
             else:
                 logging.warning("No device groups available to select.")
-                st.warning("No device groups available.")
+                # st.warning("No device groups available.")
         except Exception as e:
             logging.error(f"Error selecting device group: {e}")
             st.error(f"Error selecting device group: {e}")
@@ -419,7 +420,7 @@ class FileMonitoringApp:
                 )
             else:
                 logging.warning("No hosts available to select.")
-                st.warning("No hosts available.")
+                # st.warning("No hosts available.")
         except Exception as e:
             logging.error(f"Error selecting host: {e}")
             st.error(f"Error selecting host: {e}")
@@ -453,7 +454,7 @@ class FileMonitoringApp:
 
         try:
             if not st.session_state.historical_data:
-                st.warning("No historical data available for filtering.")
+                # st.warning("No historical data available for filtering.")
                 logging.warning("No historical data available.")
                 return []
             
@@ -466,7 +467,7 @@ class FileMonitoringApp:
                     ])
             
             if not filtered:
-                st.warning(f"No data found for device group {self.selected_group} and host {self.selected_host}.")
+                # st.warning(f"No data found for device group {self.selected_group} and host {self.selected_host}.")
                 logging.warning(f"No data found for device group {self.selected_group} and host {self.selected_host}.")
                 return []
             
@@ -534,7 +535,7 @@ class FileMonitoringApp:
                     self.selected_apps = list(apps)
             else:
                 logging.warning("No apps or host metrics available.")
-                st.warning("No apps or host metrics available.")
+                # st.warning("No apps or host metrics available.")
                 self.selected_apps = []
         except Exception as e:
             logging.error(f"Error selecting apps: {e}")
@@ -571,7 +572,7 @@ class FileMonitoringApp:
         try:
             if not filtered_data:
                 logging.warning("No data available for CPU usage visualization.")
-                st.warning("No data for CPU usage.")
+                # st.warning("No data for CPU usage.")
                 return
             cpu_usage_records = [
                 {'hostname': entry['hostname'], 'cpu_usage': entry['cpu_usage'].get('used_percent', 0)}
@@ -589,7 +590,7 @@ class FileMonitoringApp:
                 st.altair_chart(cpu_chart, use_container_width=True)
             else:
                 logging.warning("No CPU usage records found.")
-                st.warning("No CPU usage records found.")
+                # st.warning("No CPU usage records found.")
         except Exception as e:
             logging.error(f"Error plotting CPU usage: {e}")
             st.error(f"Error plotting CPU usage: {e}")
@@ -635,7 +636,7 @@ class FileMonitoringApp:
                     self.plot_hosts = available_hosts
             else:
                 logging.warning("No hosts available for plotting.")
-                st.warning("No hosts available for plotting.")
+                # st.warning("No hosts available for plotting.")
                 self.plot_hosts = []
         except Exception as e:
             logging.error(f"Error selecting hosts for plotting: {e}")
@@ -693,7 +694,7 @@ class FileMonitoringApp:
         try:
             if not filtered_data:
                 logging.warning("No data available for memory usage visualization.")
-                st.warning("No data for memory usage.")
+                # st.warning("No data for memory usage.")
                 return
 
             memory_records = []
@@ -744,14 +745,16 @@ class FileMonitoringApp:
             if memory_records:
                 df_usage = pd.DataFrame(memory_records)
                 if df_usage.empty:
-                    st.warning("No valid data after processing.")
+                    # st.warning("No valid data after processing.")
+                    logging.warning("No valid memory records after processing.")
                     return
 
                 df_usage['timestamp'] = pd.to_datetime(df_usage['timestamp'], unit='s', errors='coerce')
                 df_usage = df_usage.dropna(subset=['timestamp', 'memory_usage']).sort_values(by='timestamp')
 
                 if df_usage.empty:
-                    st.warning("No valid data after processing timestamps.")
+                    # st.warning("No valid data after processing timestamps.")
+                    logging.warning("No valid memory records after processing timestamps.")
                     return
 
                 # Log the number of unique timestamps and records for debugging
@@ -772,7 +775,8 @@ class FileMonitoringApp:
 
                 st.altair_chart(memory_chart, use_container_width=True)
             else:
-                st.warning("No memory usage records found.")
+                # st.warning("No memory usage records found.")
+                logging.warning("No memory usage records found.")  
         except Exception as e:
             logging.error(f"Error plotting memory usage: {e}")
             st.error(f"Error plotting memory usage: {e}")
@@ -838,7 +842,14 @@ class FileMonitoringApp:
                 if self.selected_apps:
                     self.visualizeMemoryUsage(final_filtered_data)
                 else:
-                    st.warning("No apps or host metrics selected.")
+                    # st.warning("No apps or host metrics selected.")
+                    logging.warning("No apps or host metrics selected.")
+            else: 
+                # st.warning("No host selected.")
+                logging.warning("No host selected.")
+        else:
+            # st.warning("No device group selected.")
+            logging.warning("No device group selected.")        
 
     def run_dashboard(self):
         """

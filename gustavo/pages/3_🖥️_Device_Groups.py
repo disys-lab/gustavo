@@ -213,6 +213,7 @@ class DGHandler:
 
         # ✅ Ensure session state is updated
         st.session_state.device_groups = device_group_list
+        # st.write(f"Device groups loaded: {device_group_list}") 
 
         return {"error": False, "response": device_group_list}
 
