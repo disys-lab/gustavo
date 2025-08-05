@@ -430,9 +430,7 @@ class ManagerService:
         - Each button triggers corresponding logic via `handleTask()` with wrapped actions
 
         Returns:
-            None
-        """
-        """Renders the expander for a given service, including status, launch, and remove buttons."""
+            Renders the expander for a given service, including status, launch, and remove buttons."""
         # Define the session key for service status at the top
         service_name_status = f'{service_name}_status'
         
