@@ -16,15 +16,8 @@ from gustavo.pages.config.SyncerConfig import SyncerConfig, refresh_registry, ch
 from gustavo.src.Composer import Composer
 import socket,os
 
-def load_css(file_name):
-    """Load CSS from a file and inject into Streamlit."""
-    with open(file_name) as f:
-        css = f.read()
-        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
-
-parent = os.path.dirname(os.path.realpath(__file__))
-css_url = os.path.join(parent,"styles","style.css")
-load_css(css_url)
+from gustavo.pages.config.loadCss import load_css
+load_css()
 
 error_container = st.container()
 
