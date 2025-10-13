@@ -205,15 +205,10 @@ class Manager(NebulaBase):
                 REDIS_BKP_DIR = "/tmp/"
             self.REDIS_BKP_DIR = REDIS_BKP_DIR
         else:
+            self.REDIS_BKP_DIR = "/tmp/"
+            logging.error(f"REDIS_BKP_DIR undefined in os.environ, defaulting to {self.REDIS_BKP_DIR}")
 
-            click.echo(
-                click.style("REDIS_IMAGE undefined in base_config file", fg="red")
-            )
 
-            return {
-                "error": True,
-                "response": "REDIS_IMAGE undefined in base_config file",
-            }
 
         if "MONGO_IMAGE" in os.environ.keys():
             self.MONGO_IMAGE = os.getenv("MONGO_IMAGE")
