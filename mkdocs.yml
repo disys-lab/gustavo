@@ -23,15 +23,33 @@ nav:
         - Preprocessing: worker-preprocessing.md
         - Worker Setup: worker-setup.md
         - Tear Down: tear-down-worker.md
-      - gustavo.comms:
-        - RedisComm: rediscomm.md
-        - Mapper: mapper.md
-        - RedisContract: rediscontract.md
+      # - gustavo.comms:
+      #   - RedisComm: rediscomm.md
+      #   - Mapper: mapper.md
+      #   - RedisContract: rediscontract.md
       - gustavo.src:
         - Cache: cache.md
         - Composer: composer.md
         - Manager: manager2.md
         - NebulaBase: nebulabase.md
+      - gustavo.pages:
+        - ManagerService: management.md
+        - AppHandler: application.md
+        - DeviceGroups: devicegroups.md
+        - Monitering: monitoring.md
+        - Config:
+          - LoadCss : loadcss.md
+          - Logging  : PlatformConfig.md
       - Troubleshooting: troubleshooting.md
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.footer
+    - content.code.annotate
+    - content.tabs.link
+    - toc.integrate
 
-theme: readthedocs
+extra_css:
+  - assets/extra.css

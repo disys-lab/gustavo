@@ -264,3 +264,33 @@ button.status-unknown {
     color: white;
 }
 
+/* === Floating Mouse Tooltip === */
+.mouse-tooltip {
+    position: fixed;
+    top: var(--mouse-y, 50%);
+    left: var(--mouse-x, 50%);
+    transform: translate(-50%, -120%); /* Move a little higher above mouse */
+    z-index: 1000;
+    animation: fadeInOut 3s ease-out forwards;
+    pointer-events: none; /* Mouse can pass through tooltip */
+}
+
+.tooltip-text {
+    background-color: rgba(0, 0, 0, 0.85); /* Darker background */
+    color: #f7f7f7; /* Slightly softer white */
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    max-width: 280px;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Add soft shadow */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -130%); }
+    10% { opacity: 1; transform: translate(-50%, -120%); }
+    90% { opacity: 1; transform: translate(-50%, -120%); }
+    100% { opacity: 0; transform: translate(-50%, -110%); }
+}
