@@ -1,7 +1,7 @@
 <!-- This part of the project documentation focuses on
 an **information-oriented** approach. Use it as a
 reference for the technical implementation of the
-`comms` project code.
+`pages` project code. -->
 
-# RedisComm
-::: comms.RedisComm.RedisComm -->
+# LoadCss Files
+::: pages.config.loadCss

@@ -6,7 +6,7 @@ from gustavo.src.Composer import Composer
 from gustavo.src.Composer import Composer
 from gustavo.src.NebulaBase import FileUndefined
 from gustavo.src.NebulaBase import PathInvalid
-from gustavo.src.NebulaBase import setup_logging
+from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 from gustavo.src.Cache import Cache
 from gustavo.src.Cache import ErrorHandling
