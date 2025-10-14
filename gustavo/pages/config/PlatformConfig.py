@@ -2,6 +2,7 @@ import streamlit as st
 from urllib.error import URLError
 import pandas as pd
 import socket
+import logging
 # from gustavo.pages.Sidebar import Sidebar
 
 class PlatformConfig:
@@ -24,7 +25,6 @@ class PlatformConfig:
                             "REDIS_PORT":"6379",
                             "REDIS_AUTH_TOKEN":"e87052bfcc0b65b2d0603ad4baa8d8ced7aa929b6698a568d2ce53dfd2dc04bcs",
                             "REDIS_IMAGE":"redis/redis-stack:7.4.0-v1",
-                            "REDIS_BKP_DIR":"/tmp/",
                             "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
@@ -62,6 +62,7 @@ class PlatformConfig:
             st.session_state.SYNCER_HOST = netwIPAddr
             st.session_state.SYNCER_PORT = "5000"
             st.session_state.REGISTRY_IP_DISABLED = True
+            st.session_state.REGISTRY_BKP_DIR = "/tmp/"
             #
             # DREGSY_CONFIG_FILE_PATH=/home/ubuntu/workshop_demo/dregsy_conf.yml
             # DREGSY_MAPPING_FILE_PATH=/home/ubuntu/workshop_demo/mappings_list.yml
@@ -169,7 +170,6 @@ class PlatformConfig:
                 key="download_pc_conf_button_widget_key"
             )
 
-
        manager_col, mongo_col, redis_col, registry_col = st.columns(4)
 
        with manager_col:
@@ -259,7 +259,11 @@ class PlatformConfig:
             st.session_state.SYNCER_IMAGE,
             key="KEY_SYNCER_IMAGE",
         )
-
+        self.platform_config["REGISTRY_BKP_DIR"] = st.text_input(
+            "Registry Backup Directory",
+            st.session_state.REGISTRY_BKP_DIR,
+            key="KEY_REGISTRY_BKP_DIR",
+        )
 
        with mongo_col:
         st.subheader("Mongo")
@@ -345,6 +349,7 @@ class PlatformConfig:
             key="KEY_REDIS_BKP_DIR",
         )
 
+    # --- Backup Management Section ---
        for config_var in self.platform_config.keys():
            st.session_state[config_var] = self.platform_config[config_var]
 
