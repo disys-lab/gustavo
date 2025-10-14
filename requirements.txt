@@ -16,6 +16,8 @@ streamlit-card==1.0.0
 streamlit-pills==0.3.0
 plotly==5.20.0
 colorlog==6.9.0
-
+redis==5.1.0
+pandas==2.2.2
+altair==5.4.0
 
 
