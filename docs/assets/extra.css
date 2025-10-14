@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+/* Reset everything */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Push everything to left */
+.md-container,
+.md-main,
+.md-sidebar--primary,
+.md-sidebar__scrollwrap,
+.md-sidebar__inner,
+.md-nav,
+.md-nav__title,
+.md-header,
+.md-tabs {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  left: 0 !important;
+  position: relative !important;
+}
+
+/* Force the sidebar to stick at very left */
+.md-sidebar--primary {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  z-index: 1000;
+  width: 260px !important;
+  max-width: 260px !important;
+  box-shadow: none !important;
+  background: white !important;
+}
+
+/* Make content start AFTER the sidebar */
+.md-main {
+  margin-left: 260px !important;
+  padding-left: 0 !important;
+}
+
+/* Optional: keep header stretched properly */
+.md-header {
+  margin-left: 260px !important;
+  padding-left: 0 !important;
+}
+
+/* Disable shadow glow and spacing artifacts */
+.md-sidebar--primary,
+.md-nav,
+.md-sidebar__inner {
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+/* Prevent nav title shift */
+.md-nav__title {
+  padding-left: 1rem !important;
+  margin-left: 0 !important;
+}
+
+/* Allow nav items to use full width */
+.md-nav__link {
+  white-space: normal !important;   /* Allow wrapping instead of truncating */
+  overflow: visible !important;
+  text-overflow: initial !important;
+  display: block !important;
+  padding-right: 1rem;
+}
+
+/* For nested items, allow full width text display */
+.md-nav__list {
+  overflow-x: visible !important;
+  white-space: normal !important;
+}
+
+/* Slightly reduce indentation padding for sub-levels to reclaim space */
+.md-nav__item .md-nav__link {
+  padding-left: 1rem !important;
+}
