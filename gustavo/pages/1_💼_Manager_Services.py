@@ -74,7 +74,8 @@ class ManagerService:
         self.registry_conf = {
             "REGISTRY_HOST":"",
             "REGISTRY_PORT":"",
-            "REGISTRY_IMAGE":""
+            "REGISTRY_IMAGE":"",
+            "REGISTRY_BKP_DIR": "/tmp/"
         }
         st.session_state["Registry_status"] = "Unknown"
         self.syncer_conf = {
@@ -294,6 +295,19 @@ class ManagerService:
         else:
             self.registry_conf["REGISTRY_IMAGE"] = st.session_state.REGISTRY_IMAGE
             self.man.REGISTRY_IMAGE = st.session_state.REGISTRY_IMAGE
+
+        if "REGISTRY_BKP_DIR" not in st.session_state.keys():
+            self.registry_conf["REGISTRY_BKP_DIR"] = "/tmp/"
+        else:
+            REGISTRY_BKP_DIR = st.session_state.REGISTRY_BKP_DIR
+            if not (os.path.exists(REGISTRY_BKP_DIR) and os.path.isdir(REGISTRY_BKP_DIR)):
+                logging.error(f"{REGISTRY_BKP_DIR} does not exist, defaulting to /tmp/")
+                st.toast(f"{REGISTRY_BKP_DIR} does not exist, defaulting to /tmp/")
+                REGISTRY_BKP_DIR = "/tmp/"
+
+            #self.REDIS_BKP_DIR = REDIS_BKP_DIR
+            self.registry_conf["REGISTRY_BKP_DIR"] = REGISTRY_BKP_DIR
+            self.man.REGISTRY_BKP_DIR = st.session_state.REGISTRY_BKP_DIR
 
         return [self.registry_conf]
 

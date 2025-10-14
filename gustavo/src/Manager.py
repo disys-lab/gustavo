@@ -13,6 +13,8 @@ import logging
 from python_on_whales import docker as dockerow
 import sys
 from NebulaPythonSDK import Nebula
+import datetime
+import shutil
 
 class Manager(NebulaBase):
     """
@@ -87,6 +89,7 @@ class Manager(NebulaBase):
         self.SYNCER_IMAGE = None
         self.REDIS_IMAGE = None
         self.REDIS_BKP_DIR = "/tmp/"
+        self.REGISTRY_BKP_DIR = "/tmp/"  # Added Registry Backup Directory
         self.MONGO_IMAGE = None
         self.MANAGER_IMAGE = None
 
@@ -178,6 +181,16 @@ class Manager(NebulaBase):
                 "error": True,
                 "response": "REGISTRY_IMAGE undefined in base_config file",
             }
+
+        if "REGISTRY_BKP_DIR" in os.environ.keys():  # Added Registry Backup Directory
+            REGISTRY_BKP_DIR = os.getenv("REGISTRY_BKP_DIR")
+            if not (os.path.exists(REGISTRY_BKP_DIR) and os.path.isdir(REGISTRY_BKP_DIR)):
+                logging.error(f"{REGISTRY_BKP_DIR} does not exist, defaulting to /tmp/")
+                REGISTRY_BKP_DIR = "/tmp/"
+            self.REGISTRY_BKP_DIR = REGISTRY_BKP_DIR
+        else:
+            self.REGISTRY_BKP_DIR = "/tmp/"
+            logging.error(f"REGISTRY_BKP_DIR undefined in os.environ, defaulting to {self.REGISTRY_BKP_DIR}")
 
         if "SYNCER_IMAGE" in os.environ.keys():
             self.SYNCER_IMAGE = os.getenv("SYNCER_IMAGE")
@@ -273,6 +286,14 @@ class Manager(NebulaBase):
 
             # success = True
             dockerow.pull(self.REGISTRY_IMAGE)
+            if not os.path.exists(self.REGISTRY_BKP_DIR):
+                try:
+                    os.makedirs(self.REGISTRY_BKP_DIR,exist_ok=True)
+                except Exception as e:
+                    logging.error(f"{e}")
+                    logging.error(f"Could not create directory: {self.REGISTRY_BKP_DIR} ")
+                    return {"error": False, "response": f"Could not create directory: {self.REGISTRY_BKP_DIR} "}
+
             try:
                 client.containers.run(
                     image=self.REGISTRY_IMAGE,
@@ -281,7 +302,11 @@ class Manager(NebulaBase):
                     ports={"5000": self.REGISTRY_PORT},
                     name="registry",
                     restart_policy={"Name": "always"},
-                    volumes=[str(self.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],
+                    volumes=[
+                        str(self.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw",
+                        f"{self.REGISTRY_BKP_DIR}:/var/lib/registry:rw"  # Mounted registry data volume
+                    ],
+                    # volumes=[str(self.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],
                 )
                 # return {"error": False, "response": {"ipfs_bootnodes": redisRet}}
             except docker.errors.ImageNotFound as e:
@@ -407,7 +432,15 @@ class Manager(NebulaBase):
         if self.REDIS_IMAGE:
             # success = True
             dockerow.pull(self.REDIS_IMAGE)
+            if not os.path.exists(self.REDIS_BKP_DIR):
+                try:
+                    os.makedirs(self.REDIS_BKP_DIR,exist_ok=True)
+                except Exception as e:
+                    logging.error(f"{e}")
+                    logging.error(f"Could not create directory: {self.REDIS_BKP_DIR} ")
+                    return {"error": False, "response": f"Could not create directory: {self.REDIS_BKP_DIR} "}
             try:
+
                 print(f"REDIS_ARGS= --requirepass {str(self.REDIS_AUTH_TOKEN)}")
                 client.containers.run(
                     image=self.REDIS_IMAGE,
@@ -418,7 +451,6 @@ class Manager(NebulaBase):
                     restart_policy={"Name": "always"},
                     volumes = {f"{self.REDIS_BKP_DIR}": {'bind': '/data/', 'mode': 'rw'}},
                     environment=[f"REDIS_ARGS=--requirepass {str(self.REDIS_AUTH_TOKEN)}"],
-                    #environment=[f"REDIS_PASSWORD={str(self.REDIS_AUTH_TOKEN)}"],
                 )
             except docker.errors.ImageNotFound as e:
                 logging.error(f"{e}")
@@ -933,3 +965,4 @@ class Manager(NebulaBase):
 
         # return True
         return {"error": False, "response": "Service handled successfully"}
+
