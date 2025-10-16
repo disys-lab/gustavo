@@ -81,7 +81,8 @@ setup(
         "streamlit==1.37.0",
         "streamlit-card==1.0.0",
         "streamlit-pills==0.3.0",
-        "plotly==5.20.0"
+        "plotly==5.20.0",
+        "colorlog==6.9.0"
     ],
     python_requires=">={}".format(python_version),
     entry_points="""
