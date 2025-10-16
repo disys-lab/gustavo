@@ -11,10 +11,10 @@
 2. Now run `gustavo worker up`. You should see something like this :
     
 ```
-    latest: Pulling from homert2admin/worker
+    latest: Pulling from ghcr.io/disys-lab/gustavo-worker:latest
     Digest: sha256:16cb0f765ace8e77c564f994f0a0e2f9c56c61a94349536a9a21be47a0be1587
-    Status: Image is up to date for homert2admin/worker:latest
-    docker.io/homert2admin/worker:latest
+    Status: Image is up to date for ghcr.io/disys-lab/gustavo-worker:latest
+    ghcr.io/disys-lab/gustavo-worker:latest
     nebula@172.31.17.1:80
     DOCKER_HOST:unix:/var/run/docker.sock
     Worker Up
@@ -30,5 +30,5 @@ Once the command exits
     
 ```
     CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-    2ae898881fea        homert2admin/worker:latest   "python /worker/work…"   4 seconds ago       Up 3 seconds                            worker_bca
+    2ae898881fea        ghcr.io/disys-lab/gustavo-worker:latest   "python /worker/work…"   4 seconds ago       Up 3 seconds                            worker_bca
 ```

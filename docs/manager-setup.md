@@ -17,15 +17,15 @@
        docker.io/library/registry:2
        Registry Up
        Using default tag: latest
-       latest: Pulling from homert2admin/redis
+       latest: Pulling from redis/redis-stack:7.4.0-v1
        Digest: sha256:c2cbe8a592927bb74033f9c29b103ebc8e1ab3ed9598a9e937aaa2a723d5b8a7
-       Status: Image is up to date for homert2admin/redis:latest
-       docker.io/homert2admin/redis:latest
+       Status: Image is up to date for redis/redis-stack:7.4.0-v1
+       docker.io/homert2admin/redis
        Redis Up
-       latest: Pulling from homert2admin/dregsy
+       latest: Pulling from ghcr.io/disys-lab/dregsy
        Digest: sha256:1900a8aa72436218c9913ee07c122676d2a354350a21f1392c73cea594f37e66
-       Status: Image is up to date for homert2admin/dregsy:latest
-       docker.io/homert2admin/dregsy:latest
+       Status: Image is up to date for ghcr.io/disys-lab/dregsy:latest
+       docker.io/ghcr.io/disys-lab/dregsy:latest
        Syncer Up
        4.0.1: Pulling from library/mongo
        Digest: sha256:acf40597af1cc8bc3bf9a3f1aea87222abca1a99911febd28277ca8f0c142177
@@ -65,8 +65,8 @@ The output logs could be different from the one shown above and might take time 
 ``` 
     bddf795d4068        nebulaorchestrator/manager:2.6.1   "gunicorn --config /…"   8 seconds ago       Up 7 seconds        0.0.0.0:80->80/tcp         manager
     0b86865cf339        mongo:4.0.1                        "docker-entrypoint.s…"   10 seconds ago      Up 8 seconds        0.0.0.0:27017->27017/tcp   mongo
-    1525094c68b9        homert2admin/dregsy:latest         "dregsy -config=conf…"   10 seconds ago      Up 9 seconds                                   syncer
-    92c624de42f1        homert2admin/redis                 "docker-entrypoint.s…"   11 seconds ago      Up 10 seconds       0.0.0.0:6379->6379/tcp     redis
+    1525094c68b9        ghcr.io/disys-lab/dregsy:latest         "dregsy -config=conf…"   10 seconds ago      Up 9 seconds                                   syncer
+    92c624de42f1        redis/redis-stack:7.4.0-v1                 "docker-entrypoint.s…"   11 seconds ago      Up 10 seconds       0.0.0.0:6379->6379/tcp     redis
     453e54ed08b3        registry:2                         "/entrypoint.sh /etc…"   12 seconds ago      Up 11 seconds       0.0.0.0:5000->5000/tcp     registry
 ```
     

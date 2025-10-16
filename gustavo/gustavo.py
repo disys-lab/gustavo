@@ -637,7 +637,7 @@ def deleteDeviceGroups(name="bca"):
     "--image",
     "-i",
     help="name of the docker image to be used for worker",
-    default="homert2admin/worker:latest",
+    default="ghcr.io/disys-lab/gustavo-worker:latest",
 )
 @click.option(
     "--prefix", "-p", help="prefix for reporting logs", default="nebula-reports"
@@ -670,7 +670,7 @@ def workerDn(name):
     "--image",
     "-i",
     help="name of the docker image to be used for worker",
-    default="homert2admin/worker:latest",
+    default="ghcr.io/disys-lab/gustavo-worker:latest",
 )
 @click.option(
     "--prefix", "-p", help="prefix for reporting logs", default="nebula-reports"

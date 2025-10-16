@@ -97,7 +97,7 @@ class SyncerConfig:
                    'docker': {'dockerhost': 'unix:///var/run/docker.sock', 'api-version': 1.24},
                    'tasks': [{'name': 'task1', 'interval': 30, 'verbose': True, 'source': {'registry': 'registry.hub.docker.com', 'auth': ''},
                               'target': {'registry': '{}:{}'.format(REGISTRY_IP,REGISTRY_PORT), 'skip-tls-verify': True}, 'mappings_file': '/mappings_list.yaml'}]}
-        self.mappings_list = {'mappings': [{'from': 'homert2admin/environment_algorithm1', 'to': 'environment_algorithm1', 'tags': ['latest']}, {'from': 'homert2admin/eclss_algorithm3', 'to': 'eclss_algorithm3', 'tags': ['latest']}, {'from': 'homert2admin/eclss_algorithm2', 'to': 'eclss_algorithm2', 'tags': ['latest']}, {'from': 'homert2admin/eclss_algorithm1', 'to': 'eclss_algorithm1', 'tags': ['latest']}, {'from': 'homert2admin/eps_algorithm1', 'to': 'eps_algorithm1', 'tags': ['latest']}, {'from': 'homert2admin/robotics_algorithm1', 'to': 'robotics_algorithm1', 'tags': ['latest']}]}
+        self.mappings_list = {'mappings': [{'from': 'ghcr.io/disys-lab/gustavo-worker:latest', 'to': 'gustavo-worker', 'tags': ['latest']},]}
 
         if "visibility" not in st.session_state:
             st.session_state.visibility = "visible"

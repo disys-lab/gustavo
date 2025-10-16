@@ -781,20 +781,6 @@ class FileMonitoringApp:
             logging.error(f"Error plotting memory usage: {e}")
             st.error(f"Error plotting memory usage: {e}")
 
-    # def check_redis_key_ttl(self, key_pattern="nebula-reports*"):
-    #     """Debugging function to check TTL of Redis keys."""
-    #     try:
-    #         for key in self.redis_client.scan_iter(key_pattern):
-    #             key_str = key.decode('utf-8')
-    #             ttl = self.redis_client.ttl(key)
-    #             logging.info(f"Key: {key_str}, TTL: {ttl} seconds")
-    #             if ttl == -2:
-    #                 logging.warning(f"Key {key_str} does not exist or has expired")
-    #             elif ttl == -1:
-    #                 logging.info(f"Key {key_str} has no expiry")
-    #     except Exception as e:
-    #         logging.error(f"Error checking TTL: {e}")
-
     def run(self):
         """
         Executes a complete monitoring workflow for one dashboard instance.
