@@ -107,7 +107,7 @@ jobs:
         env:
           GH_USERNAME: ${{ vars.GH_USERNAME }}
           GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
-          GHCR_ACCESS_TOKEN: ${{ secrets.GHCR_ACCESS_TOKEN }}
+          GHCR_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           python3 docker_builder.py "$GH_USERNAME" "$GEMFURY_TOKEN" "$GHCR_ACCESS_TOKEN"
 
