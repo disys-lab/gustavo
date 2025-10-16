@@ -84,8 +84,8 @@ NEBULA_AUTH_TOKEN=bmVidWxhOm5lYnVsYQ==
 
 #docker image details
 REGISTRY_IMAGE="registry:2"
-SYNCER_IMAGE="homert2admin/dregsy:latest"
-REDIS_IMAGE="homert2admin/redis"
+SYNCER_IMAGE="ghcr.io/disys-lab/dregsy:latest"
+REDIS_IMAGE="redis/redis-stack:7.4.0-v1"
 MONGO_IMAGE="mongo:4.0.1"
 MANAGER_IMAGE="nebulaorchestrator/manager:2.6.1"
 

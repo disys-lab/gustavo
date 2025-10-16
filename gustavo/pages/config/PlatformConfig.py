@@ -18,7 +18,7 @@ class PlatformConfig:
                             "REGISTRY_PORT":"5000",
                             "REGISTRY_IP_DISABLED": True,
                             "REGISTRY_IMAGE":"registry:2",
-                            "SYNCER_IMAGE":"homert2admin/dregsy:latest",
+                            "SYNCER_IMAGE":"ghcr.io/disys-lab/dregsy:latest",
                             "SYNCER_NMODE":"host",
                             "REDIS_HOST":netwIPAddr,
                             "REDIS_IP_DISABLED": True,
@@ -28,7 +28,7 @@ class PlatformConfig:
                             "MANAGER_HOST":netwIPAddr,
                             "MANAGER_PORT":"80",
                             "CACHE_EXPIRE_TIME":"3600",
-                            "MANAGER_IMAGE":"homert2admin/manager",
+                            "MANAGER_IMAGE":"ghcr.io/disys-lab/gustavo-manager:latest",
                             "MANAGER_NMODE":"bridge",
                             "MONGO_HOST":netwIPAddr,
                             "MONGO_IP_DISABLED": True,
@@ -90,10 +90,10 @@ class PlatformConfig:
             # docker image details
 
             st.session_state.REGISTRY_IMAGE = "registry:2"
-            st.session_state.SYNCER_IMAGE = "homert2admin/dregsy:latest"
+            st.session_state.SYNCER_IMAGE = "ghcr.io/disys-lab/dregsy:latest"
             st.session_state.REDIS_IMAGE = "redis/redis-stack:7.4.0-v1"
             st.session_state.MONGO_IMAGE = "mongo:4.0.19"
-            st.session_state.MANAGER_IMAGE = "homert2admin/manager"
+            st.session_state.MANAGER_IMAGE = "ghcr.io/disys-lab/gustavo-manager:latest"
 
             # network mode
             st.session_state.MANAGER_NMODE = "bridge"

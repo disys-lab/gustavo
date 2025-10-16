@@ -8,7 +8,7 @@ mappings:
       #   to: test_linreg
       #   tags: ['latest']
 
-      # - from: homert2admin/redis
+      # - from: redis/redis-stack:7.4.0-v1
       #   to: redis
       #   tags: [ 'latest' ]
 
@@ -16,7 +16,7 @@ mappings:
       #   to: mongo
       #   tags: [ 'latest' ]
 
-      # - from: homert2admin/manager
+      # - from: ghcr.io/disys-lab/gustavo-manager:latest
       #   to: manager
       #   tags: [ 'latest' ]
 
