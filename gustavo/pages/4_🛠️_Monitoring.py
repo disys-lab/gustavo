@@ -162,7 +162,7 @@ class FileMonitoringApp:
                     entry for entry in st.session_state.historical_data[hostname]
                     if entry.get('report_creation_time', 0) >= cutoff_time
                 ]
-            st.write(f"Debug: Loaded {len(loaded_data)} data entries")
+            #st.write(f"Debug: Loaded {len(loaded_data)} data entries")
             return loaded_data
         except Exception as e:
             logging.error(f"Error loading data from Redis: {e}")
