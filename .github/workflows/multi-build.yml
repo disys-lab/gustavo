@@ -59,7 +59,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-12, macos-13, macos-14, macos-latest ]
+        os: [ macos-13, macos-14, macos-latest ]
         python-version: [ 3.11.9 ]
     if: "contains(github.event.head_commit.message, '#macbuild')"
     steps:
@@ -105,7 +105,7 @@ jobs:
       - name: Tag Build and Push
         working-directory: .
         env:
-          GH_USERNAME: ${{ vars.GH_USERNAME }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
           GEMFURY_TOKEN: ${{ secrets.GEMFURY_TOKEN }}
           GHCR_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
