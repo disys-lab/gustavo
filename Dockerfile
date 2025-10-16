@@ -23,4 +23,4 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN pip3 install --extra-index-url https://pypi.fury.io/osu-home-stri/ gustavo==${gustavo_version}
 
-CMD ["gustavo", "gui", "-p", "8154"]
+#CMD ["gustavo", "gui", "-p", "8154"]
