@@ -7,9 +7,10 @@ class AuthTokenHandler:
     def __init__(self):
 
         self.firebase_config_api_key = os.environ.get("FIREBASE_API_KEY","")
+        self.AUTH_ENDPOINT = os.environ.get("AUTH_ENDPOINT","")
         self.AUTH_ENABLED = str(os.getenv("AUTH_ENABLED", "false")).lower() in ("1", "true", "yes", "on")
 
-        if not self.firebase_config_api_key and self.AUTH_ENABLED:
+        if (not self.firebase_config_api_key or not self.AUTH_ENDPOINT) and self.AUTH_ENABLED:
             # Hide sidebar
             st.markdown("""
                     <style>
@@ -48,12 +49,8 @@ class AuthTokenHandler:
 
         self.id_token = None
 
-        # Replace with your server endpoint
-        if "EMULATE_FIREBASE" in os.environ.keys():
-            self.AUTH_ENDPOINT = "http://127.0.0.1:8071/blockalytics-6ebbb/us-central1/datachat"
 
-        else:
-            self.AUTH_ENDPOINT = 'https://us-central1-blockalytics-6ebbb.cloudfunctions.net/datachat'
+
 
         self.error_cases = {
             400: ("BadRequest", "The request was invalid or cannot be served"),
