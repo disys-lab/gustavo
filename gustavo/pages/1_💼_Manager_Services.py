@@ -62,7 +62,8 @@ class ManagerService:
                       "REDIS_IMAGE": "",
                       "REDIS_BKP_DIR": "/tmp/"
                       }
-        st.session_state["Redis_status"] = "Unknown"
+        if "Redis_status" not in st.session_state.keys():
+            st.session_state["Redis_status"] = "Unknown"
         self.mongo_conf = {
             "MONGO_HOST": "",
             "MONGO_PORT": "",
@@ -70,20 +71,23 @@ class ManagerService:
             "MONGO_PASSWORD":"",
             "MONGO_CERTIFICATE_FOLDER_PATH":""
         }
-        st.session_state["Mongo_status"] = "Unknown"
+        if "Mongo_status" not in st.session_state.keys():
+            st.session_state["Mongo_status"] = "Unknown"
         self.registry_conf = {
             "REGISTRY_HOST":"",
             "REGISTRY_PORT":"",
             "REGISTRY_IMAGE":"",
             "REGISTRY_BKP_DIR": "/tmp/"
         }
-        st.session_state["Registry_status"] = "Unknown"
+        if "Registry_status" not in st.session_state.keys():
+            st.session_state["Registry_status"] = "Unknown"
         self.syncer_conf = {
             "SYNCER_IMAGE": "",
             "DREGSY_CONFIG_FILE_PATH":"",
             "DREGSY_MAPPING_FILE_PATH":""
         }
-        st.session_state["Syncer_status"] = "Unknown"
+        if "Syncer_status" not in st.session_state.keys():
+            st.session_state["Syncer_status"] = "Unknown"
         self.manager_conf = {
             "MANAGER_HOST": "",
             "MANAGER_PORT": "",
@@ -448,7 +452,7 @@ class ManagerService:
         # Define the session key for service status at the top
         service_name_status = f'{service_name}_status'
         
-        with st.expander(service_name, expanded=True):
+        with st.expander(service_name, expanded=False):
             service_name_status = '{}_status'.format(service_name)
             data_editor_widget_key = service_name + "_" + "data_editor"
             status_button_widget_key = service_name + "_" + "status_button"

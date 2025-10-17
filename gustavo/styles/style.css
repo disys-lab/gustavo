@@ -1,152 +1,135 @@
-/* Background Color */
+/* ===============================
+   GLOBAL BASE STYLES
+   =============================== */
 body {
-    background-color: #90B4D3; /* Light Blue */
+    background-color: #f6f7fb; /* Light gray background */
+    color: #1f1f2e; /* Primary dark text */
+    font-family: "Inter", sans-serif;
 }
 
-/* Expander Style */
+div.block-container {
+    padding-top: 5vh;
+}
+
+/* ===============================
+   TITLES AND HEADINGS
+   =============================== */
+.gustavo-title, h1, h2, h3 {
+    text-align: center;
+    font-weight: 700;
+    color: #1f1f2e;
+    margin-top: 1rem;
+}
+
+.gustavo-subtitle {
+    text-align: center;
+    color: #5e5e75;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ===============================
+   SIDEBAR
+   =============================== */
+[data-testid="stSidebar"] {
+    background-color: #ffffff; /* White sidebar */
+    border-right: 1px solid #e0e0e0;
+}
+
+[data-testid="stSidebar"] .stButton button {
+    background-color: #1f1f2e;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.4rem;
+    height: 2.4rem;
+    width: 100%;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+[data-testid="stSidebar"] .stButton button:hover {
+    background-color: #2b2b45;
+}
+
+/* ===============================
+   EXPANDERS
+   =============================== */
 .streamlit-expanderHeader {
-    background-color: #90B4D3; /* Light Blue */
-    color: #4682B4; /* Steel Blue */
-    font-weight: bold;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 2px solid #90B4D3; /* Soft Blue Border */
+    background-color: #ffffff;
+    color: #1f1f2e;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    transition: background 0.2s ease;
 }
 
-/* Input Box Style */
-.stTextInput input {
-    background-color: white; /* Light Blue */
-    color: #4682B4; /* Steel Blue for text */
-    border: 2px solid #90B4D3; /* Soft Blue Border */
-    border-radius: 5px;
+.streamlit-expanderHeader:hover {
+    background-color: #f1f2f6;
+}
+
+/* ===============================
+   INPUTS / SELECTS
+   =============================== */
+.stTextInput input,
+.stMultiSelect div[data-baseweb="select"],
+st.selectbox div[data-baseweb="select"] {
+    background-color: #ffffff;
+    color: #1f1f2e;
+    border: 1px solid #cfd2dc;
+    border-radius: 6px;
     padding: 10px;
     width: 100%;
-    font-size: 16px;
+    font-size: 15px;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Multiselect Box Style */
-.stMultiSelect div[data-baseweb="select"] {
-    background-color: white; /* Light Blue */
-    border: 2px solid #90B4D3; /* Soft Blue Border */
-    border-radius: 5px;
-    color: #4682B4; /* Steel Blue for text */
-    padding: 10px;
+.stTextInput input:focus,
+.stMultiSelect div[data-baseweb="select"]:focus-within,
+st.selectbox div[data-baseweb="select"]:focus-within {
+    border-color: #1f1f2e;
+    box-shadow: 0 0 0 2px rgba(31,31,46,0.1);
 }
 
-/* Selected Items in Multiselect */
-.stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-container {
-    background-color: #FFFFFF; /* White background for the multiselect container after selection */
-    border: 2px solid #90B4D3; /* Soft Blue Border */
-    border-radius: 5px;
-}
-
-/* Selected Items in Multiselect */
-.stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-option {
-    background-color: white; /* Light Blue */
-    color: #4682B4; /* Steel Blue */
+/* ===============================
+   BUTTONS
+   =============================== */
+.stButton button,
+div[data-testid="stDownloadButton"] button {
+    background-color: #1f1f2e;
+    color: #ffffff;
     border: none;
-    border-radius: 5px;
-    margin-right: 5px;
-    padding: 5px 10px;
-}
-
-.stMultiSelect div[data-baseweb="select"] .css-1n6y8sc-option:hover {
-    background-color: white; /* Slightly darker blue on hover */
-    color: #90B4D3;
-}
-
-/* select Box Style */
-st.selectbox div[data-baseweb="select"] {
-    background-color: white; /* Light Blue */
-    border: 2px solid #90B4D3; /* Soft Blue Border */
-    border-radius: 5px;
-    color: #4682B4; /* Steel Blue for text */
-    padding: 10px;
-}
-
-/* Selected Items in select */
-st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option {
-    background-color: white; /* Light Blue */
-    color: #4682B4; /* Steel Blue */
-    border: none;
-    border-radius: 5px;
-    margin-right: 5px;
-    padding: 5px 10px;
-}
-
-st.selectbox div[data-baseweb="select"] .css-1n6y8sc-option:hover {
-    background-color: white; /* Slightly darker blue on hover */
-    color: #90B4D3;
-}
-
-/* Button Style */
-.stButton button {
-    background-color: #90B4D3; /* Light Blue */
-    color: #4682B4; /* Steel Blue */
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
+    border-radius: 0.4rem;
+    height: 2.6rem;
+    width: 100%;
+    font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
-    margin-top: 10px;
+    transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.stButton button:hover {
-    background-color: #90B4D3; /* Slightly darker blue on hover */
-    color: white;
+.stButton button:hover,
+div[data-testid="stDownloadButton"] button:hover {
+    background-color: #2b2b45;
+    transform: translateY(-1px);
 }
 
-/* Custom red button for statusButton */
-.red-button {
-    background-color: red; /* Red button */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
+/* Status Buttons */
+button.status-up {
+    background-color: #3dbd7d;
 }
 
-.red-button:hover {
-    background-color: darkred; /* Darker red on hover */
-    color: white;
+button.status-down {
+    background-color: #e74c3c;
 }
 
-st.download_button button {
-    background-color: #90B4D3; /* Light Blue */
-    color: #1C1C1C; /* Dark Text */
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
+button.status-unknown {
+    background-color: #7f8c8d;
 }
 
-st.download_button button:hover {
-    background-color: #90B4D3; /* Slightly darker blue on hover */
-    color: white;
-}
-
-/* Section Headers */
-h1, h2, h3 {
-    color: #90B4D3; /* Steel Blue */
-    text-align: center;
-}
-
-/* General Text Color */
-body {
-    color: #90B4D3; /* Steel Blue */
-}
-
-/* General Border Style */
-input, select, textarea, button, .streamlit-expanderHeader {
-    border-radius: 5px;
-    border: 2px solid #90B4D3; /* Soft Blue Border */
-}
-
+/* ===============================
+   STATUS CIRCLES
+   =============================== */
 .status-circle {
     display: inline-block;
     width: 12px;
@@ -154,143 +137,36 @@ input, select, textarea, button, .streamlit-expanderHeader {
     border-radius: 50%;
     margin-right: 5px;
 }
+.status-up { background-color: #3dbd7d; }
+.status-down { background-color: #e74c3c; }
+.status-unknown { background-color: #7f8c8d; }
 
-.status-up {
-    background-color: 9CECA2;
-}
-
-.status-down {
-    background-color: red;
-}
-
-.status-unknown {
-    background-color: grey;
-}
-
-
-/* Default button style */
-button.status-button {
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-/* Button color styles */
-button.status-up {
-    background-color: #9CECA2;
-}
-
-button.status-down {
-    background-color: red;
-}
-
-button.status-unknown {
-    background-color: gray;
-}
-
-/* Background button (slightly larger than the actual button) */
-.custom-button-background {
-    position: absolute;
-    top: 0; 
-    left: 0;
-    width: 120%; /* Slightly larger width */
-    height: 120%; /* Slightly larger height */
-    background-color: #b0e0e6;  /* Light blue (or any color for the background) */
-    border-radius: 10px;
-    z-index: 0;  /* Ensure it is behind the actual button */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Optional shadow for a 3D effect */
-}
-
-/* This keeps your existing button style */
-.stButton button {
-    background-color: #90B4D3; /* Light Blue */
-    color: #4682B4; /* Steel Blue */
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    position: relative;  /* Ensure the button is placed above the background */
-    z-index: 1;  /* Higher z-index to ensure it stays above the background */
-}
-
-
-/* Ensure all buttons have the same width */
-.stButton button, div[data-testid="stDownloadButton"] button {
-    background-color: #90B4D3; /* Light Blue */
-    color: #4682B4; /* Steel Blue */
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-    width: 100% !important; /* Forces all buttons to take full column width */
-    text-align: center;
-}
-
-/* Hover effect */
-.stButton button:hover, div[data-testid="stDownloadButton"] button:hover {
-    background-color: #90B4D3; 
-    color: white;
-}
-
-
-.stButton button, div[data-testid="stDownloadButton"] button {
-    background-color: #90B4D3; 
-    color: #4682B4;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-    width: auto; 
-    min-width: 150px; 
-    max-width: 250px; 
-    text-align: center;
-    display: block; 
-    margin-left: auto; 
-    margin-right: auto; 
-}
-
-
-.stButton button:hover, div[data-testid="stDownloadButton"] button:hover {
-    background-color: #90B4D3; 
-    color: white;
-}
-
-/* === Floating Mouse Tooltip === */
+/* ===============================
+   TOOLTIP (Optional)
+   =============================== */
 .mouse-tooltip {
     position: fixed;
     top: var(--mouse-y, 50%);
     left: var(--mouse-x, 50%);
-    transform: translate(-50%, -120%); /* Move a little higher above mouse */
+    transform: translate(-50%, -120%);
     z-index: 1000;
     animation: fadeInOut 3s ease-out forwards;
-    pointer-events: none; /* Mouse can pass through tooltip */
+    pointer-events: none;
 }
 
 .tooltip-text {
-    background-color: rgba(0, 0, 0, 0.85); /* Darker background */
-    color: #f7f7f7; /* Slightly softer white */
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #f7f7f7;
     padding: 10px 14px;
     border-radius: 10px;
-    font-size: 15px;
-    max-width: 280px;
+    font-size: 14px;
     text-align: center;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Add soft shadow */
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 @keyframes fadeInOut {
     0% { opacity: 0; transform: translate(-50%, -130%); }
-    10% { opacity: 1; transform: translate(-50%, -120%); }
-    90% { opacity: 1; transform: translate(-50%, -120%); }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
     100% { opacity: 0; transform: translate(-50%, -110%); }
 }

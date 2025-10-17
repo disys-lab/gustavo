@@ -51,7 +51,7 @@ def login_page():
     left, center, right = st.columns([1,2,1])
     with center:
         parent = os.path.dirname(os.path.realpath(__file__))
-        logo_path = os.path.join(parent, "images", "gustavo_login.png")
+        logo_path = os.path.join(parent, "images", "gustavo_login_transparent.png")
 
         if os.path.exists(logo_path):
             image_left, image_center, image_right = st.columns([1, 2, 1])
