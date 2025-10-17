@@ -7,8 +7,9 @@ class AuthTokenHandler:
     def __init__(self):
 
         self.firebase_config_api_key = os.environ.get("FIREBASE_API_KEY","")
+        self.AUTH_ENABLED = str(os.getenv("AUTH_ENABLED", "false")).lower() in ("1", "true", "yes", "on")
 
-        if not self.firebase_config_api_key:
+        if not self.firebase_config_api_key and self.AUTH_ENABLED:
             # Hide sidebar
             st.markdown("""
                     <style>
