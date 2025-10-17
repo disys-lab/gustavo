@@ -8,6 +8,7 @@ class AuthTokenHandler:
 
         self.firebase_config_api_key = os.environ.get("FIREBASE_API_KEY","")
         self.AUTH_ENDPOINT = os.environ.get("AUTH_ENDPOINT","")
+        self.CUSTOM_TOKEN_URL = os.environ.get("CUSTOM_TOKEN_URL","")
         self.AUTH_ENABLED = str(os.getenv("AUTH_ENABLED", "false")).lower() in ("1", "true", "yes", "on")
 
         if (not self.firebase_config_api_key or not self.AUTH_ENDPOINT) and self.AUTH_ENABLED:
@@ -152,7 +153,7 @@ class AuthTokenHandler:
         """
         FIREBASE_API_KEY = self.firebase_config_api_key
 
-        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={FIREBASE_API_KEY}"
+        url = f"{self.CUSTOM_TOKEN_URL}?key={FIREBASE_API_KEY}"
         payload = {
             "token": custom_token,
             "returnSecureToken": True
