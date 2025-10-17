@@ -13,4 +13,16 @@ def sidebarInit():
         except Exception as e:
             VERSION = "dev"
 
+        # Small logout button
+        if st.button("🚪 Logout", use_container_width=True):
+            # Clear Firebase tokens
+            if "firebase" in st.session_state:
+                st.session_state["firebase"]["id_token"] = None
+                st.session_state["firebase"]["custom_token"] = None
+
+            st.toast("👋 Logged out successfully!")
+            # Force redirect to main route (Home.py)
+            st.switch_page("🏠Home.py")
+            st.rerun()
+
         st.text("Gustavo version {}".format(VERSION))
