@@ -42,10 +42,6 @@ class HostConfig:
                                       'ipfs_rest_port': 'IPFS REST Port', 'ipfs_disc_port': 'IPFS Discovery Port'})
         self.df = temp_df
         st.session_state["df"] = temp_df
-        # st.experimental_rerun()
-        #temp_df.set_index("hostid",inplace=False)
-        # print(temp_df)
-        # print(self.df)
 
 
     def hosts(self):
@@ -93,41 +89,5 @@ class HostConfig:
         self.edited_df = st.data_editor(st.session_state["df"], num_rows="dynamic", use_container_width=True,
                                         key="HOSTS_CONFIG_EDITOR")
 
-        #
-        # favorite_command = edited_df.loc[edited_df["rating"].idxmax()]["command"]
-        # st.markdown(f"Your favorite command is **{favorite_command}** 🎈")
-
-
-# st.set_page_config(
-#
-#     layout="wide",
-#     initial_sidebar_state="expanded"
-#
-# )
-# sb = Sidebar()
 hc = HostConfig()
 hc.hosts()
-#
-
-
-# with add_row:
-            #     if 'add_row_clicked' not in st.session_state:
-            #         st.session_state.add_row_clicked = False
-            #
-            #     def set_add_row_clicked():
-            #         st.session_state.add_row_clicked= not (st.session_state.add_row_clicked)
-            #
-            #     st.button('Add ➕', on_click=set_add_row_clicked)
-            #     if st.session_state.add_row_clicked:
-            #         pass
-            #
-            # with delete_row:
-            #     if 'delete_row_clicked' not in st.session_state:
-            #         st.session_state.delete_row_clicked = False
-            #
-            #     def set_delete_row_clicked():
-            #         st.session_state.delete_row_clicked= not (st.session_state.delete_row_clicked)
-            #
-            #     st.button('Delete ❌', on_click=set_delete_row_clicked)
-            #     if st.session_state.delete_row_clicked:
-            #         pass
