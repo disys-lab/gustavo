@@ -149,7 +149,7 @@ class NebulaBase:
         if "CACHE_PREFIX" in os.environ.keys():
             self.CACHE_PREFIX = os.getenv("CACHE_PREFIX")
         else:
-            self.CACHE_PREFIX = "nebula-reports"
+            self.CACHE_PREFIX = "gustavo-reports"
 
         if "REDIS_HOST" in os.environ.keys():
             self.REDIS_IP = os.getenv("REDIS_HOST")

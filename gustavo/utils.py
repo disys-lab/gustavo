@@ -234,7 +234,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
         The container image that needs to be used for the worker
 
     prefix : string
-        Prefix for cache entries, the topic used to identify cache entries in redis, default is "nebula-reports"
+        Prefix for cache entries, the topic used to identify cache entries in redis, default is "gustavo-reports"
 
     expire_time : string
         The expire time for cache content on redis

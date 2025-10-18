@@ -64,7 +64,7 @@ REDIS_HOST=172.31.17.1
 REDIS_PORT=6379
 REDIS_AUTH_TOKEN="teentakle1212"
 REDIS_EXPIRE_TIME=10
-REDIS_KEY_PREFIX="nebula-reports"
+REDIS_KEY_PREFIX="gustavo-reports"
 
 #the details of the manager host and port
 MANAGER_HOST=172.31.17.1

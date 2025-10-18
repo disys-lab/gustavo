@@ -10,6 +10,7 @@ import time
 from gustavo.pages.config.Sidebar import sidebarInit
 from gustavo.pages.config.Logging import setup_logging
 from gustavo.pages.config.loadCss import load_css
+from gustavo.src.Composer import Composer
 load_css()
 load_dotenv()
 # Initialize sidebar and logging
@@ -99,7 +100,7 @@ class FileMonitoringApp:
 
         Workflow:
         1. Check if Redis client is connected. If not, alert the user and exit.
-        2. Define a Redis key pattern using the prefix `CACHE_PREFIX` (default: 'nebula-reports').
+        2. Define a Redis key pattern using the prefix `CACHE_PREFIX` (default: 'gustavo-reports').
         3. Set a time cutoff based on the current Unix timestamp minus 5 minutes.
         4. Use `scan_iter` to iterate over all Redis keys matching the pattern.
         5. For each key:
@@ -125,13 +126,14 @@ class FileMonitoringApp:
         Returns:
             list: All valid recent entries, useful for filtering and plotting
         """
+        self.redis_client = self.get_redis_client()
         if not self.redis_client:
             st.error("Redis client not initialized")
             return []
-        prefix = os.getenv("CACHE_PREFIX", "nebula-reports")
+        prefix = os.getenv("CACHE_PREFIX", "gustavo-reports")
         pattern = f"{prefix}*"
         loaded_data = []
-        time_window_minutes = 5  # Store data from the last 5 minutes
+        time_window_minutes = int(os.environ.get("DATA_PLOT_MINUTES",5))  # Store data from the last 5 minutes
         cutoff_time = int(time.time()) - (time_window_minutes * 60)
         try:
             for key in self.redis_client.scan_iter(pattern):
@@ -269,6 +271,29 @@ class FileMonitoringApp:
             st.error(f"Error refreshing data: {e}")
             return {"error": True, "response": str(e)}
 
+    def listDeviceGroups(self):
+        try:
+            bcmp = Composer(mode="streamlit", params=st.session_state)
+            response = bcmp.nebulaObj.list_device_groups()
+        except Exception as e:
+            return {"error": True, "response": e}
+
+
+        device_group_list = []
+
+        if response["status_code"] == 200:
+            for group_name in response["reply"]["device_groups"]:
+                group_response = bcmp.nebulaObj.list_device_group(group_name)
+                if group_response["status_code"] == 200:
+                    apps = group_response["reply"]["apps"]
+                    device_group_list.append({"name": group_name, "apps": apps})
+
+        # ✅ Ensure session state is updated
+        st.session_state.device_groups = device_group_list
+
+
+        return [dg.get("name",) for dg in device_group_list]
+
     def getDeviceGroups(self):
         """
         Extracts a unique set of `device_group` names from the current Redis data in session.
@@ -333,6 +358,7 @@ class FileMonitoringApp:
         """
         try:
             self.device_groups = self.getDeviceGroups()
+            logging.info(f"{self.device_groups}")
             if self.device_groups:
                 selected_group_key = f"selected_group_{self.app_id}_{iteration}"
                 if selected_group_key not in st.session_state:
@@ -580,14 +606,19 @@ class FileMonitoringApp:
             ]
             if cpu_usage_records:
                 df_cpu_usage = pd.DataFrame(cpu_usage_records)
-                cpu_chart = alt.Chart(df_cpu_usage).mark_bar().encode(
-                    x='hostname:N',
-                    y=alt.Y('cpu_usage:Q', title="CPU Usage (%)"),
-                    tooltip=['hostname:N', 'cpu_usage:Q']
-                ).properties(
-                    title=f"CPU Usage by Host ({self.selected_group})"
-                ).interactive()
-                st.altair_chart(cpu_chart, use_container_width=True)
+                cpu_scatter = (
+                    alt.Chart(df_cpu_usage)
+                    .mark_circle(size=150, color="steelblue")
+                    .encode(
+                        x=alt.X("hostname:N", title="Host"),
+                        y=alt.Y("cpu_usage:Q", title="CPU Usage (%)"),
+                        tooltip=["hostname", "cpu_usage"]
+                    )
+                    .properties(title=f"CPU Usage Scatter ({'All Hosts'})")
+                    .interactive()
+                )
+
+                st.altair_chart(cpu_scatter, use_container_width=True)
             else:
                 logging.warning("No CPU usage records found.")
                 # st.warning("No CPU usage records found.")
@@ -870,7 +901,16 @@ class FileMonitoringApp:
 
         Each app instance manages its own widgets and visualization context.
         """
+        data_plot_minutes = os.environ.get("DATA_PLOT_MINUTES", 5)
         st.title("Monitoring Dashboard")
+        st.markdown(
+            f"<p style='text-align: center; font-size:16px;'>Plotting past {data_plot_minutes} minutes worth of data</p>",
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            f"<p style='text-align: center; font-size:16px;'>Refresh plots to update</p>",
+            unsafe_allow_html=True
+        )
         if 'app_instances' not in st.session_state:
             st.session_state.app_instances = []
             default_app = FileMonitoringApp()
