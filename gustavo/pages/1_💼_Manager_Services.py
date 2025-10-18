@@ -541,9 +541,11 @@ class ManagerService:
                             if not result["error"]:
                                 st.session_state[service_name_status] = "Up"
                                 status_container.markdown(f":green[{service_name} is Up]")
+                                st.toast(f"✅ {service_name} is up!")
                             else:
                                 st.session_state[service_name_status] = "Down"
                                 status_container.markdown(f":red[Error while launching {service_name}]")
+                                st.toast(f"❌ Error while launching {service_name}")
                             return result  # ✅ Add this line
                     self.handleTask(f"Launching {service_name}...", launch_action, f"{service_name}_launch_result")
                     st.session_state[launch_session_key] = False
@@ -568,9 +570,11 @@ class ManagerService:
                                 st.session_state[service_name_status] = "Down"
                                 st.write(result["response"])
                                 status_container.markdown(f":green[{service_name} is brought down]")
+                                st.toast(f"✅ {service_name} brought down successfully!")
                             elif "error" in result.keys():
                                 st.write(result["response"])
                                 status_container.markdown(f":red[Error encountered while removing {service_name}]")
+                                st.toast(f"❌ Error while removing {service_name}")
                             return result
                     self.handleTask(f"Removing {service_name}...", remove_action, f"{service_name}_remove_result")
                     st.session_state[remove_session_key] = False
