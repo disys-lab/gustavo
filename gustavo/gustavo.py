@@ -640,7 +640,7 @@ def deleteDeviceGroups(name="bca"):
     default="ghcr.io/disys-lab/gustavo-worker:latest",
 )
 @click.option(
-    "--prefix", "-p", help="prefix for reporting logs", default="nebula-reports"
+    "--prefix", "-p", help="prefix for reporting logs", default="gustavo-reports"
 )
 @click.option(
     "--expire-time",
@@ -673,7 +673,7 @@ def workerDn(name):
     default="ghcr.io/disys-lab/gustavo-worker:latest",
 )
 @click.option(
-    "--prefix", "-p", help="prefix for reporting logs", default="nebula-reports"
+    "--prefix", "-p", help="prefix for reporting logs", default="gustavo-reports"
 )
 @click.option(
     "--expire-time",
