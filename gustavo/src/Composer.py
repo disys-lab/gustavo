@@ -1,5 +1,5 @@
 import sys, click, requests, json
-from NebulaPythonSDK import Nebula
+from gustavo.src.NebulaPythonSDK import Nebula
 from .NebulaBase import NebulaBase
 from gustavo.pages.config.Logging import setup_logging
 setup_logging()

@@ -12,7 +12,7 @@ setup_logging()
 import logging
 from python_on_whales import docker as dockerow
 import sys
-from NebulaPythonSDK import Nebula
+from gustavo.src.NebulaPythonSDK import Nebula
 import datetime
 import shutil
 
