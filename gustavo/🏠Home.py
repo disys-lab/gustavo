@@ -2,14 +2,18 @@ import streamlit as st
 import os
 from gustavo.pages.config.AuthTokenHandler import AuthTokenHandler
 
+
+
 AUTH_ENABLED = str(os.getenv("AUTH_ENABLED", "false")).lower() in ("1", "true", "yes", "on")
 st.session_state["AUTH_ENABLED"] = AUTH_ENABLED
+ADMIN_UID = str(os.getenv("ADMIN_UID", None))
+st.session_state["ADMIN_UID"] = ADMIN_UID
+st.session_state["ADMIN_MODE"] = False
 
 # --- SESSION STATE SETUP ---
 if "firebase" not in st.session_state:
     st.session_state["firebase"] = {"id_token": None, "custom_token": None}
 auth = AuthTokenHandler()
-
 
 def login_page():
     st.set_page_config(page_title="Gustavo Login", layout="centered", initial_sidebar_state="collapsed")
@@ -70,6 +74,8 @@ def login_page():
             submitted = st.form_submit_button("Login")
 
             if submitted:
+
+
                 with st.spinner("Authenticating..."):
                     status, custom_token = auth.get_custom_token(user_id, user_token)
                     if status:
@@ -77,7 +83,14 @@ def login_page():
                         ok, id_token = auth.exchange_custom_with_id_token(custom_token)
                         if ok:
                             st.session_state["firebase"]["id_token"] = id_token
-                            st.toast("🎉 Successfully authenticated!")
+                            #st.toast("🎉 Successfully authenticated!")
+                            if user_id == ADMIN_UID:
+                                st.toast(f"Authenticated as admin with ADMIN_UID:{ADMIN_UID}")
+                                st.session_state["ADMIN_UID"] = ADMIN_UID
+                                st.session_state["ADMIN_MODE"] = True
+                            else:
+                                st.toast(f"Authenticated as user:{user_id}")
+                                st.session_state["ADMIN_MODE"] = False
                             st.rerun()
                         else:
                             st.error("Failed to exchange custom token for ID token.")
