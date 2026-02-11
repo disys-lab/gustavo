@@ -9,6 +9,7 @@ import docker
 import datetime
 import shutil
 import pandas as pd
+import subprocess
 # from src.Manager import Manager # Manager import is kept but not directly used for backup handlers in this file
 from gustavo.src.NebulaBase import setup_logging
 setup_logging()
@@ -354,6 +355,7 @@ class BackupService:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_dirname = f"registry_backup_{timestamp}"
             backup_path_on_host = os.path.join(self.REGISTRY_BKP_DIR, backup_dirname)
+            live_registry_path_on_host = os.path.join(self.REGISTRY_BKP_DIR, "docker")
 
             # Ensure the target directory exists on the host
             os.makedirs(backup_path_on_host, exist_ok=True)
@@ -363,8 +365,9 @@ class BackupService:
             # Note: docker cp requires the container to be running.
             # For a consistent backup, the registry might need to be paused or stopped.
             # This implementation assumes a "hot" backup which might not be fully consistent.
-            import subprocess
-            command = ["docker", "cp", f"{registry_container.name}:/var/lib/registry", backup_path_on_host]
+            #command = ["docker", "cp", f"{registry_container.name}:/var/lib/registry", backup_path_on_host]
+
+            command = ["cp", "-r" ,live_registry_path_on_host, backup_path_on_host]
             result = subprocess.run(command, capture_output=True, text=True)
 
             if result.returncode == 0:
