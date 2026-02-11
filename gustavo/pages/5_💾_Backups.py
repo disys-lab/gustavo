@@ -365,7 +365,6 @@ class BackupService:
             # Note: docker cp requires the container to be running.
             # For a consistent backup, the registry might need to be paused or stopped.
             # This implementation assumes a "hot" backup which might not be fully consistent.
-            #command = ["docker", "cp", f"{registry_container.name}:/var/lib/registry", backup_path_on_host]
 
             command = ["cp", "-r" ,live_registry_path_on_host, backup_path_on_host]
             result = subprocess.run(command, capture_output=True, text=True)
