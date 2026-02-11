@@ -360,6 +360,7 @@ class BackupService:
             # Ensure the target directory exists on the host
             os.makedirs(backup_path_on_host, exist_ok=True)
 
+
             # Use docker cp to copy the registry data from the container to the host
             # Assuming registry data is at /var/lib/registry inside the container
             # Note: docker cp requires the container to be running.
