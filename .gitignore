@@ -1,13 +1,36 @@
-build/
-.idea/
-nginx_app_config.yaml
-alpine_app_config.yaml
-app_settings.yaml
-*.spec
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
 dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# ── Secrets / runtime config ─────────────────────────────────────────────────
+*.env
+.env
+.env.*
+/config/
+/tmp/
+*.rdb
+*.log
+
+# ── IDE / OS ─────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
 .DS_Store
+*.spec
+
+# ── Legacy ignored paths ──────────────────────────────────────────────────────
 ./sample_config_files/
 ./config_files/
 ./comms/
-*.egg-info
+nginx_app_config.yaml
+alpine_app_config.yaml
+app_settings.yaml
