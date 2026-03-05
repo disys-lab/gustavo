@@ -11,7 +11,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Gustavo — Container Orchestration",
   description: "Gustavo Nebula platform management UI",
-  icons: { icon: "/gustavo_icon.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

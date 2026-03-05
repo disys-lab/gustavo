@@ -1,6 +1,7 @@
 "use client";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/lib/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,15 @@ function LoginForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm rounded-xl border bg-white p-8 shadow-sm">
+        <div className="mb-6 flex justify-center">
+          <Image
+            src="/gustavo_login_transparent.png"
+            alt="Gustavo"
+            width={180}
+            height={180}
+            priority
+          />
+        </div>
         <h1 className="mb-1 text-center text-xl font-bold text-gray-900">Sign in to Gustavo</h1>
         <p className="mb-6 text-center text-sm text-gray-500">Authenticate using your User ID and Token</p>
         <form onSubmit={handleSubmit} className="space-y-4">

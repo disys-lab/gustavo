@@ -6,7 +6,7 @@ name: Python Package Creation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "nextjsint" ]
 
 
 jobs:
