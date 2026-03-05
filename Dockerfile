@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 
 ARG py_version=python3.11
-ARG gustavo_version=0.3.12
+ARG gustavo_version=v0.4.0-beta.3
 ARG node_version=20
 ARG NEXT_PUBLIC_AUTH_ENABLED=true
 
@@ -13,17 +13,19 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # ── Python base (mirrors Dockerfile.streamlit exactly) ───────────────────────
-RUN apt-get -y update && apt-get -y upgrade
-
-RUN apt-get -y install build-essential supervisor software-properties-common curl
-
-RUN add-apt-repository ppa:deadsnakes/ppa
-
-RUN apt-get -y install python3-pip ${py_version} ${py_version}-venv ${py_version}-dev
+# All apt steps in one layer so apt lists are always fresh and then cleaned up,
+# preventing stale GPG signatures from being cached across builds.
+RUN apt-get -y update && apt-get -y upgrade && \
+    apt-get -y install build-essential supervisor software-properties-common curl && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get -y update && \
+    apt-get -y install python3-pip ${py_version} ${py_version}-venv ${py_version}-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # ── Node.js ──────────────────────────────────────────────────────────────────
 RUN curl -fsSL https://deb.nodesource.com/setup_${node_version}.x | bash - && \
-    apt-get -y install nodejs
+    apt-get -y install nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN ${py_version} -m venv /opt/venv
 
@@ -38,9 +40,10 @@ RUN pip install --no-cache-dir -r /tmp/requirements-api.txt
 WORKDIR /app
 COPY . .
 
-# Install local gustavo package (adds gustavo/api/ submodule not in PyPI release)
-# --no-deps avoids reinstalling the heavy Streamlit/Altair stack already in the venv
-RUN pip install --no-cache-dir -e . --no-deps
+# Install local gustavo package (adds gustavo/api/ submodule not in PyPI release).
+# PACKAGE_VERSION must be set so setup.py doesn't fall through to sys.argv[-1],
+# which pip sets to 'egg_info' during editable installs — an invalid version string.
+RUN PACKAGE_VERSION=${gustavo_version} pip install --no-cache-dir -e . --no-deps
 
 # ── Next.js UI build ─────────────────────────────────────────────────────────
 # NEXT_PUBLIC_AUTH_ENABLED is baked in at build time (Next.js requirement for client vars)

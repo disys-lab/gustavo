@@ -14,12 +14,13 @@
 
 REGISTRY   ?= ghcr.io/disys-lab
 IMAGE      ?= gustavo
-VERSION    ?= latest
+GUSTAVO_DOCKER_VERSION    ?= 0.4.0b3
+GUSTAVO_VERSION    ?= v0.4.0-beta.3
 PY_VERSION ?= python3.11
 NODE_VERSION ?= 20
 AUTH       ?= true
 
-FULL_IMAGE  = $(REGISTRY)/$(IMAGE):$(VERSION)
+FULL_IMAGE  = $(REGISTRY)/$(IMAGE):$(GUSTAVO_DOCKER_VERSION)
 LATEST_TAG  = $(REGISTRY)/$(IMAGE):latest
 
 # ── Build ─────────────────────────────────────────────────────────────────────
@@ -27,7 +28,9 @@ LATEST_TAG  = $(REGISTRY)/$(IMAGE):latest
 build:
 	docker buildx build \
 		--platform linux/amd64 \
-		--build-arg gustavo_version=$(VERSION) \
+		--no-cache \
+		--pull \
+		--build-arg gustavo_version=$(GUSTAVO_VERSION) \
 		--build-arg py_version=$(PY_VERSION) \
 		--build-arg node_version=$(NODE_VERSION) \
 		--build-arg NEXT_PUBLIC_AUTH_ENABLED=$(AUTH) \
@@ -47,7 +50,9 @@ push:
 release:
 	docker buildx build \
 		--platform linux/amd64 \
-		--build-arg gustavo_version=$(VERSION) \
+		--no-cache \
+		--pull \
+		--build-arg gustavo_version=$(GUSTAVO_VERSION) \
 		--build-arg py_version=$(PY_VERSION) \
 		--build-arg node_version=$(NODE_VERSION) \
 		--build-arg NEXT_PUBLIC_AUTH_ENABLED=$(AUTH) \

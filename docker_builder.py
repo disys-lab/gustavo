@@ -43,6 +43,7 @@ def build_and_push_docker_image(image_name, sc_version, py_version, dockerfile_p
             ["docker", "buildx" ,"build",
              "--platform", "linux/amd64",
              "--no-cache",
+             "--pull",
              "-t", image_name, "-t", "ghcr.io/disys-lab/gustavo:latest",
              dockerfile_path,
              "--build-arg", f"gustavo_version={sc_version}", "--build-arg", f"py_version={py_version}",
