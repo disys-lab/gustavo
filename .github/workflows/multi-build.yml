@@ -8,7 +8,6 @@ on:
   push:
     branches: [ "main", "nextjsint" ]
 
-
 jobs:
   bumpversion:
     if: "contains(github.event.head_commit.message, '#bump')"
