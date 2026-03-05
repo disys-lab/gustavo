@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  gustavo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_AUTH_ENABLED is baked into the Next.js bundle at build time.
+        # It inherits AUTH_ENABLED so one variable controls both sides.
+        - NEXT_PUBLIC_AUTH_ENABLED=${AUTH_ENABLED:-true}
+    container_name: gustavo
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # Only the Next.js UI is exposed externally.
+                      # FastAPI binds to 127.0.0.1:8000 inside the container —
+                      # with bridge networking that loopback is fully isolated
+                      # and unreachable from the host or any external machine.
+    volumes:
+      - ./config:/etc/gustavo          # platform.yaml config persistence
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/:/tmp/
+    environment:
+      - GUSTAVO_API_CONFIG=/etc/gustavo/platform.yaml
+      - AUTH_ENABLED=${AUTH_ENABLED:-true}
+      - FIREBASE_API_KEY=${FIREBASE_API_KEY:-}
+      - AUTH_ENDPOINT=${AUTH_ENDPOINT:-}
+      - CUSTOM_TOKEN_URL=${CUSTOM_TOKEN_URL:-}
+      - PYTHONWARNINGS=ignore
+    command: ["gustavo-next", "-p", "3000"]

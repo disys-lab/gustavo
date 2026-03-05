@@ -122,5 +122,3 @@ if latest_gustavo_version:
 else:
     print(f"Could not fetch the latest version of {package_name}.")
     raise Exception(f"FuryVersionRetreivalError:Could not fetch the latest version of {package_name}.")
-
-
