@@ -3,9 +3,9 @@ import type { NextRequest } from "next/server";
 
 // Check runtime AUTH_ENABLED first (Edge Runtime compatible, no NEXT_PUBLIC_ prefix needed).
 // Falls back to the build-time baked value so local `npm run dev` still works.
-const AUTH_ENABLED =
-  process.env.AUTH_ENABLED === "true" ||
-  process.env.NEXT_PUBLIC_AUTH_ENABLED === "true";
+// Use only the runtime env var — NEXT_PUBLIC_AUTH_ENABLED is baked at build
+// time and cannot be toggled without a rebuild, so we ignore it here.
+const AUTH_ENABLED = process.env.AUTH_ENABLED === "true";
 const PUBLIC_PATHS = ["/login", "/api/auth"];
 
 export function middleware(request: NextRequest) {

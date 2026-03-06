@@ -30,6 +30,12 @@ class TokenRequest(BaseModel):
     user_token: str
 
 
+@router.get("/status")
+async def auth_status():
+    """Return whether server-side auth is currently enabled."""
+    return {"auth_enabled": AUTH_ENABLED}
+
+
 @router.post("/token")
 async def get_token(req: TokenRequest):
     """

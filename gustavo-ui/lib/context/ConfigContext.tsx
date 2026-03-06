@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { getConfig, updateConfig } from "@/lib/api/config";
+import { useAuth } from "@/lib/context/AuthContext";
 import type { PlatformConfig } from "@/lib/types/platform";
 
 interface ConfigContextValue {
@@ -15,6 +16,7 @@ const ConfigContext = createContext<ConfigContextValue | null>(null);
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<Partial<PlatformConfig>>({});
   const [isLoaded, setIsLoaded] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const refresh = useCallback(async () => {
     try {
@@ -38,8 +40,10 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Hydrate from localStorage first, then fetch from API
+  // Only fetch from API once the user is authenticated.
+  // This prevents a 401 loop on the login page when AUTH_ENABLED=true.
   useEffect(() => {
+    if (!isAuthenticated) return;
     if (typeof window !== "undefined") {
       const cached = localStorage.getItem("gustavo_config");
       if (cached) {
@@ -49,7 +53,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       }
     }
     refresh();
-  }, [refresh]);
+  }, [isAuthenticated, refresh]);
 
   const save = async (partial: Partial<PlatformConfig>) => {
     try {

@@ -13,7 +13,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const COOKIE_NAME = "gustavo_token";
-const COOKIE_MAX_AGE = 3600; // 1 hour — matches Firebase idToken expiry
+const COOKIE_MAX_AGE = 3600;
 
 function setAuthCookie(token: string) {
   document.cookie = `${COOKIE_NAME}=${token}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
@@ -26,17 +26,25 @@ function clearAuthCookie() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  // null = not yet fetched from server
+  const [authEnabled, setAuthEnabled] = useState<boolean | null>(null);
 
-  const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === "true";
+  // Fetch runtime auth status from the API so AUTH_ENABLED can be toggled
+  // via env var without a rebuild (NEXT_PUBLIC_AUTH_ENABLED is baked and ignored here).
+  useEffect(() => {
+    fetch("/api/auth/status")
+      .then((r) => r.json())
+      .then((data) => setAuthEnabled(data.auth_enabled === true))
+      .catch(() => setAuthEnabled(true)); // fail-safe: assume auth required
+  }, []);
 
-  // Hydrate from localStorage on mount and ensure cookie is in sync
+  // Hydrate token from localStorage on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storedToken = localStorage.getItem("gustavo_token");
     const storedUid = localStorage.getItem("gustavo_uid");
     if (storedToken) {
       setToken(storedToken);
-      // Restore cookie if it was cleared (e.g. browser restart loses session cookies)
       setAuthCookie(storedToken);
     }
     if (storedUid) setUserId(storedUid);
@@ -49,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: true, message: String(res.response) };
       }
       const { idToken, localId } = res.response as { idToken: string; localId: string };
-      // Persist to localStorage (for axios interceptor) and cookie (for middleware)
       localStorage.setItem("gustavo_token", idToken);
       localStorage.setItem("gustavo_uid", localId ?? "");
       setAuthCookie(idToken);
@@ -72,7 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isAuthenticated = !authEnabled || !!token;
+  // While auth status is loading (null), treat as not authenticated.
+  // Once loaded: if auth is disabled, everyone is authenticated; otherwise require a token.
+  const isAuthenticated = authEnabled === false || (authEnabled === true && !!token);
 
   return (
     <AuthContext.Provider value={{ token, userId, isAuthenticated, login, logout }}>
