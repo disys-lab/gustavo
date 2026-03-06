@@ -1,3 +1,10 @@
+/**
+ * ConfigContext — platform configuration state.
+ *
+ * Loads from GET /api/config (gated on isAuthenticated to avoid 401 on login page).
+ * Falls back to localStorage cache on network error.
+ * Exposes save() which calls POST /api/config and updates both state and localStorage.
+ */
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { getConfig, updateConfig } from "@/lib/api/config";

@@ -1,3 +1,9 @@
+/**
+ * API functions for the /api/apps endpoints.
+ *
+ * Covers application CRUD, registry image queries, YAML import/export,
+ * and server-side default env-var fetching.
+ */
 import apiClient from "./client";
 import type { ApiResponse } from "@/lib/types/api";
 import type { AppConfig } from "@/lib/types/platform";
