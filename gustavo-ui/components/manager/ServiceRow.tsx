@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useActivityToast } from "@/hooks/use-activity-toast";
@@ -23,6 +24,7 @@ export function ServiceRow({ name, initialStatus = "Unknown", showStatus = true 
   const [statusLoading, setStatusLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<"stop" | "remove" | null>(null);
   const { toast } = useActivityToast();
+  const queryClient = useQueryClient();
 
   const { isRunning: jobRunning, isDone, isError, job } = useJobPoller(jobId);
 
@@ -83,6 +85,8 @@ export function ServiceRow({ name, initialStatus = "Unknown", showStatus = true 
     try {
       const res = await getServiceStatus(name);
       setStatus(res.error ? "Down" : "Up");
+      // Refresh the shared services cache so the dashboard status strip updates
+      queryClient.invalidateQueries({ queryKey: ["services"] });
     } catch {
       setStatus("Unknown");
     } finally {
