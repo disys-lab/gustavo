@@ -1,50 +1,30 @@
-# Installation
+# Native Installation
 
-There are two ways to install Gustavo.
+!!! warning "Docker is recommended"
+    For most users, the [Docker quickstart](quickstart.md) is faster and simpler. Native installation is intended for contributors, CI pipelines, or environments without Docker.
 
-## Install Gustavo from Gemfury
+---
 
-Execute this command:
+## CLI-only installation
 
-`pip install --index-url https://pypi.fury.io/osu-home-stri/ gustavo==0.1.4`
+If you only need the `gustavo` CLI to manage platform services and workers — without the web UI — follow the [Native Setup guide](cli/index.md#native-setup) in the CLI reference. It covers:
 
-## Install `gustavo`  directly from binaries.
+- Installing Docker and configuring the insecure registry
+- Installing the Gustavo CLI via pip
+- Creating `manager.env` / `worker.env` config files
+- Bringing up manager services and worker nodes
 
-Download the administration tool `gustavo` and copy it to a location the system path for example `/usr/bin`. You can also create a symbolic link located in `/usr/bin/`  using:
+---
 
- `sudo ln -s path/to/gustavo /usr/bin/gustavo`
+## Full stack installation
 
-## Install `gustavo`  directly from github.
+For running the **full stack** (FastAPI backend + Next.js UI) natively, see the [Web UI Native Installation](ui/index.md#native-installation) guide, which covers all 7 steps:
 
-Clone the Github repository `https://github.com/paritoshpr/gustavo.git` 
+1. Install the Python package
+2. Install FastAPI backend dependencies
+3. Build the Next.js UI
+4. Create the configuration file
+5. Start the FastAPI backend
+6. Start the Next.js frontend
+7. Running with Supervisor (production)
 
- `cd gustavo && sh builder.sh`
-
-This will create a binary in `./gustavo/dist/<operating_system_name>/gustavo`.
-
-Add this path to `~/.bashrc` to directly execute the binary.
-
-## Configure `gustavo`
-
-1. Check whether it is functional by either running: `gustavo --help` or `gustavo --version` . You must get something like this:
-    
-```
-    Usage: gustavo [OPTIONS] COMMAND [ARGS]...
-    
-      Manage gustavo from a simple CLI.
-    
-    Options:
-      --version  Show the version and exit.
-      --help     Show this message and exit.
-    
-    Commands:
-      apps          Manage applications
-      cache         obtain status of various workers on the platform
-      device-group  Manage device groups.
-      manager       Administer the manager.
-      ping          check nebula api responds
-      prune         prune images.
-      registry      Manage local registry.
-      utils         utility commands
-      worker        Manage worker.
-```
