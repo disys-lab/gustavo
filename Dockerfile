@@ -31,7 +31,7 @@ RUN ${py_version} -m venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN pip3 install --extra-index-url https://pypi.fury.io/osu-home-stri/ gustavo==${gustavo_version}
+RUN pip3 install --no-cache-dir --extra-index-url https://pypi.fury.io/osu-home-stri/ gustavo==${gustavo_version}
 
 # ── FastAPI requirements ─────────────────────────────────────────────────────
 COPY gustavo/api/requirements-api.txt /tmp/requirements-api.txt
@@ -51,10 +51,12 @@ RUN PACKAGE_VERSION=${gustavo_version} pip install --no-cache-dir -e . --no-deps
 ENV NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
 
 WORKDIR /app/gustavo-ui
-RUN npm ci --prefer-offline && \
+RUN npm ci --prefer-offline --no-audit --no-fund && \
     npm run build && \
     cp -r .next/static .next/standalone/.next/static && \
-    cp -r public .next/standalone/public
+    cp -r public .next/standalone/public && \
+    rm -rf node_modules && \
+    npm cache clean --force
 
 # ── Runtime configuration ────────────────────────────────────────────────────
 WORKDIR /app
