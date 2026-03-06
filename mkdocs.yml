@@ -1,55 +1,113 @@
 site_name: Gustavo
+site_description: Container orchestration UI for the Nebula platform
+site_author: Paritosh Ramanan
+repo_url: https://github.com/disys-lab/gustavo
+repo_name: disys-lab/gustavo
+edit_uri: edit/main/docs/
 
-#ToRun mkdocs execute from parent : PYTHONPATH=gustavo mkdocs serve -f gustavo/mkdocs.yml
+# To serve locally:
+#   pip install -r docs/requirements.txt
+#   PYTHONPATH=. mkdocs serve -f mkdocs.yml
+#
+# To deploy to GitHub Pages manually:
+#   mkdocs gh-deploy --force
 
 plugins:
+  - search
   - mkdocstrings:
       handlers:
         python:
           options:
-            heading_level: 1
+            heading_level: 2
             docstring_style: "numpy"
+            show_source: true
+            show_root_heading: true
+            show_category_heading: true
+            members_order: source
 
 nav:
-  - Home:
-      - Gustavo: index.md
-      - Installation: installation.md
-      - Manager:
-        - Preprocessing: manager-preprocessing.md
-        - Manager Setup: manager-setup.md
-        - Platform Management: platform-management.md
-        - Tear Down: tear-down.md
-      - Worker:
-        - Preprocessing: worker-preprocessing.md
-        - Worker Setup: worker-setup.md
-        - Tear Down: tear-down-worker.md
-      # - gustavo.comms:
-      #   - RedisComm: rediscomm.md
-      #   - Mapper: mapper.md
-      #   - RedisContract: rediscontract.md
-      - gustavo.src:
-        - Cache: cache.md
-        - Composer: composer.md
-        - Manager: manager2.md
-        - NebulaBase: nebulabase.md
-      - gustavo.pages:
-        - ManagerService: management.md
-        - AppHandler: application.md
-        - DeviceGroups: devicegroups.md
-        - Monitering: monitoring.md
-        - Config:
-          - LoadCss : loadcss.md
-          - Logging  : PlatformConfig.md
-      - Troubleshooting: troubleshooting.md
+  - Home: index.md
+  - Getting Started:
+    - Quickstart (Docker): quickstart.md
+    - Native Installation: installation.md
+    - End-to-End Tutorial: tutorial.md
+    - Configuration Reference: configuration.md
+    - Deployment: deployment.md
+  - CLI Reference:
+    - Overview & Setup: cli/index.md
+    - Manager Node Setup: cli/manager-setup.md
+    - manager: cli/manager.md
+    - worker: cli/worker.md
+    - apps: cli/apps.md
+    - device-group: cli/device-groups.md
+    - registry: cli/registry.md
+    - cache: cli/cache.md
+    - utils: cli/utils.md
+  - FastAPI Backend:
+    - Overview: api/index.md
+    - Authentication: api/auth.md
+    - Configuration: api/config.md
+    - Services: api/services.md
+    - Apps: api/apps.md
+    - Device Groups: api/device-groups.md
+    - Monitoring: api/monitoring.md
+    - Backups: api/backups.md
+  - Web UI:
+    - Overview: ui/index.md
+    - Dashboard: ui/dashboard.md
+    - Apps: ui/apps.md
+    - Device Groups: ui/device-groups.md
+    - Monitoring: ui/monitoring.md
+    - Backups: ui/backups.md
+    - Settings: ui/settings.md
+    - Component Reference: ui/components.md
+  - Core Library:
+    - NebulaBase: src/nebulabase.md
+    - Manager: src/manager.md
+    - Composer: src/composer.md
+    - Cache: src/cache.md
+  - Developer Guide: contributing.md
+  - Troubleshooting: troubleshooting.md
+
 theme:
   name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
     - navigation.sections
     - navigation.expand
     - navigation.footer
+    - navigation.top
     - content.code.annotate
+    - content.code.copy
     - content.tabs.link
     - toc.integrate
+    - search.highlight
+    - search.share
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - attr_list
+  - md_in_html
+  - tables
 
 extra_css:
   - assets/extra.css

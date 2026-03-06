@@ -1,0 +1,48 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'gustavo/**/*.py'
+      - 'gustavo-ui/**/*.ts'
+      - 'gustavo-ui/**/*.tsx'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write           # Required for gh-pages branch push
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # Full history for git-committers plugin
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Install documentation dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Install gustavo package (for mkdocstrings auto-import)
+        run: pip install -e . --no-deps
+
+      - name: Install FastAPI backend dependencies (for mkdocstrings)
+        run: pip install -r gustavo/api/requirements-api.txt
+
+      - name: Build and deploy documentation
+        env:
+          PYTHONPATH: .
+        run: mkdocs gh-deploy --force --clean --verbose
