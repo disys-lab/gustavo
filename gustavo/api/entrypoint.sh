@@ -13,7 +13,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 export PORT=$UI_PORT
-export FASTAPI_URL=${FASTAPI_URL:-http://localhost:8000}
+export FASTAPI_URL=${FASTAPI_URL:-http://127.0.0.1:8000}
 export NODE_ENV=production
 export NEXT_TELEMETRY_DISABLED=1
 
