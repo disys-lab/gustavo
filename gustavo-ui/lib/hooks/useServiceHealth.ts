@@ -3,9 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getServices } from "@/lib/api/services";
 import type { ServicesMap } from "@/lib/types/api";
 
+// "syncer" is intentionally excluded — preserved for future re-enablement
+const HEALTH_SERVICES: (keyof ServicesMap)[] = ["redis", "mongo", "registry", "manager"];
+
 /**
  * Polls /api/services every 30s.
- * Returns `allUp: true` if every service is running, `false` if any is down,
+ * Returns `allUp: true` if all 4 platform services are running, `false` if any is down,
  * `null` while loading or on error.
  */
 export function useServiceHealth() {
@@ -19,9 +22,11 @@ export function useServiceHealth() {
   if (isLoading || isError || !data || data.error) return { allUp: null };
 
   const map = data.response as ServicesMap;
-  const statuses = Object.values(map);
-  if (statuses.length === 0) return { allUp: null };
+  if (!map || typeof map !== "object") return { allUp: null };
 
-  const allUp = statuses.every((s) => s === "Up" || s === "running");
+  const allUp = HEALTH_SERVICES.every((svc) => {
+    const entry = map[svc];
+    return entry && !entry.error;
+  });
   return { allUp };
 }
