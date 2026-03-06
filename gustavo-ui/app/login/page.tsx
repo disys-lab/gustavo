@@ -36,7 +36,7 @@ function LoginForm() {
       <div className="w-full max-w-sm rounded-xl border bg-white p-8 shadow-sm">
         <div className="mb-6 flex justify-center">
           <Image
-            src="/gustavo_login_transparent.png"
+            src="/gustavo_wordmark.png"
             alt="Gustavo"
             width={180}
             height={180}

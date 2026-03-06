@@ -25,7 +25,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
       const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === "true";
-      if (authEnabled) {
+      if (authEnabled && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
     }
