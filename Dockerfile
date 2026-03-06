@@ -20,6 +20,8 @@ RUN apt-get -y update && apt-get -y upgrade && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get -y update && \
     apt-get -y install python3-pip ${py_version} ${py_version}-venv ${py_version}-dev && \
+    apt-get purge -y build-essential && \
+    apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
 # ── Node.js ──────────────────────────────────────────────────────────────────
@@ -35,7 +37,8 @@ RUN pip3 install --no-cache-dir --extra-index-url https://pypi.fury.io/osu-home-
 
 # ── FastAPI requirements ─────────────────────────────────────────────────────
 COPY gustavo/api/requirements-api.txt /tmp/requirements-api.txt
-RUN pip install --no-cache-dir -r /tmp/requirements-api.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-api.txt && \
+    rm -f /tmp/requirements-api.txt
 
 WORKDIR /app
 COPY . .
@@ -51,6 +54,10 @@ RUN PACKAGE_VERSION=${gustavo_version} pip install --no-cache-dir -e . --no-deps
 ENV NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
 
 WORKDIR /app/gustavo-ui
+# Ensure all gustavo images are available to Next.js at build time
+# regardless of which public/ files were committed to git.
+RUN cp /app/gustavo/images/*.png /app/gustavo-ui/public/
+
 RUN npm ci --prefer-offline --no-audit --no-fund && \
     npm run build && \
     cp -r .next/static .next/standalone/.next/static && \
