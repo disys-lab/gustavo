@@ -144,7 +144,7 @@ class NebulaBase:
         """
         if "GUSTAVO_CONFIG_FILE" in os.environ:
             dotenv_path = Path(self.base_config)
-            load_dotenv(dotenv_path=dotenv_path)
+            load_dotenv(dotenv_path=dotenv_path,override=True)
 
         if "CACHE_PREFIX" in os.environ.keys():
             self.CACHE_PREFIX = os.getenv("CACHE_PREFIX")
