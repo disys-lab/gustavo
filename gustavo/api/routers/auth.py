@@ -18,8 +18,9 @@ router = APIRouter()
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY", "")
 AUTH_ENDPOINT = os.environ.get("AUTH_ENDPOINT", "")
-FIREBASE_CUSTOM_TOKEN_URL = (
-    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken"
+CUSTOM_TOKEN_URL = os.environ.get(
+    "CUSTOM_TOKEN_URL",
+    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken",
 )
 AUTH_ENABLED = os.environ.get("AUTH_ENABLED", "false").lower() in ("1", "true", "yes", "on")
 
@@ -67,7 +68,7 @@ async def get_token(req: TokenRequest):
 
         # Step 2: Exchange custom token for idToken via Firebase REST API
         step2 = requests.post(
-            f"{FIREBASE_CUSTOM_TOKEN_URL}?key={FIREBASE_API_KEY}",
+            f"{CUSTOM_TOKEN_URL}?key={FIREBASE_API_KEY}",
             json={"token": firebase_token, "returnSecureToken": True},
             timeout=10,
         )
