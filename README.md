@@ -1,9 +1,16 @@
 # Gustavo
+
 Gustavo is a container orchestration framework constructed for Demo A3 under Research Thrust 2 of [NASA HOME STRI Project](https://homestri.ucdavis.edu/research). 
 Gustavo is designed to be a one stop shop for administering applications in an **autonomous, self aware** fashion.
-Gustavo is available in a Command Line Interface and can be run on Linux/Mac Environments as well as under Windows with the help of Windows Subsystem for Linux (WSL).
+Gustavo is available as a **web-based GUI** (via Docker containers) or via **Command Line Interface** and can be run on Linux/Mac Environments as well as under Windows with the help of Windows Subsystem for Linux (WSL).
 
-Read the [documentation](https://gustavo.readthedocs.io/en/latest/).
+## Documentation
+
+Gustavo's documentation is hosted at: **[https://disys-lab.github.io/gustavo/](https://disys-lab.github.io/gustavo/)**
+
+For the CLI command reference and basic usage, see the [CLI Reference](https://disys-lab.github.io/gustavo/cli/index.md/) section of the documentation.
+
+The recommended approach for most users is the Docker-based web interface, which provides a user-friendly dashboard and REST API. See the [Quickstart](https://disys-lab.github.io/gustavo/quickstart.md) for a 5-minute installation guide.
 
 ```
 Usage: gustavo [OPTIONS] COMMAND [ARGS]...
@@ -26,79 +33,22 @@ Commands:
   worker        Manage worker.
 ```
 
-```gustavo apps -n test_linreg -f sample.yaml```
-
-The following files are essential:
-   - The environment file contains the list of environment variables needed for running the manager and its allied services.
-     A sample ```manager.env``` file is as follows:
-```
-        REGISTRY_HOST=127.0.0.1
-        REGISTRY_PORT=5000
-          
-        DREGSY_CONFIG_FILE_PATH=./.config/gustavo/dregsy_conf.yml
-        DREGSY_MAPPING_FILE_PATH=./.config/gustavo/mappings_list.yml
-        
-        REDIS_HOST=127.0.0.1
-        REDIS_PORT=6379
-        REDIS_AUTH_TOKEN="teentakle1212"
-        
-        MANAGER_HOST=127.0.0.1
-        MANAGER_PORT=80
-        
-        MONGO_HOST=127.0.0.1
-        MONGO_PORT=27017
-        MONGO_USERNAME=nebula
-        MONGO_PASSWORD=nebula
-        MONGO_CERTIFICATE_FOLDER_PATH=/tmp/
-        
-        NEBULA_USERNAME=nebula
-        NEBULA_PASSWORD=nebula
-        NEBULA_AUTH_TOKEN="teentakle1212"
-```
-  - ```dregsy_conf.yml``` contains configuration for dregsy. Needs to be edited according to .env file.
-  - ```mappings_list.yml``` contains which images to sync. This file is dynamically read. Feel free to change the entries during run time to pause or start sync of new/existing images.
-
-The docker daemon requires registries to be running ```http```. However, the current version only supports ```http```. To turn off ```https```, follow the steps outlined in the [link](https://docs.docker.com/registry/insecure/)
-This needs to be done at each host where a docker daemon might be running. Be careful to set the ```myregistrydomain:5000``` to the ```REGISTRY_HOST:REGISTRY_PORT```.
-
-## Building and testing locally
-Clone repository using ```git clone -b main https://github.com/disys-lab/gustavo.git```
-
-Then run
-```PACKAGE_VERSION=<dev-version> pip install -e .```
-
 ## Common Gotchas
-If using podman, you must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.
+
+- **Podman**: You must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.
+- **Docker in bridge mode**: If managed services (Redis, MongoDB, etc.) run in Docker containers, use container names (via a shared network) rather than dynamic bridge IPs. Bridge IPs change when containers restart.
 
 ## Development and Maintenance
+
 Gustavo was conceived and developed by researchers at Oklahoma State University and Georgia Tech.
 
-* [Paritosh Ramanan](https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html)
-* [Nagi Gebraeel](https://www.isye.gatech.edu/users/nagi-gebraeel)
+- [Paritosh Ramanan](https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html) — Oklahoma State University
+- [Nagi Gebraeel](https://www.isye.gatech.edu/users/nagi-gebraeel) — Georgia Tech
 
-## Documentation
+## Contributing
 
-To run documentation using ```pdoc3```, run
-```
-pdoc3 -o ../docs-internal/ --html .
-```
+Contributions are welcome! Please see the [Contributing Guide](https://disys-lab.github.io/gustavo/contributing.md) for details.
 
-#For pdf version
-First run ```pdoc3```, then you can run for eg:
+## License
 
-```pdoc3 -o <location> --pdf gustavo.md > <location>/gustavo.md```
-
-Add to the top of .md file 
-```
----
-mainfont: DejaVuSerif.ttf
-sansfont: DejaVuSans.ttf
-monofont: DejaVuSansMono.ttf 
-mathfont: texgyredejavu-math.otf 
----
-```
-
-To run pandoc:
-```
-pandoc --metadata=title:"Project Gustavo: A nifty CLI to orchestrate container images in a distributed manner" --from=markdown+abbreviations+tex_math_single_backslash --pdf-engine=xelatex --variable=mainfont:"DejaVuSerif.ttf" --toc --toc-depth=4 --output=gustavo.pdf  <location>/gustavo.md
-```
+This project is licensed under the MIT License - see the LICENSE file for details.
