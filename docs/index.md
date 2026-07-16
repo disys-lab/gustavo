@@ -1,6 +1,6 @@
 # Gustavo
 
-**Gustavo** is a container orchestration UI for the [Nebula](https://nebula-orchestrator.github.io/) platform, built for the NASA HOME STRI Project. It provides a web-based dashboard and REST API to manage the full lifecycle of platform services, applications, device groups, backups, and real-time monitoring across distributed edge nodes.
+**Gustavo** is a container orchestration platform, built for the NASA HOME STRI Project. It provides a web-based dashboard and REST API to manage the full lifecycle of platform services, applications, device groups, backups, and real-time monitoring across distributed edge nodes.
 
 ---
 
