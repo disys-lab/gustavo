@@ -64,7 +64,20 @@ DEFAULTS: dict[str, Any] = {
 
 _SENSITIVE_KEYS = {"NEBULA_PASSWORD", "NEBULA_AUTH_TOKEN", "REDIS_AUTH_TOKEN", "MONGO_PASSWORD"}
 
+# Keys that, when set as container environment variables, always win over
+# platform.yaml/DEFAULTS. This keeps the break-glass admin login
+# (auth.py, compared directly against os.environ) from ever diverging from
+# what _build_manager/_build_composer actually use to talk to Nebula.
+_ENV_OVERRIDE_KEYS = ("NEBULA_USERNAME", "NEBULA_PASSWORD")
+
 _config: dict[str, Any] = {}
+
+
+def _apply_env_overrides(cfg: dict[str, Any]) -> None:
+    for key in _ENV_OVERRIDE_KEYS:
+        value = os.environ.get(key)
+        if value:
+            cfg[key] = value
 
 
 def load() -> dict[str, Any]:
@@ -79,6 +92,7 @@ def load() -> dict[str, Any]:
         except Exception as exc:
             import logging
             logging.error(f"config_store: failed to load {CONFIG_PATH}: {exc}")
+    _apply_env_overrides(merged)
     _config = merged
     _write_env_shim()
     return _config
@@ -97,6 +111,7 @@ def update(partial: dict[str, Any]) -> dict[str, Any]:
     if not _config:
         load()
     _config.update(partial)
+    _apply_env_overrides(_config)
     _persist()
     _write_env_shim()
     return _config

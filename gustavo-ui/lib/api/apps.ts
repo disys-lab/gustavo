@@ -14,8 +14,8 @@ export const listApps = () =>
 export const getApp = (name: string) =>
   apiClient.get<ApiResponse>(`/apps/${name}`).then((r) => r.data);
 
-export const createApp = (name: string, config: AppConfig, device_groups: string[] = []) =>
-  apiClient.post<ApiResponse>("/apps", { name, config, device_groups }).then((r) => r.data);
+export const createApp = (name: string, config: AppConfig, device_groups: string[] = [], owner_group?: string) =>
+  apiClient.post<ApiResponse>("/apps", { name, config, device_groups, owner_group }).then((r) => r.data);
 
 export const updateApp = (name: string, config: AppConfig) =>
   apiClient.put<ApiResponse>(`/apps/${name}`, { config }).then((r) => r.data);

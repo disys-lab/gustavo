@@ -24,7 +24,7 @@ import docker
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from gustavo.api import config_store, background
-from gustavo.api.auth import verify_firebase_token
+from gustavo.api.auth import require_admin
 
 router = APIRouter()
 
@@ -259,26 +259,26 @@ def _delete_registry_backup_handler(dirname: str) -> dict:
 # ---------------------------------------------------------------------------
 
 @router.get("/redis")
-async def list_redis_backups(_token=Depends(verify_firebase_token)):
+async def list_redis_backups(_session=Depends(require_admin)):
     return _list_redis_backups_handler()
 
 
 @router.post("/redis/create")
-async def create_redis_backup(_token=Depends(verify_firebase_token)):
+async def create_redis_backup(_session=Depends(require_admin)):
     job_id = background.create_job({"type": "redis_backup", "action": "create"})
     background.run_in_background(_create_redis_backup_handler, job_id)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
 
 
 @router.post("/redis/restore/{filename}")
-async def restore_redis_backup(filename: str, _token=Depends(verify_firebase_token)):
+async def restore_redis_backup(filename: str, _session=Depends(require_admin)):
     job_id = background.create_job({"type": "redis_backup", "action": "restore", "filename": filename})
     background.run_in_background(_restore_redis_backup_handler, job_id, filename)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
 
 
 @router.delete("/redis/{filename}")
-async def delete_redis_backup(filename: str, _token=Depends(verify_firebase_token)):
+async def delete_redis_backup(filename: str, _session=Depends(require_admin)):
     return _delete_redis_backup_handler(filename)
 
 
@@ -287,24 +287,24 @@ async def delete_redis_backup(filename: str, _token=Depends(verify_firebase_toke
 # ---------------------------------------------------------------------------
 
 @router.get("/registry")
-async def list_registry_backups(_token=Depends(verify_firebase_token)):
+async def list_registry_backups(_session=Depends(require_admin)):
     return _list_registry_backups_handler()
 
 
 @router.post("/registry/create")
-async def create_registry_backup(_token=Depends(verify_firebase_token)):
+async def create_registry_backup(_session=Depends(require_admin)):
     job_id = background.create_job({"type": "registry_backup", "action": "create"})
     background.run_in_background(_create_registry_backup_handler, job_id)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
 
 
 @router.post("/registry/restore/{dirname}")
-async def restore_registry_backup(dirname: str, _token=Depends(verify_firebase_token)):
+async def restore_registry_backup(dirname: str, _session=Depends(require_admin)):
     job_id = background.create_job({"type": "registry_backup", "action": "restore", "dirname": dirname})
     background.run_in_background(_restore_registry_backup_handler, job_id, dirname)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
 
 
 @router.delete("/registry/{dirname}")
-async def delete_registry_backup(dirname: str, _token=Depends(verify_firebase_token)):
+async def delete_registry_backup(dirname: str, _session=Depends(require_admin)):
     return _delete_registry_backup_handler(dirname)

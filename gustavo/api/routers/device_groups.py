@@ -14,9 +14,10 @@ import logging
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from gustavo.api import config_store
-from gustavo.api.auth import verify_firebase_token
+from gustavo.api import config_store, nebula_auth
+from gustavo.api.auth import require_admin, verify_firebase_token
 from gustavo.api.dependencies import _build_composer
+from gustavo.api.session import Session
 
 router = APIRouter()
 
@@ -35,16 +36,20 @@ class AppListRequest(BaseModel):
 
 
 @router.get("")
-async def list_device_groups(_token=Depends(verify_firebase_token)):
-    """List all device groups with their app membership (mirrors DGHandler.listAllDeviceGroups)."""
+async def list_device_groups(session: Session = Depends(verify_firebase_token)):
+    """List all device groups with their app membership (mirrors DGHandler.listAllDeviceGroups).
+    Filtered to the caller's grants if not an admin (Nebula's own list endpoint is unfiltered)."""
     cfg = config_store.get()
     comp = _build_composer(cfg)
+    perms = None if session.is_admin else nebula_auth.compute_permissions(cfg, session.username)
     try:
         result = comp.nebulaObj.list_device_groups()
         if result.get("status_code") != 200:
             return {"error": True, "response": f"Failed to list device groups (status {result.get('status_code')})"}
 
         groups_list = result.get("reply", {}).get("device_groups", [])
+        if perms is not None:
+            groups_list = [g for g in groups_list if g in perms["device_groups"]]
         groups = []
         for group_name in groups_list:
             group_result = comp.nebulaObj.list_device_group(group_name)
@@ -60,7 +65,7 @@ async def list_device_groups(_token=Depends(verify_firebase_token)):
 
 
 @router.post("")
-async def create_device_group(req: DeviceGroupCreateRequest, _token=Depends(verify_firebase_token)):
+async def create_device_group(req: DeviceGroupCreateRequest, _session=Depends(require_admin)):
     """Create a new device group (mirrors DGHandler.createDeviceGroup)."""
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -75,9 +80,11 @@ async def create_device_group(req: DeviceGroupCreateRequest, _token=Depends(veri
 
 
 @router.get("/{name}")
-async def get_device_group(name: str, _token=Depends(verify_firebase_token)):
+async def get_device_group(name: str, session: Session = Depends(verify_firebase_token)):
     """Get a device group's config (mirrors list_device_group SDK call)."""
     cfg = config_store.get()
+    if not session.is_admin and name not in nebula_auth.compute_permissions(cfg, session.username)["device_groups"]:
+        return {"error": True, "response": f"Not permitted for device group '{name}'"}
     comp = _build_composer(cfg)
     try:
         result = comp.nebulaObj.list_device_group(name)
@@ -93,7 +100,7 @@ async def get_device_group(name: str, _token=Depends(verify_firebase_token)):
 async def update_device_group(
     name: str,
     req: DeviceGroupUpdateRequest,
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     """Update a device group's app list (mirrors DGHandler.updateDeviceGroup)."""
     cfg = config_store.get()
@@ -109,7 +116,7 @@ async def update_device_group(
 
 
 @router.delete("/{name}")
-async def delete_device_group(name: str, _token=Depends(verify_firebase_token)):
+async def delete_device_group(name: str, _session=Depends(require_admin)):
     """Delete a device group (mirrors DGHandler.deleteDeviceGroup — diagnostic fetch first)."""
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -131,7 +138,7 @@ async def delete_device_group(name: str, _token=Depends(verify_firebase_token)):
 async def add_apps_to_device_group(
     name: str,
     req: AppListRequest,
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     """Add apps to a device group (mirrors Streamlit: handleDeviceGroup with mode='update')."""
     cfg = config_store.get()
@@ -150,7 +157,7 @@ async def add_apps_to_device_group(
 async def remove_apps_from_device_group(
     name: str,
     req: AppListRequest,
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     """Remove apps from a device group (mirrors Streamlit: handleDeviceGroup with mode='delete')."""
     cfg = config_store.get()
