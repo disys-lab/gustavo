@@ -11,19 +11,19 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi.responses import PlainTextResponse
 
 from gustavo.api import config_store
-from gustavo.api.auth import verify_firebase_token
+from gustavo.api.auth import require_admin
 
 router = APIRouter()
 
 
 @router.get("")
-async def get_config(_token=Depends(verify_firebase_token)):
+async def get_config(_session=Depends(require_admin)):
     """Return the current platform config with sensitive fields masked."""
     return {"error": False, "response": config_store.masked()}
 
 
 @router.post("")
-async def update_config(partial: dict, _token=Depends(verify_firebase_token)):
+async def update_config(partial: dict, _session=Depends(require_admin)):
     """Merge *partial* into the platform config and persist to disk.
 
     Values equal to '***' (the mask sentinel) or empty strings are silently
@@ -42,7 +42,7 @@ async def update_config(partial: dict, _token=Depends(verify_firebase_token)):
 @router.post("/upload")
 async def upload_config(
     file: UploadFile = File(...),
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     """
     Parse a .env file upload and merge key=value pairs into the config.
@@ -66,7 +66,7 @@ async def upload_config(
 
 
 @router.get("/download", response_class=PlainTextResponse)
-async def download_config(_token=Depends(verify_firebase_token)):
+async def download_config(_session=Depends(require_admin)):
     """Return the current config as a manager.env text file."""
     cfg = config_store.get()
     lines = [f"{k}={v}" for k, v in cfg.items()]

@@ -52,6 +52,7 @@ nav:
     - Device Groups: api/device-groups.md
     - Monitoring: api/monitoring.md
     - Backups: api/backups.md
+    - Users: api/users.md
   - Web UI:
     - Overview: ui/index.md
     - Dashboard: ui/dashboard.md
@@ -60,6 +61,7 @@ nav:
     - Monitoring: ui/monitoring.md
     - Backups: ui/backups.md
     - Settings: ui/settings.md
+    - Users: ui/users.md
     - Component Reference: ui/components.md
   - Core Library:
     - NebulaBase: src/nebulabase.md
