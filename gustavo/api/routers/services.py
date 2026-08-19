@@ -15,7 +15,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from gustavo.api import config_store, background
-from gustavo.api.auth import verify_firebase_token
+from gustavo.api.auth import require_admin
 from gustavo.api.dependencies import _build_manager
 
 router = APIRouter()
@@ -35,7 +35,7 @@ def _get_status_for(man, svc: str) -> dict:
 
 
 @router.get("")
-async def list_services(_token=Depends(verify_firebase_token)):
+async def list_services(_session=Depends(require_admin)):
     """Return status for all 5 services.
 
     Docker calls are blocking, so we run them in a single background thread
@@ -65,7 +65,7 @@ async def list_services(_token=Depends(verify_firebase_token)):
 
 
 @router.get("/jobs/{job_id}")
-async def get_job(job_id: str, _token=Depends(verify_firebase_token)):
+async def get_job(job_id: str, _session=Depends(require_admin)):
     """Poll the result of a background run/restore job."""
     job = background.get_job(job_id)
     if job is None:
@@ -74,7 +74,7 @@ async def get_job(job_id: str, _token=Depends(verify_firebase_token)):
 
 
 @router.get("/{svc}/status")
-async def service_status(svc: str, _token=Depends(verify_firebase_token)):
+async def service_status(svc: str, _session=Depends(require_admin)):
     """Check status of a single service."""
     if svc not in VALID_SERVICES:
         return {"error": True, "response": f"Unknown service: {svc}"}
@@ -87,7 +87,7 @@ async def service_status(svc: str, _token=Depends(verify_firebase_token)):
 async def run_service(
     svc: str,
     bg: BackgroundTasks,
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     """
     Launch a service (long-running). Returns a job_id immediately.
@@ -111,7 +111,7 @@ async def run_service(
 async def service_action(
     svc: str,
     req: ActionRequest,
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     """
     Perform a lifecycle action on a service.

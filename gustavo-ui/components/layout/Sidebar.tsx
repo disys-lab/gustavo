@@ -3,11 +3,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, LayoutGrid, Database, Users, Activity, Archive, Settings,
+  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/context/AuthContext";
 import { ActivitySheet } from "@/components/layout/ActivitySheet";
+import { RegenerateCredentialDialog } from "@/components/layout/RegenerateCredentialDialog";
 import { useServiceHealth } from "@/lib/hooks/useServiceHealth";
 
 // "/manager" (Services) is intentionally not in the sidebar — service controls
@@ -23,10 +24,15 @@ const NAV = [
   { href: "/settings",      label: "Settings",      icon: Settings },
 ];
 
+// Admin-only, appended after Settings — separate from the roles/permissions
+// data itself, which lives entirely in Nebula's user_groups.
+const ADMIN_NAV = { href: "/users", label: "Users", icon: UserCog };
+
 export function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const { allUp } = useServiceHealth();
+  const navItems = isAdmin ? [...NAV, ADMIN_NAV] : NAV;
 
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-white border-r border-gray-200 px-3 py-5 shrink-0">
@@ -42,7 +48,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-col gap-0.5 flex-1">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname.startsWith(href);
           const isManager = href === "/dashboard";
           return (
@@ -74,6 +80,7 @@ export function Sidebar() {
 
       <div className="mt-2 border-t pt-2 space-y-0.5">
         <ActivitySheet />
+        <RegenerateCredentialDialog />
         <button
           onClick={logout}
           className="w-full rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors text-left"

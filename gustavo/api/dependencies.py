@@ -59,3 +59,21 @@ def _build_composer(cfg: dict) -> Composer:
     Composer uses NebulaBase in streamlit mode, which reads from session_state dict.
     """
     return Composer(mode="streamlit", params=cfg)
+
+
+def _build_composer_for(cfg: dict, token: str | None = None) -> Composer:
+    """
+    Instantiate a Composer authenticated as a specific Nebula user's token,
+    instead of the platform admin credentials.
+
+    Composer always constructs Nebula(..., token=NEBULA_AUTH_TOKEN, ...), and
+    the SDK's `if token is not None:` check picks Bearer auth over Basic auth
+    whenever a token is present — so overriding NEBULA_AUTH_TOKEN here is all
+    that's needed for per-user requests to authenticate as that user instead
+    of the platform admin. With token=None this is just _build_composer(cfg).
+    """
+    if token is None:
+        return _build_composer(cfg)
+    user_cfg = dict(cfg)
+    user_cfg["NEBULA_AUTH_TOKEN"] = token
+    return _build_composer(user_cfg)

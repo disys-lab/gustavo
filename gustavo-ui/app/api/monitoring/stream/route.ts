@@ -12,10 +12,29 @@ export async function GET(request: NextRequest) {
   const device_group = searchParams.get("device_group") || "all";
   const host = searchParams.get("host") || "all";
 
+  // EventSource can't set an Authorization header, so the browser sends the
+  // gustavo_token cookie instead (mirrored there by AuthContext on login).
+  // Forward it as a real Bearer header so the FastAPI /stream route can be
+  // gated with the same require_admin dependency as every other monitoring
+  // endpoint.
+  const token = request.cookies.get("gustavo_token")?.value;
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const upstream = await fetch(
     `${FASTAPI_URL}/api/monitoring/stream?device_group=${encodeURIComponent(device_group)}&host=${encodeURIComponent(host)}`,
-    { headers: { Accept: "text/event-stream" } }
+    {
+      headers: {
+        Accept: "text/event-stream",
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
+
+  if (upstream.status === 401 || upstream.status === 403) {
+    return new Response("Unauthorized", { status: upstream.status });
+  }
 
   if (!upstream.body) {
     return new Response("No stream body from upstream", { status: 502 });

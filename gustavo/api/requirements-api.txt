@@ -4,3 +4,5 @@ sse-starlette>=2.1.0
 python-multipart>=0.0.9
 pyyaml>=6.0.1
 python-dotenv>=1.0.1
+PyJWT>=2.8.0
+cryptography>=42.0.0
