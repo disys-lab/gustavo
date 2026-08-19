@@ -1,11 +1,11 @@
 """
 /api/services — Manager service lifecycle endpoints.
 
-GET  /api/services                      → all 5 services + status
-GET  /api/services/{svc}/status         → Manager.serviceStatus(svc)
-POST /api/services/{svc}/run            → background task → returns job_id
-POST /api/services/{svc}/action         → body: {action: stop|start|kill|remove|restart}
-GET  /api/services/jobs/{job_id}        → poll result of background run
+GET  /api/services                      → all 5 services + status (any authenticated user)
+GET  /api/services/{svc}/status         → Manager.serviceStatus(svc) (any authenticated user)
+POST /api/services/{svc}/run            → background task → returns job_id (admin-only)
+POST /api/services/{svc}/action         → body: {action: stop|start|kill|remove|restart} (admin-only)
+GET  /api/services/jobs/{job_id}        → poll result of background run (admin-only)
 
 Valid {svc}: redis, mongo, registry, syncer, manager, all
 """
@@ -15,7 +15,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from gustavo.api import config_store, background
-from gustavo.api.auth import require_admin
+from gustavo.api.auth import require_admin, verify_firebase_token
 from gustavo.api.dependencies import _build_manager
 
 router = APIRouter()
@@ -35,8 +35,9 @@ def _get_status_for(man, svc: str) -> dict:
 
 
 @router.get("")
-async def list_services(_session=Depends(require_admin)):
-    """Return status for all 5 services.
+async def list_services(_session=Depends(verify_firebase_token)):
+    """Return status for all 5 services. Read-only, open to any authenticated
+    user (launch/stop/restart/remove stay admin-only, below).
 
     Docker calls are blocking, so we run them in a single background thread
     (sequential, same Manager instance) to avoid blocking the event loop.
@@ -74,8 +75,8 @@ async def get_job(job_id: str, _session=Depends(require_admin)):
 
 
 @router.get("/{svc}/status")
-async def service_status(svc: str, _session=Depends(require_admin)):
-    """Check status of a single service."""
+async def service_status(svc: str, _session=Depends(verify_firebase_token)):
+    """Check status of a single service. Read-only, open to any authenticated user."""
     if svc not in VALID_SERVICES:
         return {"error": True, "response": f"Unknown service: {svc}"}
     cfg = config_store.get()
