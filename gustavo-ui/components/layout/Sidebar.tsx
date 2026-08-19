@@ -19,20 +19,23 @@ const NAV = [
   { href: "/apps",          label: "Apps",          icon: LayoutGrid },
   { href: "/registry",      label: "Registry",      icon: Database },
   { href: "/device-groups", label: "Device Groups", icon: Users },
-  { href: "/monitoring",    label: "Monitoring",    icon: Activity },
-  { href: "/backups",       label: "Backups",       icon: Archive },
-  { href: "/settings",      label: "Settings",      icon: Settings },
 ];
 
-// Admin-only, appended after Settings — separate from the roles/permissions
-// data itself, which lives entirely in Nebula's user_groups.
-const ADMIN_NAV = { href: "/users", label: "Users", icon: UserCog };
+// Every one of these hits an admin-only backend route (services/config,
+// monitoring, backups) — a non-admin session gets a clean 403 on all of
+// them, so there's nothing useful to show; hide rather than dead-end.
+const ADMIN_ONLY_NAV = [
+  { href: "/monitoring", label: "Monitoring", icon: Activity },
+  { href: "/backups",    label: "Backups",    icon: Archive },
+  { href: "/settings",   label: "Settings",   icon: Settings },
+  { href: "/users",      label: "Users",      icon: UserCog },
+];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { logout, isAdmin } = useAuth();
+  const { logout, isAdmin, username } = useAuth();
   const { allUp } = useServiceHealth();
-  const navItems = isAdmin ? [...NAV, ADMIN_NAV] : NAV;
+  const navItems = isAdmin ? [...NAV, ...ADMIN_ONLY_NAV] : NAV;
 
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-white border-r border-gray-200 px-3 py-5 shrink-0">
@@ -78,7 +81,16 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-2 border-t pt-2 space-y-0.5">
+      {username && (
+        <div className="border-t pt-3 px-3">
+          <p className="truncate text-sm font-medium text-gray-900" title={username}>
+            {username}
+          </p>
+          <p className="text-xs text-gray-400">{isAdmin ? "Admin" : "User"}</p>
+        </div>
+      )}
+
+      <div className="mt-2 pt-2 space-y-0.5">
         <ActivitySheet />
         <RegenerateCredentialDialog />
         <button
