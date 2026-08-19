@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings,
 } from "lucide-react";
@@ -10,6 +11,7 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { ActivitySheet } from "@/components/layout/ActivitySheet";
 import { RegenerateCredentialDialog } from "@/components/layout/RegenerateCredentialDialog";
 import { useServiceHealth } from "@/lib/hooks/useServiceHealth";
+import { getMyGroups } from "@/lib/api/users";
 
 // "/manager" (Services) is intentionally not in the sidebar — service controls
 // live in the Dashboard's expandable "Manage Platform Services" section.
@@ -36,6 +38,16 @@ export function Sidebar() {
   const { logout, isAdmin, username } = useAuth();
   const { allUp } = useServiceHealth();
   const navItems = isAdmin ? [...NAV, ...ADMIN_ONLY_NAV] : NAV;
+
+  // Admins bypass group-based grants entirely, so /me/groups always returns
+  // [] for them — the query is harmless to run either way.
+  const { data: groupsData } = useQuery({
+    queryKey: ["my-groups"],
+    queryFn: getMyGroups,
+    enabled: !!username,
+    staleTime: 60_000,
+  });
+  const myGroups: string[] = !groupsData?.error ? groupsData?.response.groups ?? [] : [];
 
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-white border-r border-gray-200 px-3 py-5 shrink-0">
@@ -87,6 +99,11 @@ export function Sidebar() {
             {username}
           </p>
           <p className="text-xs text-gray-400">{isAdmin ? "Admin" : "User"}</p>
+          {myGroups.length > 0 && (
+            <p className="truncate text-xs text-gray-400" title={myGroups.join(", ")}>
+              {myGroups.join(", ")}
+            </p>
+          )}
         </div>
       )}
 
