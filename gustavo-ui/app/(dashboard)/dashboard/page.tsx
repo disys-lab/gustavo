@@ -16,6 +16,8 @@ import type { ActivityEntry } from "@/lib/activityLog";
 import type { VitalsData } from "@/lib/types/api";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useAuth } from "@/lib/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 // "syncer" is intentionally excluded — preserved for future re-enablement
 const VISIBLE_SERVICES = ["redis", "mongo", "registry", "manager"] as const;
@@ -53,12 +55,15 @@ export default function DashboardPage() {
   const [selectedHost, setSelectedHost] = useState("all");
   const [selectedDg, setSelectedDg] = useState("all");
 
+  const { isAdmin } = useAuth();
+
   useEffect(() => subscribeActivity(setActivity), []);
 
   const { data: hostsData } = useQuery({
     queryKey: ["monitoring-hosts"],
     queryFn: () => getHosts("all", "all"),
     staleTime: 60_000,
+    enabled: isAdmin,
   });
 
   const availableHosts: string[] = ["all"];
@@ -76,9 +81,10 @@ export default function DashboardPage() {
     queryFn: getServices,
     refetchInterval: 30_000,
     staleTime: 25_000,
+    enabled: isAdmin,
   });
 
-  const { lastEvent: monitoringEvent } = useMonitoringStream(selectedDg, selectedHost);
+  const { lastEvent: monitoringEvent } = useMonitoringStream(selectedDg, selectedHost, isAdmin);
 
   const { data: appsData } = useQuery({
     queryKey: ["apps"],
@@ -121,7 +127,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      {/* Platform Services card */}
+      {/* Platform Services card — admin-only, backend is admin-gated */}
+      {isAdmin && (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Platform Services</CardTitle>
@@ -188,11 +195,13 @@ export default function DashboardPage() {
 
         </CardContent>
       </Card>
+      )}
 
       {/* Stat cards row */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className={cn("grid grid-cols-1 gap-6", isAdmin ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
 
-        {/* System vitals */}
+        {/* System vitals — admin-only, backend is admin-gated */}
+        {isAdmin && (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -239,6 +248,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Apps */}
         <Card>
