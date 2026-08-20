@@ -220,20 +220,6 @@ async def get_app(name: str, session: Session = Depends(verify_firebase_token)):
         return {"error": True, "response": str(exc)}
 
 
-def _resolve_owner_group(cfg: dict, session: Session, req: AppCreateRequest) -> tuple[str | None, str | None]:
-    """Return (group_name, error_message) for a non-admin app-creation request."""
-    groups = nebula_auth.user_groups(cfg, session.username)
-    if not groups:
-        return None, "You are not a member of any group — ask an admin to add you to one before creating apps."
-    if req.owner_group:
-        if req.owner_group not in groups:
-            return None, f"You are not a member of group '{req.owner_group}'"
-        return req.owner_group, None
-    if len(groups) > 1:
-        return None, f"You belong to multiple groups ({', '.join(groups)}) — specify owner_group."
-    return groups[0], None
-
-
 @router.post("")
 async def create_app(req: AppCreateRequest, session: Session = Depends(verify_firebase_token)):
     """Create a new Nebula app and optionally assign it to device groups.
@@ -248,7 +234,7 @@ async def create_app(req: AppCreateRequest, session: Session = Depends(verify_fi
 
     owner_group = None
     if not session.is_admin:
-        owner_group, err = _resolve_owner_group(cfg, session, req)
+        owner_group, err = nebula_auth.resolve_owner_group(cfg, session.username, req.owner_group)
         if err:
             return {"error": True, "response": err}
 

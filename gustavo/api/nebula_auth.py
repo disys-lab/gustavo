@@ -85,6 +85,25 @@ def compute_permissions(cfg: dict, username: str) -> dict:
     return permissions
 
 
+def resolve_owner_group(cfg: dict, username: str, owner_group: str | None) -> tuple[str | None, str | None]:
+    """
+    For a non-admin creating a new app or device group: which of their
+    groups should be granted rw on it? Returns (group_name, error_message)
+    — exactly one is set. Shared by apps.py and device_groups.py, since
+    both need identical zero/one/many-groups resolution.
+    """
+    groups = user_groups(cfg, username)
+    if not groups:
+        return None, "You are not a member of any group — ask an admin to add you to one before creating resources."
+    if owner_group:
+        if owner_group not in groups:
+            return None, f"You are not a member of group '{owner_group}'"
+        return owner_group, None
+    if len(groups) > 1:
+        return None, f"You belong to multiple groups ({', '.join(groups)}) — specify owner_group."
+    return groups[0], None
+
+
 def user_groups(cfg: dict, username: str) -> list[str]:
     """Names of every user_group `username` is a member of."""
     comp = _build_composer(cfg)
