@@ -59,3 +59,44 @@ def _build_composer(cfg: dict) -> Composer:
     Composer uses NebulaBase in streamlit mode, which reads from session_state dict.
     """
     return Composer(mode="streamlit", params=cfg)
+
+
+def _build_composer_for(
+    cfg: dict,
+    token: str | None = None,
+    username: str | None = None,
+    password: str | None = None,
+) -> Composer:
+    """
+    Instantiate a Composer authenticated as a specific Nebula user, instead
+    of the platform admin credentials. Two mutually exclusive modes:
+
+    - token=... : Bearer auth. Composer always constructs Nebula(...,
+      token=NEBULA_AUTH_TOKEN, ...), and the SDK's `if token is not None:`
+      check picks Bearer over Basic auth whenever a token is present — so
+      overriding NEBULA_AUTH_TOKEN here is all that's needed. This is the
+      path used for ongoing per-user app/device-group writes.
+
+    - username=..., password=... : Basic auth, identity-bound (Nebula looks
+      up that specific username and compares the password against their own
+      stored hash — unlike Bearer, which just scans for any valid token
+      regardless of claimed identity). This is only used for login
+      verification. Since Composer always passes the (non-None-by-default)
+      NEBULA_AUTH_TOKEN too, it must be explicitly forced to None here, or
+      the SDK's Bearer branch would silently win and ignore the
+      username/password entirely — the same footgun as above, just in the
+      other direction.
+
+    With no arguments this is just _build_composer(cfg) (the platform admin).
+    """
+    if token is not None:
+        user_cfg = dict(cfg)
+        user_cfg["NEBULA_AUTH_TOKEN"] = token
+        return _build_composer(user_cfg)
+    if username is not None and password is not None:
+        user_cfg = dict(cfg)
+        user_cfg["NEBULA_USERNAME"] = username
+        user_cfg["NEBULA_PASSWORD"] = password
+        user_cfg["NEBULA_AUTH_TOKEN"] = None
+        return _build_composer(user_cfg)
+    return _build_composer(cfg)

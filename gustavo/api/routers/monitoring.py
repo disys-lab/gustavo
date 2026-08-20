@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, Query
 from sse_starlette.sse import EventSourceResponse
 
 from gustavo.api import config_store
-from gustavo.api.auth import verify_firebase_token
+from gustavo.api.auth import require_admin
 from gustavo.api.cache_shim import build_cache
 
 router = APIRouter()
@@ -56,7 +56,7 @@ def _get_containers_sync(device_group: str = "all", host: str = "all") -> dict:
 async def get_hosts(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_hosts_sync, device_group, host)
@@ -67,7 +67,7 @@ async def get_hosts(
 async def get_vitals(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_vitals_sync, device_group, host)
@@ -78,7 +78,7 @@ async def get_vitals(
 async def get_containers(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _token=Depends(verify_firebase_token),
+    _session=Depends(require_admin),
 ):
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_containers_sync, device_group, host)
@@ -210,12 +210,14 @@ async def _monitoring_event_generator(
 async def monitoring_stream(
     device_group: str = Query("all"),
     host: str = Query("all"),
+    _session=Depends(require_admin),
 ):
     """
     Server-Sent Events endpoint. Emits monitoring snapshots every 10 s.
-    Note: auth dependency omitted here to allow EventSource connections
-    (browsers cannot set Authorization headers on EventSource). The Next.js
-    API route layer handles auth before proxying the SSE stream.
+    Browsers can't set Authorization headers on EventSource, so the browser
+    never calls this directly — the Next.js proxy route
+    (app/api/monitoring/stream/route.ts) reads the gustavo_token cookie and
+    forwards it here as a real Authorization: Bearer header.
     """
     return EventSourceResponse(
         _monitoring_event_generator(device_group, host),

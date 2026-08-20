@@ -26,5 +26,13 @@ services:
       - FIREBASE_API_KEY=${FIREBASE_API_KEY:-}
       - AUTH_ENDPOINT=${AUTH_ENDPOINT:-}
       - CUSTOM_TOKEN_URL=${CUSTOM_TOKEN_URL:-}
+      # Break-glass admin login (identifier:secret == NEBULA_USERNAME:NEBULA_PASSWORD).
+      # Override these for any non-throwaway deployment.
+      - NEBULA_USERNAME=${NEBULA_USERNAME:-nebula}
+      - NEBULA_PASSWORD=${NEBULA_PASSWORD:-nebula}
+      # Signs/encrypts Gustavo session tokens. Pin this in production —
+      # if unset, a random secret is generated at startup and every
+      # restart invalidates existing sessions.
+      - GUSTAVO_SESSION_SECRET=${GUSTAVO_SESSION_SECRET:-}
       - PYTHONWARNINGS=ignore
     command: ["gustavo-next", "-p", "3000"]

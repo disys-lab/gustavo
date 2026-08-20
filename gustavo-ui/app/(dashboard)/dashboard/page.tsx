@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getServices } from "@/lib/api/services";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getServices, getServiceStatus } from "@/lib/api/services";
 import { listApps } from "@/lib/api/apps";
 import { getHosts } from "@/lib/api/monitoring";
 import { useMonitoringStream } from "@/lib/hooks/useMonitoringStream";
@@ -15,7 +15,9 @@ import { subscribeActivity } from "@/lib/activityLog";
 import type { ActivityEntry } from "@/lib/activityLog";
 import type { VitalsData } from "@/lib/types/api";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
+import { useAuth } from "@/lib/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 // "syncer" is intentionally excluded — preserved for future re-enablement
 const VISIBLE_SERVICES = ["redis", "mongo", "registry", "manager"] as const;
@@ -52,6 +54,20 @@ export default function DashboardPage() {
   const [manageExpanded, setManageExpanded] = useState(false);
   const [selectedHost, setSelectedHost] = useState("all");
   const [selectedDg, setSelectedDg] = useState("all");
+  const [checkingSvc, setCheckingSvc] = useState<string | null>(null);
+
+  const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
+
+  const handleCheckStatus = async (svc: string) => {
+    setCheckingSvc(svc);
+    try {
+      await getServiceStatus(svc);
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ["services"] });
+      setCheckingSvc(null);
+    }
+  };
 
   useEffect(() => subscribeActivity(setActivity), []);
 
@@ -59,6 +75,7 @@ export default function DashboardPage() {
     queryKey: ["monitoring-hosts"],
     queryFn: () => getHosts("all", "all"),
     staleTime: 60_000,
+    enabled: isAdmin,
   });
 
   const availableHosts: string[] = ["all"];
@@ -78,7 +95,7 @@ export default function DashboardPage() {
     staleTime: 25_000,
   });
 
-  const { lastEvent: monitoringEvent } = useMonitoringStream(selectedDg, selectedHost);
+  const { lastEvent: monitoringEvent } = useMonitoringStream(selectedDg, selectedHost, isAdmin);
 
   const { data: appsData } = useQuery({
     queryKey: ["apps"],
@@ -121,7 +138,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      {/* Platform Services card */}
+      {/* Platform Services card — status strip is visible to everyone;
+          the launch/restart/stop/remove controls below are admin-only. */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Platform Services</CardTitle>
@@ -139,16 +157,31 @@ export default function DashboardPage() {
                 const entry = services[svc];
                 const status = entry ? (entry.error ? "Down" : "Up") : "Unknown";
                 return (
-                  <div key={svc} className="flex flex-col items-start gap-1 rounded-lg border px-3 py-2.5">
-                    <span className="text-xs text-gray-500 capitalize">{svc}</span>
-                    <StatusPill status={status} />
+                  <div key={svc} className="flex items-start justify-between gap-2 rounded-lg border px-3 py-2.5">
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-xs text-gray-500 capitalize">{svc}</span>
+                      <StatusPill status={status} />
+                    </div>
+                    {/* Read-only status check — admins already have this inside
+                        "Manage Platform Services" below, so it'd be redundant there. */}
+                    {!isAdmin && (
+                      <button
+                        onClick={() => handleCheckStatus(svc)}
+                        disabled={checkingSvc === svc}
+                        title="Check status"
+                        className="rounded p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors disabled:opacity-50"
+                      >
+                        <RefreshCw className={cn("h-3.5 w-3.5", checkingSvc === svc && "animate-spin")} />
+                      </button>
+                    )}
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* Expandable manage section */}
+          {/* Expandable manage section — admin-only (launch/stop/restart/remove) */}
+          {isAdmin && (
           <div className="border-t pt-3">
             <button
               onClick={() => setManageExpanded((v) => !v)}
@@ -185,14 +218,16 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+          )}
 
         </CardContent>
       </Card>
 
       {/* Stat cards row */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className={cn("grid grid-cols-1 gap-6", isAdmin ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
 
-        {/* System vitals */}
+        {/* System vitals — admin-only, backend is admin-gated */}
+        {isAdmin && (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -239,6 +274,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Apps */}
         <Card>

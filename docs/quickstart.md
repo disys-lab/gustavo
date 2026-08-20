@@ -65,8 +65,13 @@ services:
     environment:
       PYTHONWARNINGS: "ignore"
       GUSTAVO_API_CONFIG: /etc/gustavo/platform.yaml
-      AUTH_ENABLED: "false"           # Set to "true" to enable login
-      # Required only when AUTH_ENABLED=true:
+      AUTH_ENABLED: "true"            # Login is Nebula-backed and works immediately —
+                                       # default admin credential is nebula:nebula.
+                                       # Set to "false" to skip login entirely (local/dev only).
+      # NEBULA_USERNAME: "nebula"     # Override the admin login for anything beyond a quick trial
+      # NEBULA_PASSWORD: "nebula"
+      # GUSTAVO_SESSION_SECRET: ""    # Pin this in production — see Deployment
+      # Optional SSO bridge, hidden from the login page unless set:
       # AUTH_ENDPOINT: "https://your-auth-endpoint.example.com"
       # FIREBASE_API_KEY: "your-firebase-web-api-key"
       # CUSTOM_TOKEN_URL: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken"
