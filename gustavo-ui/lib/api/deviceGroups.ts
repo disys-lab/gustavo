@@ -7,8 +7,8 @@ export const listDeviceGroups = () =>
 export const getDeviceGroup = (name: string) =>
   apiClient.get<ApiResponse>(`/device-groups/${name}`).then((r) => r.data);
 
-export const createDeviceGroup = (name: string, apps: string[] = []) =>
-  apiClient.post<ApiResponse>("/device-groups", { name, apps }).then((r) => r.data);
+export const createDeviceGroup = (name: string, apps: string[] = [], owner_group?: string) =>
+  apiClient.post<ApiResponse>("/device-groups", { name, apps, owner_group }).then((r) => r.data);
 
 export const updateDeviceGroup = (name: string, apps: string[]) =>
   apiClient.put<ApiResponse>(`/device-groups/${name}`, { apps }).then((r) => r.data);
