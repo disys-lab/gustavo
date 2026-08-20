@@ -20,6 +20,24 @@ Run these on **each worker node** before deploying:
 
 ---
 
+## Obtaining worker.env automatically
+
+Rather than hand-writing the env file, download one scoped to your own
+Nebula identity directly from a running Gustavo instance — see
+[`GET /api/config/worker-download`](../api/config.md#get-apiconfigworker-download):
+
+```bash
+curl -u <username>:<secret> http://<gustavo-host>:<port>/api/config/worker-download -o worker.env
+```
+
+This works for any authenticated user, not just admins — a regular user
+gets a file scoped to only the `apps`/`device_groups` access they already
+have, safe to hand to a worker node without granting anything extra. Point
+`GUSTAVO_CONFIG_FILE` at the downloaded file and run `gustavo worker up`
+as normal.
+
+---
+
 ## Commands
 
 ### `up`
@@ -68,6 +86,8 @@ Equivalent to `worker remove` followed by `worker up`.
 | `REDIS_HOST` | Redis address (for metric reporting) |
 | `REDIS_PORT` | Redis port |
 | `REDIS_AUTH_TOKEN` | Redis password |
+| `REGISTRY_HOST` | Docker registry address — required; the worker fails to start without it |
+| `REGISTRY_PORT` | Docker registry port — required; the worker fails to start without it |
 | `WORKER_NMODE` | Docker network mode for the worker container (default: `host`) |
 | `NEBULA_USERNAME` | Nebula API credentials |
 | `NEBULA_PASSWORD` | Nebula API credentials |
