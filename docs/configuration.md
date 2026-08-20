@@ -27,6 +27,13 @@ The Settings page in the web UI is the easiest way to manage configuration. Chan
 | `NEBULA_AUTH_TOKEN` | `bmVidWxhOm5lYnVsYQ==` | Base64 encoded `username:password` (derived automatically from above) |
 | `NEBULA_PROTOCOL` | `http` | Protocol for Nebula API calls (`http` or `https`) |
 
+`NEBULA_USERNAME`/`NEBULA_PASSWORD` are also the **break-glass admin login** for the
+Gustavo UI itself (`nebula:nebula` by default — see [Authentication](api/auth.md)).
+If set as container environment variables (recommended for any non-throwaway
+deployment — see below), the env var always wins over whatever is in
+`platform.yaml`, so the login credential can never drift from what Gustavo
+actually uses to talk to Nebula.
+
 ---
 
 ## Registry
@@ -92,9 +99,12 @@ These are set on the Docker container and are not persisted to `platform.yaml`:
 | Variable | Description |
 |----------|-------------|
 | `GUSTAVO_API_CONFIG` | Path to the YAML config file (default: `/etc/gustavo/platform.yaml`) |
-| `AUTH_ENABLED` | Set to `true` to require Firebase login. Default: `false` |
-| `FIREBASE_API_KEY` | Firebase Web API key (required when `AUTH_ENABLED=true`) |
-| `AUTH_ENDPOINT` | URL of the custom token exchange endpoint (required when `AUTH_ENABLED=true`) |
+| `AUTH_ENABLED` | Set to `true` to require login. Default: `true` (see [Authentication](api/auth.md)) |
+| `NEBULA_USERNAME` / `NEBULA_PASSWORD` | Break-glass admin login (`identifier:secret` on the sign-in page). Overrides `platform.yaml` when set. Default: `nebula` / `nebula` — override for any non-throwaway deployment |
+| `GUSTAVO_SESSION_SECRET` | Signs/encrypts Gustavo session tokens. If unset, a random secret is generated at startup and **every restart invalidates all sessions**. Pin this (e.g. `openssl rand -hex 32`) for production |
+| `GUSTAVO_SESSION_TTL` | Session lifetime in seconds. Default: `43200` (12h) |
+| `FIREBASE_API_KEY` | Firebase Web API key (only used if `AUTH_ENDPOINT` is also set) |
+| `AUTH_ENDPOINT` | URL of the custom token exchange endpoint. If unset, the Firebase/SSO login option is hidden and the Nebula-backed login is the only path |
 | `CUSTOM_TOKEN_URL` | Firebase `signInWithCustomToken` URL (has a working default; override only if needed) |
 | `GUSTAVO_CONFIG_FILE` | Path to the env-format config shim used by the CLI and Cache (set automatically by the API) |
 | `FASTAPI_URL` | Used by Next.js to proxy `/api/*` requests. Default: `http://127.0.0.1:8000` |

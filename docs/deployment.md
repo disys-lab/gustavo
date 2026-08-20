@@ -100,7 +100,12 @@ services:
     restart: unless-stopped
 ```
 
-### With authentication
+### Production (pinned admin credentials + session secret)
+
+`AUTH_ENABLED=true` gates the UI behind login, backed by Nebula's own user
+API (see [Authentication](api/auth.md)). At minimum, override the
+break-glass admin credential and pin a session secret so sessions survive a
+container restart:
 
 ```yaml
 services:
@@ -116,10 +121,20 @@ services:
     environment:
       GUSTAVO_API_CONFIG: /etc/gustavo/platform.yaml
       AUTH_ENABLED: "true"
-      FIREBASE_API_KEY: AIzaSy...
-      AUTH_ENDPOINT: https://your-auth-endpoint.example.com
+      NEBULA_USERNAME: your-admin-username
+      NEBULA_PASSWORD: your-admin-password
+      GUSTAVO_SESSION_SECRET: your-random-secret   # e.g. `openssl rand -hex 32`
+      # Optional SSO bridge — hidden from the login page unless set:
+      # FIREBASE_API_KEY: AIzaSy...
+      # AUTH_ENDPOINT: https://your-auth-endpoint.example.com
     restart: unless-stopped
 ```
+
+!!! warning "Don't skip GUSTAVO_SESSION_SECRET in production"
+    If unset, a random secret is generated each time the container starts,
+    which invalidates every active session on every restart/redeploy. Fine
+    for local development, not for anything users depend on staying logged
+    into.
 
 ---
 

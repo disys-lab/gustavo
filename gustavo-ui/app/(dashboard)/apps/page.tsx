@@ -40,7 +40,12 @@ export default function AppsPage() {
         running: values.running,
         privileged: values.privileged,
       };
-      const res = await createApp(values.name, config as Parameters<typeof createApp>[1], values.device_groups ?? []);
+      const res = await createApp(
+        values.name,
+        config as Parameters<typeof createApp>[1],
+        values.device_groups ?? [],
+        values.owner_group || undefined,
+      );
       if (!res.error) {
         toast({ title: `App '${values.name}' created` });
         queryClient.invalidateQueries({ queryKey: ["apps"] });

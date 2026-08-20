@@ -7,7 +7,8 @@ import type { ServicesMap } from "@/lib/types/api";
 const HEALTH_SERVICES: (keyof ServicesMap)[] = ["redis", "mongo", "registry", "manager"];
 
 /**
- * Polls /api/services every 30s.
+ * Polls /api/services every 30s. Status is read-only and open to any
+ * authenticated user (launch/stop/restart/remove stay admin-only).
  * Returns `allUp: true` if all 4 platform services are running, `false` if any is down,
  * `null` while loading or on error.
  */

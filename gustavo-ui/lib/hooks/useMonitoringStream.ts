@@ -19,10 +19,13 @@ interface UseMonitoringStreamResult {
 
 /**
  * Opens an EventSource to /api/monitoring/stream and maintains a 5-min rolling buffer.
+ * The stream is admin-only on the backend — pass enabled=false (e.g. for a
+ * non-admin session) to skip connecting at all.
  */
 export function useMonitoringStream(
   device_group = "all",
-  host = "all"
+  host = "all",
+  enabled = true
 ): UseMonitoringStreamResult {
   const [buffer, setBuffer] = useState<VitalsPoint[]>([]);
   const [lastEvent, setLastEvent] = useState<MonitoringEvent | null>(null);
@@ -74,11 +77,12 @@ export function useMonitoringStream(
   }, [device_group, host]);
 
   useEffect(() => {
+    if (!enabled) return;
     connect();
     return () => {
       esRef.current?.close();
     };
-  }, [connect]);
+  }, [connect, enabled]);
 
   return { buffer, lastEvent, connected, error };
 }
