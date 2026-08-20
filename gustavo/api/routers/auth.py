@@ -11,7 +11,6 @@ POST /api/auth/token  → optional Firebase/AUTH_ENDPOINT bridge (only meaningfu
                          login is treated as the platform admin — no per-user
                          Firebase identity bridging yet.
 """
-import hmac
 import logging
 import os
 
@@ -89,26 +88,10 @@ async def login(req: LoginRequest):
         return {"error": True, "response": "Invalid credential format"}
 
     identifier, secret = req.credential.split(":", 1)
-
-    admin_username = os.environ.get("NEBULA_USERNAME", "nebula")
-    admin_password = os.environ.get("NEBULA_PASSWORD", "nebula")
-    if hmac.compare_digest(identifier, admin_username) and hmac.compare_digest(secret, admin_password):
-        return _session_response(_admin_session())
-
     cfg = config_store.get()
-    try:
-        valid = nebula_auth.verify_db_user_credentials(cfg, identifier, secret)
-    except nebula_auth.ManagerUnreachable:
-        return {
-            "error": True,
-            "response": "Platform services aren't running yet — start them first (or log in with the admin credentials to do so).",
-        }
-
-    if not valid:
-        return {"error": True, "response": "Invalid credential"}
-
-    permissions = nebula_auth.compute_permissions(cfg, identifier)
-    session = Session(username=identifier, user_type="db", is_admin=permissions["admin"], nebula_secret=secret)
+    session, error = nebula_auth.resolve_basic_credentials(cfg, identifier, secret)
+    if error:
+        return {"error": True, "response": error}
     return _session_response(session)
 
 

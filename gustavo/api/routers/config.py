@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi.responses import PlainTextResponse
 
 from gustavo.api import config_store
-from gustavo.api.auth import require_admin, verify_firebase_token
+from gustavo.api.auth import require_admin, verify_firebase_token, verify_session_or_basic
 from gustavo.api.session import Session
 
 router = APIRouter()
@@ -77,7 +77,7 @@ async def download_config(_session=Depends(require_admin)):
 
 
 @router.get("/worker-download", response_class=PlainTextResponse)
-async def download_worker_config(session: Session = Depends(verify_firebase_token)):
+async def download_worker_config(session: Session = Depends(verify_session_or_basic)):
     """
     Return a worker.env scoped to the CALLER's own Nebula identity — never
     a different user's, and never generated from someone else's secret. That
@@ -88,6 +88,12 @@ async def download_worker_config(session: Session = Depends(verify_firebase_toke
     username/password, so their worker config only carries the same
     apps/device_groups access they already have — nothing a leaked copy
     could use to escalate beyond what they can already do.
+
+    Accepts either a Gustavo Bearer session token (what the UI button uses)
+    or plain HTTP Basic auth with the caller's own Nebula username:secret
+    (verify_session_or_basic) — the latter lets a script pull this in one
+    request from a remote machine, e.g. `curl -u alice:secret .../worker-download`,
+    without first calling /login to mint a session token.
     """
     cfg = config_store.get()
     username = session.username
