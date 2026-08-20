@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1402,6 +1402,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1646,6 +1674,34 @@
     
   
     Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
   
 
     
@@ -1958,11 +2014,11 @@
     <div class="doc doc-contents first">
 
         <p>/api/services — Manager service lifecycle endpoints.</p>
-<p>GET  /api/services                      → all 5 services + status
-GET  /api/services/{svc}/status         → Manager.serviceStatus(svc)
-POST /api/services/{svc}/run            → background task → returns job_id
-POST /api/services/{svc}/action         → body: {action: stop|start|kill|remove|restart}
-GET  /api/services/jobs/{job_id}        → poll result of background run</p>
+<p>GET  /api/services                      → all 5 services + status (any authenticated user)
+GET  /api/services/{svc}/status         → Manager.serviceStatus(svc) (any authenticated user)
+POST /api/services/{svc}/run            → background task → returns job_id (admin-only)
+POST /api/services/{svc}/action         → body: {action: stop|start|kill|remove|restart} (admin-only)
+GET  /api/services/jobs/{job_id}        → poll result of background run (admin-only)</p>
 <p>Valid {svc}: redis, mongo, registry, syncer, manager, all</p>
 
 
@@ -1989,7 +2045,7 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
 
 <h4 id="gustavo.api.routers.services.list_services" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">list_services</span><span class="p">(</span><span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">list_services</span><span class="p">(</span><span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2000,7 +2056,8 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
     <div class="doc doc-contents ">
 
-        <p>Return status for all 5 services.</p>
+        <p>Return status for all 5 services. Read-only, open to any authenticated
+user (launch/stop/restart/remove stay admin-only, below).</p>
 <p>Docker calls are blocking, so we run them in a single background thread
 (sequential, same Manager instance) to avoid blocking the event loop.</p>
 
@@ -2034,34 +2091,36 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 <span class="normal"><a href="#__codelineno-0-61">61</a></span>
 <span class="normal"><a href="#__codelineno-0-62">62</a></span>
 <span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_services</span><span class="p">(</span><span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return status for all 5 services.</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Docker calls are blocking, so we run them in a single background thread</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    (sequential, same Manager instance) to avoid blocking the event loop.</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="n">services</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;redis&quot;</span><span class="p">,</span> <span class="s2">&quot;mongo&quot;</span><span class="p">,</span> <span class="s2">&quot;registry&quot;</span><span class="p">,</span> <span class="s2">&quot;syncer&quot;</span><span class="p">,</span> <span class="s2">&quot;manager&quot;</span><span class="p">]</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_all_statuses</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a>        <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a>        <span class="k">for</span> <span class="n">svc</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a>            <span class="n">result</span><span class="p">[</span><span class="n">svc</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_status_for</span><span class="p">(</span><span class="n">man</span><span class="p">,</span> <span class="n">svc</span><span class="p">)</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;serviceStatus(</span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="n">svc</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a>        <span class="k">return</span> <span class="n">result</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">_all_statuses</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">25.0</span><span class="p">)</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;list_services: timed out after 25s&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">svc</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;status check timed out&quot;</span><span class="p">}</span> <span class="k">for</span> <span class="n">svc</span> <span class="ow">in</span> <span class="n">services</span><span class="p">}</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;list_services failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">svc</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span> <span class="k">for</span> <span class="n">svc</span> <span class="ow">in</span> <span class="n">services</span><span class="p">}</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">}</span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_services</span><span class="p">(</span><span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">"""Return status for all 5 services. Read-only, open to any authenticated</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    user (launch/stop/restart/remove stay admin-only, below).</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    Docker calls are blocking, so we run them in a single background thread</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    (sequential, same Manager instance) to avoid blocking the event loop.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    """</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="n">services</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"redis"</span><span class="p">,</span> <span class="s2">"mongo"</span><span class="p">,</span> <span class="s2">"registry"</span><span class="p">,</span> <span class="s2">"syncer"</span><span class="p">,</span> <span class="s2">"manager"</span><span class="p">]</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_all_statuses</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="k">for</span> <span class="n">svc</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>            <span class="n">result</span><span class="p">[</span><span class="n">svc</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_status_for</span><span class="p">(</span><span class="n">man</span><span class="p">,</span> <span class="n">svc</span><span class="p">)</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"serviceStatus(</span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="n">svc</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>        <span class="k">return</span> <span class="n">result</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">_all_statuses</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">25.0</span><span class="p">)</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"list_services: timed out after 25s"</span><span class="p">)</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">svc</span><span class="p">:</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"status check timed out"</span><span class="p">}</span> <span class="k">for</span> <span class="n">svc</span> <span class="ow">in</span> <span class="n">services</span><span class="p">}</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"list_services failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">svc</span><span class="p">:</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span> <span class="k">for</span> <span class="n">svc</span> <span class="ow">in</span> <span class="n">services</span><span class="p">}</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">result</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2072,7 +2131,7 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
 
 <h4 id="gustavo.api.routers.services.get_job" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2088,19 +2147,19 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/services.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-67">67</a></span>
-<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-68">68</a></span>
 <span class="normal"><a href="#__codelineno-0-69">69</a></span>
 <span class="normal"><a href="#__codelineno-0-70">70</a></span>
 <span class="normal"><a href="#__codelineno-0-71">71</a></span>
 <span class="normal"><a href="#__codelineno-0-72">72</a></span>
-<span class="normal"><a href="#__codelineno-0-73">73</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/jobs/</span><span class="si">{job_id}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Poll the result of a background run/restore job.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Job not found&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">job</span><span class="p">}</span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/jobs/</span><span class="si">{job_id}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">)):</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="w">    </span><span class="sd">"""Poll the result of a background run/restore job."""</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">"Job not found"</span><span class="p">)</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">job</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2111,7 +2170,7 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
 
 <h4 id="gustavo.api.routers.services.service_status" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">service_status</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">service_status</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2122,26 +2181,26 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
     <div class="doc doc-contents ">
 
-        <p>Check status of a single service.</p>
+        <p>Check status of a single service. Read-only, open to any authenticated user.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/services.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-76">76</a></span>
-<span class="normal"><a href="#__codelineno-0-77">77</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-77">77</a></span>
 <span class="normal"><a href="#__codelineno-0-78">78</a></span>
 <span class="normal"><a href="#__codelineno-0-79">79</a></span>
 <span class="normal"><a href="#__codelineno-0-80">80</a></span>
 <span class="normal"><a href="#__codelineno-0-81">81</a></span>
 <span class="normal"><a href="#__codelineno-0-82">82</a></span>
-<span class="normal"><a href="#__codelineno-0-83">83</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{svc}</span><span class="s2">/status&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">service_status</span><span class="p">(</span><span class="n">svc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Check status of a single service.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="k">if</span> <span class="n">svc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_SERVICES</span><span class="p">:</span>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Unknown service: </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a>    <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span class="k">return</span> <span class="n">_get_status_for</span><span class="p">(</span><span class="n">man</span><span class="p">,</span> <span class="n">svc</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-83">83</a></span>
+<span class="normal"><a href="#__codelineno-0-84">84</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{svc}</span><span class="s2">/status"</span><span class="p">)</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">service_status</span><span class="p">(</span><span class="n">svc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="w">    </span><span class="sd">"""Check status of a single service. Read-only, open to any authenticated user."""</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="k">if</span> <span class="n">svc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_SERVICES</span><span class="p">:</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Unknown service: </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>    <span class="k">return</span> <span class="n">_get_status_for</span><span class="p">(</span><span class="n">man</span><span class="p">,</span> <span class="n">svc</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2152,7 +2211,7 @@ GET  /api/services/jobs/{job_id}        → poll result of background run</p>
 
 
 <h4 id="gustavo.api.routers.services.run_service" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">run_service</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">bg</span><span class="p">,</span> <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">run_service</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">bg</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2169,8 +2228,7 @@ Poll GET /api/services/jobs/{job_id} for the result.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/services.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
-<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
 <span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
 <span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
 <span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
@@ -2190,28 +2248,29 @@ Poll GET /api/services/jobs/{job_id} for the result.</p>
 <span class="normal"><a href="#__codelineno-0-104">104</a></span>
 <span class="normal"><a href="#__codelineno-0-105">105</a></span>
 <span class="normal"><a href="#__codelineno-0-106">106</a></span>
-<span class="normal"><a href="#__codelineno-0-107">107</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-86" name="__codelineno-0-86"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{svc}</span><span class="s2">/run&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_service</span><span class="p">(</span>
-<a id="__codelineno-0-88" name="__codelineno-0-88"></a>    <span class="n">svc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-89" name="__codelineno-0-89"></a>    <span class="n">bg</span><span class="p">:</span> <span class="n">BackgroundTasks</span><span class="p">,</span>
-<a id="__codelineno-0-90" name="__codelineno-0-90"></a>    <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">),</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="p">):</span>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">    Launch a service (long-running). Returns a job_id immediately.</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">    Poll GET /api/services/jobs/{job_id} for the result.</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="k">if</span> <span class="n">svc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_SERVICES</span><span class="p">:</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Unknown service: </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="n">job_id</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">create_job</span><span class="p">({</span><span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="n">svc</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;run&quot;</span><span class="p">})</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">():</span>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a>        <span class="k">return</span> <span class="n">man</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">svc</span><span class="p">)</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span class="n">background</span><span class="o">.</span><span class="n">run_in_background</span><span class="p">(</span><span class="n">_run</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;running&quot;</span><span class="p">}}</span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/</span><span class="si">{svc}</span><span class="s2">/run"</span><span class="p">)</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_service</span><span class="p">(</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>    <span class="n">svc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>    <span class="n">bg</span><span class="p">:</span> <span class="n">BackgroundTasks</span><span class="p">,</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>    <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">),</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="p">):</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">    Launch a service (long-running). Returns a job_id immediately.</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">    Poll GET /api/services/jobs/{job_id} for the result.</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">    """</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="k">if</span> <span class="n">svc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_SERVICES</span><span class="p">:</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Unknown service: </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="n">job_id</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">create_job</span><span class="p">({</span><span class="s2">"service"</span><span class="p">:</span> <span class="n">svc</span><span class="p">,</span> <span class="s2">"action"</span><span class="p">:</span> <span class="s2">"run"</span><span class="p">})</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">():</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>        <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="k">return</span> <span class="n">man</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">svc</span><span class="p">)</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="n">background</span><span class="o">.</span><span class="n">run_in_background</span><span class="p">(</span><span class="n">_run</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"job_id"</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"running"</span><span class="p">}}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2222,7 +2281,7 @@ Poll GET /api/services/jobs/{job_id} for the result.</p>
 
 
 <h4 id="gustavo.api.routers.services.service_action" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">service_action</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">service_action</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2239,8 +2298,7 @@ action: stop | start | kill | remove | restart</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/services.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-110">110</a></span>
-<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-111">111</a></span>
 <span class="normal"><a href="#__codelineno-0-112">112</a></span>
 <span class="normal"><a href="#__codelineno-0-113">113</a></span>
 <span class="normal"><a href="#__codelineno-0-114">114</a></span>
@@ -2263,31 +2321,32 @@ action: stop | start | kill | remove | restart</p>
 <span class="normal"><a href="#__codelineno-0-131">131</a></span>
 <span class="normal"><a href="#__codelineno-0-132">132</a></span>
 <span class="normal"><a href="#__codelineno-0-133">133</a></span>
-<span class="normal"><a href="#__codelineno-0-134">134</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{svc}</span><span class="s2">/action&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">service_action</span><span class="p">(</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="n">svc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">req</span><span class="p">:</span> <span class="n">ActionRequest</span><span class="p">,</span>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="n">_token</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">),</span>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="p">):</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">    Perform a lifecycle action on a service.</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    action: stop | start | kill | remove | restart</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="k">if</span> <span class="n">svc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_SERVICES</span><span class="p">:</span>
-<a id="__codelineno-0-121" name="__codelineno-0-121"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Unknown service: </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
-<a id="__codelineno-0-122" name="__codelineno-0-122"></a>
-<a id="__codelineno-0-123" name="__codelineno-0-123"></a>    <span class="n">valid_actions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;kill&quot;</span><span class="p">,</span> <span class="s2">&quot;remove&quot;</span><span class="p">,</span> <span class="s2">&quot;restart&quot;</span><span class="p">}</span>
-<a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_actions</span><span class="p">:</span>
-<a id="__codelineno-0-125" name="__codelineno-0-125"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Unknown action: </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">action</span><span class="si">}</span><span class="s2">. Valid: </span><span class="si">{</span><span class="n">valid_actions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
-<a id="__codelineno-0-126" name="__codelineno-0-126"></a>
-<a id="__codelineno-0-127" name="__codelineno-0-127"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
-<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-130" name="__codelineno-0-130"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">man</span><span class="o">.</span><span class="n">handleService</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
-<a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span class="k">return</span> <span class="n">result</span>
-<a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-<a id="__codelineno-0-133" name="__codelineno-0-133"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;service action </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">action</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/</span><span class="si">{svc}</span><span class="s2">/action"</span><span class="p">)</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">service_action</span><span class="p">(</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">svc</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="n">req</span><span class="p">:</span> <span class="n">ActionRequest</span><span class="p">,</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">),</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="p">):</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    Perform a lifecycle action on a service.</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    action: stop | start | kill | remove | restart</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">    """</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a>    <span class="k">if</span> <span class="n">svc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VALID_SERVICES</span><span class="p">:</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Unknown service: </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="n">valid_actions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"stop"</span><span class="p">,</span> <span class="s2">"start"</span><span class="p">,</span> <span class="s2">"kill"</span><span class="p">,</span> <span class="s2">"remove"</span><span class="p">,</span> <span class="s2">"restart"</span><span class="p">}</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_actions</span><span class="p">:</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Unknown action: </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">action</span><span class="si">}</span><span class="s2">. Valid: </span><span class="si">{</span><span class="n">valid_actions</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">man</span><span class="o">.</span><span class="n">handleService</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="k">return</span> <span class="n">result</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"service action </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">action</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">svc</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2342,13 +2401,13 @@ action: stop | start | kill | remove | restart</p>
 <p>Return the status of all five services in a single response.</p>
 <p><strong>Response:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">&quot;redis&quot;</span><span class="p">:</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;mongo&quot;</span><span class="p">:</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">&quot;registry&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">&quot;syncer&quot;</span><span class="p">:</span><span class="w">   </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;not found&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">&quot;manager&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">"redis"</span><span class="p">:</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">"mongo"</span><span class="p">:</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">"registry"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">"syncer"</span><span class="p">:</span><span class="w">   </span><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"not found"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">"manager"</span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="p">}</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
 </code></pre></div>
@@ -2359,7 +2418,7 @@ action: stop | start | kill | remove | restart</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>GET /api/services/redis/status
 </code></pre></div>
 <p><strong>Response:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <hr />
 <h3 id="post-apiservicessvcrun"><code>POST /api/services/{svc}/run</code></h3>
@@ -2367,7 +2426,7 @@ action: stop | start | kill | remove | restart</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>POST /api/services/redis/run
 </code></pre></div>
 <p><strong>Response:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"job_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>Poll <code>GET /api/services/jobs/{job_id}</code> until <code>status</code> is <code>done</code> or <code>error</code>.</p>
 <hr />
@@ -2376,29 +2435,29 @@ action: stop | start | kill | remove | restart</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>POST /api/services/redis/action
 </code></pre></div>
 <p><strong>Request body:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;restart&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"restart"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>Valid actions: <code>stop</code>, <code>start</code>, <code>kill</code>, <code>remove</code>, <code>restart</code></p>
 <p><strong>Response:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;redis restarted&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"redis restarted"</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <hr />
 <h3 id="get-apiservicesjobsjob_id"><code>GET /api/services/jobs/{job_id}</code></h3>
 <p>Poll the result of a background service launch.</p>
 <p><strong>Response while running:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-...&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="p">,</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"550e8400-..."</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="p">}</span>
 </code></pre></div>
 <p><strong>Response on completion:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-...&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;done&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;redis started successfully&quot;</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"550e8400-..."</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"done"</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">"result"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"redis started successfully"</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 <a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">}</span>
 </code></pre></div>
 <hr />
@@ -2476,14 +2535,14 @@ action: stop | start | kill | remove | restart</p>
 <span class="normal"><a href="#__codelineno-0-32">32</a></span>
 <span class="normal"><a href="#__codelineno-0-33">33</a></span>
 <span class="normal"><a href="#__codelineno-0-34">34</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_job</span><span class="p">(</span><span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new job and return its ID.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="w">    </span><span class="sd">"""Create a new job and return its ID."""</span>
 <a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span class="n">job_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
 <a id="__codelineno-0-26" name="__codelineno-0-26"></a>    <span class="k">with</span> <span class="n">_lock</span><span class="p">:</span>
 <a id="__codelineno-0-27" name="__codelineno-0-27"></a>        <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-0-28" name="__codelineno-0-28"></a>            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
-<a id="__codelineno-0-29" name="__codelineno-0-29"></a>            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-30" name="__codelineno-0-30"></a>            <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-31" name="__codelineno-0-31"></a>            <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28"></a>            <span class="s2">"id"</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29"></a>            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"running"</span><span class="p">,</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30"></a>            <span class="s2">"result"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31"></a>            <span class="s2">"error"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-0-32" name="__codelineno-0-32"></a>            <span class="o">**</span><span class="p">(</span><span class="n">meta</span> <span class="ow">or</span> <span class="p">{}),</span>
 <a id="__codelineno-0-33" name="__codelineno-0-33"></a>        <span class="p">}</span>
 <a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span class="k">return</span> <span class="n">job_id</span>
@@ -2515,11 +2574,11 @@ action: stop | start | kill | remove | restart</p>
 <span class="normal"><a href="#__codelineno-0-40">40</a></span>
 <span class="normal"><a href="#__codelineno-0-41">41</a></span>
 <span class="normal"><a href="#__codelineno-0-42">42</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="k">def</span><span class="w"> </span><span class="nf">complete_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark a job as done with the given result.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="w">    </span><span class="sd">"""Mark a job as done with the given result."""</span>
 <a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="k">with</span> <span class="n">_lock</span><span class="p">:</span>
 <a id="__codelineno-0-40" name="__codelineno-0-40"></a>        <span class="k">if</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">_jobs</span><span class="p">:</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;done&quot;</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">&quot;result&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">"status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"done"</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">"result"</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2548,11 +2607,11 @@ action: stop | start | kill | remove | restart</p>
 <span class="normal"><a href="#__codelineno-0-48">48</a></span>
 <span class="normal"><a href="#__codelineno-0-49">49</a></span>
 <span class="normal"><a href="#__codelineno-0-50">50</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="k">def</span><span class="w"> </span><span class="nf">fail_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark a job as failed with an error message.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="w">    </span><span class="sd">"""Mark a job as failed with an error message."""</span>
 <a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="k">with</span> <span class="n">_lock</span><span class="p">:</span>
 <a id="__codelineno-0-48" name="__codelineno-0-48"></a>        <span class="k">if</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">_jobs</span><span class="p">:</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">&quot;error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">"status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"error"</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>            <span class="n">_jobs</span><span class="p">[</span><span class="n">job_id</span><span class="p">][</span><span class="s2">"error"</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2579,7 +2638,7 @@ action: stop | start | kill | remove | restart</p>
 <span class="normal"><a href="#__codelineno-0-54">54</a></span>
 <span class="normal"><a href="#__codelineno-0-55">55</a></span>
 <span class="normal"><a href="#__codelineno-0-56">56</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the current state of a job, or None if not found.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="w">    </span><span class="sd">"""Return the current state of a job, or None if not found."""</span>
 <a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="k">with</span> <span class="n">_lock</span><span class="p">:</span>
 <a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_jobs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="p">{}))</span> <span class="k">if</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">_jobs</span> <span class="k">else</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -2620,11 +2679,11 @@ action: stop | start | kill | remove | restart</p>
 <span class="normal"><a href="#__codelineno-0-71">71</a></span>
 <span class="normal"><a href="#__codelineno-0-72">72</a></span>
 <span class="normal"><a href="#__codelineno-0-73">73</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_in_background</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="w">    </span><span class="sd">"""</span>
 <a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Execute *fn* in a daemon thread, updating *job_id* on completion.</span>
 <a id="__codelineno-0-62" name="__codelineno-0-62"></a>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    fn must return a dict with keys &#39;error&#39; and &#39;response&#39;.</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    fn must return a dict with keys 'error' and 'response'.</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    """</span>
 <a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_worker</span><span class="p">():</span>
 <a id="__codelineno-0-66" name="__codelineno-0-66"></a>        <span class="k">try</span><span class="p">:</span>
 <a id="__codelineno-0-67" name="__codelineno-0-67"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -2747,7 +2806,7 @@ action: stop | start | kill | remove | restart</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

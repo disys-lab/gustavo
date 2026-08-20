@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1081,6 +1081,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1325,6 +1353,34 @@
     
   
     Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
   
 
     
@@ -1798,7 +1854,7 @@
 <p><strong>Error:</strong> <code>bind: address already in use</code></p>
 <p><strong>Cause:</strong> Another process is bound to the same port.</p>
 <p><strong>Fix:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Find what&#39;s using the port (e.g., 5001)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Find what's using the port (e.g., 5001)</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>lsof<span class="w"> </span>-i<span class="w"> </span>:5001
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Kill the process or stop the conflicting container</span>
@@ -1810,7 +1866,7 @@
 <p><strong>Fix:</strong> Ensure <code>FASTAPI_URL=http://127.0.0.1:8000</code> (not <code>localhost</code>).</p>
 <p>Verify FastAPI is running inside the container:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>gustavo<span class="w"> </span>curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8000/health
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># Expected: {&quot;status&quot;:&quot;ok&quot;}</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># Expected: {"status":"ok"}</span>
 </code></pre></div>
 <hr />
 <h2 id="redis-connectivity-error-after-changing-ip">Redis connectivity error after changing IP</h2>
@@ -1836,7 +1892,7 @@
 <h2 id="repeated-401-errors-in-logs">Repeated 401 errors in logs</h2>
 <p><strong>Cause:</strong> <code>AUTH_ENABLED=true</code> but <code>FIREBASE_API_KEY</code> or <code>AUTH_ENDPOINT</code> are not set, or the client's auth token has not been acquired yet.</p>
 <p><strong>Check:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>inspect<span class="w"> </span>gustavo<span class="w"> </span>--format<span class="w"> </span><span class="s1">&#39;{{range .Config.Env}}{{println .}}{{end}}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>AUTH
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>inspect<span class="w"> </span>gustavo<span class="w"> </span>--format<span class="w"> </span><span class="s1">'{{range .Config.Env}}{{println .}}{{end}}'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>AUTH
 </code></pre></div>
 <p>If <code>AUTH_ENABLED=false</code> is intended, verify the runtime env var is correct (the build-time <code>NEXT_PUBLIC_AUTH_ENABLED</code> build arg is separate and does not affect runtime behaviour).</p>
 <hr />
@@ -1947,7 +2003,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

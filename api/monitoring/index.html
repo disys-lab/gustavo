@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1247,6 +1247,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1491,6 +1519,34 @@
     
   
     Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
   
 
     
@@ -1832,7 +1888,7 @@ GET /api/monitoring/stream      → SSE, emits every 10 s</p>
 
 
 <h4 id="gustavo.api.routers.monitoring.monitoring_stream" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">monitoring_stream</span><span class="p">(</span><span class="n">device_group</span><span class="o">=</span><span class="n">Query</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">),</span> <span class="n">host</span><span class="o">=</span><span class="n">Query</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">monitoring_stream</span><span class="p">(</span><span class="n">device_group</span><span class="o">=</span><span class="n">Query</span><span class="p">(</span><span class="s1">'all'</span><span class="p">),</span> <span class="n">host</span><span class="o">=</span><span class="n">Query</span><span class="p">(</span><span class="s1">'all'</span><span class="p">),</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -1844,9 +1900,10 @@ GET /api/monitoring/stream      → SSE, emits every 10 s</p>
     <div class="doc doc-contents ">
 
         <p>Server-Sent Events endpoint. Emits monitoring snapshots every 10 s.
-Note: auth dependency omitted here to allow EventSource connections
-(browsers cannot set Authorization headers on EventSource). The Next.js
-API route layer handles auth before proxying the SSE stream.</p>
+Browsers can't set Authorization headers on EventSource, so the browser
+never calls this directly — the Next.js proxy route
+(app/api/monitoring/stream/route.ts) reads the gustavo_token cookie and
+forwards it here as a real Authorization: Bearer header.</p>
 
 
             <details class="mkdocstrings-source">
@@ -1865,21 +1922,25 @@ API route layer handles auth before proxying the SSE stream.</p>
 <span class="normal"><a href="#__codelineno-0-220">220</a></span>
 <span class="normal"><a href="#__codelineno-0-221">221</a></span>
 <span class="normal"><a href="#__codelineno-0-222">222</a></span>
-<span class="normal"><a href="#__codelineno-0-223">223</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-209" name="__codelineno-0-209"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/stream&quot;</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-223">223</a></span>
+<span class="normal"><a href="#__codelineno-0-224">224</a></span>
+<span class="normal"><a href="#__codelineno-0-225">225</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-209" name="__codelineno-0-209"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/stream"</span><span class="p">)</span>
 <a id="__codelineno-0-210" name="__codelineno-0-210"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">monitoring_stream</span><span class="p">(</span>
-<a id="__codelineno-0-211" name="__codelineno-0-211"></a>    <span class="n">device_group</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">),</span>
-<a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">),</span>
-<a id="__codelineno-0-213" name="__codelineno-0-213"></a><span class="p">):</span>
-<a id="__codelineno-0-214" name="__codelineno-0-214"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="sd">    Server-Sent Events endpoint. Emits monitoring snapshots every 10 s.</span>
-<a id="__codelineno-0-216" name="__codelineno-0-216"></a><span class="sd">    Note: auth dependency omitted here to allow EventSource connections</span>
-<a id="__codelineno-0-217" name="__codelineno-0-217"></a><span class="sd">    (browsers cannot set Authorization headers on EventSource). The Next.js</span>
-<a id="__codelineno-0-218" name="__codelineno-0-218"></a><span class="sd">    API route layer handles auth before proxying the SSE stream.</span>
-<a id="__codelineno-0-219" name="__codelineno-0-219"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-220" name="__codelineno-0-220"></a>    <span class="k">return</span> <span class="n">EventSourceResponse</span><span class="p">(</span>
-<a id="__codelineno-0-221" name="__codelineno-0-221"></a>        <span class="n">_monitoring_event_generator</span><span class="p">(</span><span class="n">device_group</span><span class="p">,</span> <span class="n">host</span><span class="p">),</span>
-<a id="__codelineno-0-222" name="__codelineno-0-222"></a>        <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;text/event-stream&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-223" name="__codelineno-0-223"></a>    <span class="p">)</span>
+<a id="__codelineno-0-211" name="__codelineno-0-211"></a>    <span class="n">device_group</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="s2">"all"</span><span class="p">),</span>
+<a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="s2">"all"</span><span class="p">),</span>
+<a id="__codelineno-0-213" name="__codelineno-0-213"></a>    <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">),</span>
+<a id="__codelineno-0-214" name="__codelineno-0-214"></a><span class="p">):</span>
+<a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-216" name="__codelineno-0-216"></a><span class="sd">    Server-Sent Events endpoint. Emits monitoring snapshots every 10 s.</span>
+<a id="__codelineno-0-217" name="__codelineno-0-217"></a><span class="sd">    Browsers can't set Authorization headers on EventSource, so the browser</span>
+<a id="__codelineno-0-218" name="__codelineno-0-218"></a><span class="sd">    never calls this directly — the Next.js proxy route</span>
+<a id="__codelineno-0-219" name="__codelineno-0-219"></a><span class="sd">    (app/api/monitoring/stream/route.ts) reads the gustavo_token cookie and</span>
+<a id="__codelineno-0-220" name="__codelineno-0-220"></a><span class="sd">    forwards it here as a real Authorization: Bearer header.</span>
+<a id="__codelineno-0-221" name="__codelineno-0-221"></a><span class="sd">    """</span>
+<a id="__codelineno-0-222" name="__codelineno-0-222"></a>    <span class="k">return</span> <span class="n">EventSourceResponse</span><span class="p">(</span>
+<a id="__codelineno-0-223" name="__codelineno-0-223"></a>        <span class="n">_monitoring_event_generator</span><span class="p">(</span><span class="n">device_group</span><span class="p">,</span> <span class="n">host</span><span class="p">),</span>
+<a id="__codelineno-0-224" name="__codelineno-0-224"></a>        <span class="n">media_type</span><span class="o">=</span><span class="s2">"text/event-stream"</span><span class="p">,</span>
+<a id="__codelineno-0-225" name="__codelineno-0-225"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1899,10 +1960,10 @@ API route layer handles auth before proxying the SSE stream.</p>
 <p><strong>Query params:</strong> <code>device_group</code> (default: <code>all</code>), <code>host</code> (default: <code>all</code>)</p>
 <p><strong>Response:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">&quot;192.168.1.50&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;production&quot;</span><span class="p">],</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;192.168.1.51&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">"192.168.1.50"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"production"</span><span class="p">],</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">"192.168.1.51"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"production"</span><span class="p">,</span><span class="w"> </span><span class="s2">"staging"</span><span class="p">]</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="p">}</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
 </code></pre></div>
@@ -1912,10 +1973,10 @@ API route layer handles auth before proxying the SSE stream.</p>
 <p><strong>Query params:</strong> <code>device_group</code> (default: <code>all</code>), <code>host</code> (default: <code>all</code>)</p>
 <p><strong>Response:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.168.1.50@192.168.1.50 at time:1741270000\tmem:{&#39;total&#39;:8192,&#39;used&#39;:4096,&#39;free&#39;:4096}\tdisk:{&#39;total&#39;:100000,&#39;used&#39;:50000,&#39;free&#39;:50000}\tcpu_cores:4\tcpu_percent:23.5&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"192.168.1.50@192.168.1.50 at time:1741270000\tmem:{'total':8192,'used':4096,'free':4096}\tdisk:{'total':100000,'used':50000,'free':50000}\tcpu_cores:4\tcpu_percent:23.5"</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="p">}</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
 </code></pre></div>
@@ -1930,26 +1991,26 @@ API route layer handles auth before proxying the SSE stream.</p>
 <p><strong>Query params:</strong> <code>device_group</code> (default: <code>all</code>), <code>host</code> (default: <code>all</code>)</p>
 <p><strong>Event format:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>event: monitoring
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>data: {&quot;vitals&quot;: {...}, &quot;containers&quot;: [...]}
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>data: {"vitals": {...}, "containers": [...]}
 </code></pre></div>
 <p><strong>Vitals object:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.168.1.50@192.168.1.50&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1741270000</span><span class="p">,</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;cpu_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">23.5</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">&quot;cpu_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">&quot;memory_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8192</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;used&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4096</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;free&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4096</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">&quot;disk_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100000</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;used&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50000</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;free&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50000</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">"host"</span><span class="p">:</span><span class="w"> </span><span class="s2">"192.168.1.50@192.168.1.50"</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1741270000</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">"cpu_percent"</span><span class="p">:</span><span class="w"> </span><span class="mf">23.5</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">"cpu_cores"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">"memory_mb"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">8192</span><span class="p">,</span><span class="w"> </span><span class="nt">"used"</span><span class="p">:</span><span class="w"> </span><span class="mi">4096</span><span class="p">,</span><span class="w"> </span><span class="nt">"free"</span><span class="p">:</span><span class="w"> </span><span class="mi">4096</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">"disk_mb"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">100000</span><span class="p">,</span><span class="w"> </span><span class="nt">"used"</span><span class="p">:</span><span class="w"> </span><span class="mi">50000</span><span class="p">,</span><span class="w"> </span><span class="nt">"free"</span><span class="p">:</span><span class="w"> </span><span class="mi">50000</span><span class="w"> </span><span class="p">}</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
 </code></pre></div>
 <p><strong>Containers array:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">[</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="p">{</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_linreg&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">&quot;cpu_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.2</span><span class="p">,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">&quot;memory_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">256.0</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">&quot;memory_limit_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2048.0</span><span class="p">,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">&quot;memory_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12.5</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test_linreg"</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">"cpu_percent"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.2</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">"memory_mb"</span><span class="p">:</span><span class="w"> </span><span class="mf">256.0</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">"memory_limit_mb"</span><span class="p">:</span><span class="w"> </span><span class="mf">2048.0</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">"memory_percent"</span><span class="p">:</span><span class="w"> </span><span class="mf">12.5</span>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="p">}</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">]</span>
 </code></pre></div>
@@ -1964,7 +2025,7 @@ API route layer handles auth before proxying the SSE stream.</p>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>         (every CACHE_EXPIRE_TIME seconds)
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>FastAPI /api/monitoring/stream
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  └── build_cache() → Cache.getAssetsForAll(&quot;vitals&quot;)
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  └── build_cache() → Cache.getAssetsForAll("vitals")
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>         └── Reads latest pickle from Redis per host
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>              └── Emits structured JSON over SSE
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
@@ -2072,7 +2133,7 @@ API route layer handles auth before proxying the SSE stream.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
