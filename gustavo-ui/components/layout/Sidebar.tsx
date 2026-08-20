@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/context/AuthContext";
 import { ActivitySheet } from "@/components/layout/ActivitySheet";
 import { RegenerateCredentialDialog } from "@/components/layout/RegenerateCredentialDialog";
+import { DownloadWorkerConfigButton } from "@/components/layout/DownloadWorkerConfigButton";
 import { useServiceHealth } from "@/lib/hooks/useServiceHealth";
 import { getMyGroups } from "@/lib/api/users";
 
@@ -110,6 +111,7 @@ export function Sidebar() {
       <div className="mt-2 pt-2 space-y-0.5">
         <ActivitySheet />
         <RegenerateCredentialDialog />
+        <DownloadWorkerConfigButton />
         <button
           onClick={logout}
           className="w-full rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors text-left"

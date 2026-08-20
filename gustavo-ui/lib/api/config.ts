@@ -18,3 +18,8 @@ export const uploadConfig = (file: File) => {
 
 export const downloadConfig = () =>
   apiClient.get("/config/download", { responseType: "text" }).then((r) => r.data as string);
+
+// Scoped to the caller's own Nebula identity — safe for any authenticated
+// user, admin or not (see gustavo/api/routers/config.py).
+export const downloadWorkerConfig = () =>
+  apiClient.get("/config/worker-download", { responseType: "text" }).then((r) => r.data as string);

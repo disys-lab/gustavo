@@ -2,9 +2,12 @@
 /api/users — Nebula user + user_group (role) management.
 
 Every db user's login credential is "username:secret" (see nebula_auth.py /
-routers/auth.py), where secret is a Nebula token Gustavo generates. Nebula
-never returns a usable plaintext secret from create_user/update_user, so
-Gustavo captures it at generation time and shows it exactly once — the same
+routers/auth.py), where secret is a random value Gustavo generates and
+registers with Nebula as *both* that user's token and password — token for
+ongoing per-user Bearer calls (apps.py/device_groups.py), password so login
+itself can be verified via Nebula's identity-bound Basic auth. Nebula never
+returns a usable plaintext secret from create_user/update_user, so Gustavo
+captures it at generation time and shows it exactly once — the same
 constraint that makes "forgot password" unnecessary: losing a credential
 just means regenerating a new one, admin-driven or self-service.
 
@@ -113,7 +116,10 @@ async def create_user(req: UserCreateRequest, _session=Depends(require_admin)):
     comp = _build_composer(cfg)
     secret = _new_secret()
     try:
-        result = comp.nebulaObj.create_user(req.username, {"token": secret})
+        # Both fields get the same secret: token is used for ongoing per-user
+        # Bearer calls (apps.py/device_groups.py), password is what makes
+        # login's Basic-auth check identity-bound (see nebula_auth.py).
+        result = comp.nebulaObj.create_user(req.username, {"token": secret, "password": secret})
         if result.get("status_code") != 200:
             return {"error": True, "response": f"Failed to create user (status {result.get('status_code')}): {result.get('reply')}"}
 
@@ -174,7 +180,7 @@ async def regenerate_my_token(session: Session = Depends(verify_firebase_token))
     comp = _build_composer(cfg)
     secret = _new_secret()
     try:
-        result = comp.nebulaObj.update_user(session.username, {"token": secret})
+        result = comp.nebulaObj.update_user(session.username, {"token": secret, "password": secret})
         if result.get("status_code") != 200:
             return {"error": True, "response": f"Failed to regenerate token (status {result.get('status_code')})"}
         return {"error": False, "response": {"username": session.username, "credential": _credential(session.username, secret)}}
@@ -189,7 +195,7 @@ async def regenerate_token(username: str, _session=Depends(require_admin)):
     comp = _build_composer(cfg)
     secret = _new_secret()
     try:
-        result = comp.nebulaObj.update_user(username, {"token": secret})
+        result = comp.nebulaObj.update_user(username, {"token": secret, "password": secret})
         if result.get("status_code") != 200:
             return {"error": True, "response": f"Failed to regenerate token (status {result.get('status_code')})"}
         return {"error": False, "response": {"username": username, "credential": _credential(username, secret)}}
