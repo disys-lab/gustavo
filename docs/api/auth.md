@@ -61,8 +61,12 @@ The credential is split on the first `:`:
    (compared directly against environment variables, no Nebula API call
    involved) — the caller is the break-glass admin.
 2. Otherwise, `identifier` is treated as a Nebula username and `secret` as
-   that user's Nebula token. Verified by calling the Nebula Manager's
-   `/status` endpoint with the secret as a Bearer token.
+   that user's Nebula token/password. Verified via Nebula's Basic auth
+   (`/status` with the pair as HTTP Basic credentials) — deliberately
+   identity-bound (checked against that specific user's own stored hash),
+   not Bearer/token verification, which has no claimed-username concept and
+   can't safely tell one user's valid token from a mismatched identity
+   claim.
 
 **Success response** (same shape for both account types):
 
