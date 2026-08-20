@@ -295,7 +295,7 @@ async def update_app(name: str, req: AppUpdateRequest, session: Session = Depend
         return {"error": True, "response": result.get("response", "You do not have write access to this app")}
     except Exception as exc:
         logging.error(f"update_app {name} failed: {exc}")
-        return {"error": True, "response": str(exc)}
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
 
 
 @router.delete("/{name}")
@@ -325,4 +325,4 @@ async def delete_app(name: str, session: Session = Depends(verify_firebase_token
         return {"error": False, "response": f"App '{name}' deleted"}
     except Exception as exc:
         logging.error(f"delete_app {name} failed: {exc}")
-        return {"error": True, "response": str(exc)}
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}

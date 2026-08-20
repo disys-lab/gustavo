@@ -142,7 +142,7 @@ async def update_device_group(
         return {"error": False, "response": f"Device group '{name}' updated"}
     except Exception as exc:
         logging.error(f"update_device_group {name} failed: {exc}")
-        return {"error": True, "response": str(exc)}
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
 
 
 @router.delete("/{name}")
@@ -164,7 +164,7 @@ async def delete_device_group(name: str, session: Session = Depends(verify_fireb
         return {"error": False, "response": f"Device group '{name}' deleted"}
     except Exception as exc:
         logging.error(f"delete_device_group {name} failed: {exc}")
-        return {"error": True, "response": str(exc)}
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
 
 
 def _merge_device_group_apps(cfg: dict, session: Session, name: str, apps: list[str], mode: str) -> dict:
@@ -217,7 +217,7 @@ async def add_apps_to_device_group(
         return {"error": False, "response": f"Added {req.apps} to '{name}'"}
     except Exception as exc:
         logging.error(f"add_apps_to_dg {name} failed: {exc}")
-        return {"error": True, "response": str(exc)}
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
 
 
 @router.post("/{name}/apps/remove")
@@ -235,4 +235,4 @@ async def remove_apps_from_device_group(
         return {"error": False, "response": f"Removed {req.apps} from '{name}'"}
     except Exception as exc:
         logging.error(f"remove_apps_from_dg {name} failed: {exc}")
-        return {"error": True, "response": str(exc)}
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
