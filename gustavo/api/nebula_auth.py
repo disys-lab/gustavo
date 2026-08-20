@@ -19,6 +19,25 @@ class ManagerUnreachable(Exception):
     """The Nebula Manager API could not be reached at all."""
 
 
+def friendly_write_error(exc: Exception) -> str:
+    """
+    Translate a per-user Composer write failure (update/delete on an app or
+    device group) into a message clean enough to show a user.
+
+    Same footgun as verify_db_user_credentials: Nebula's 401/403 responses
+    have a plain-text body, not JSON, but the SDK always calls
+    response.json() regardless of status code. So when a per-user token is
+    invalid or has been regenerated out from under an open session, the
+    failure surfaces here as requests.exceptions.JSONDecodeError (a
+    RequestException subclass) rather than a clean non-200 status — without
+    this translation, the raw parser error ("Expecting value: line 1 column
+    1 (char 0)") leaks straight to the user instead of an actionable message.
+    """
+    if isinstance(exc, requests.exceptions.RequestException):
+        return "Your credential is no longer valid — please log in again."
+    return str(exc)
+
+
 def verify_db_user_credentials(cfg: dict, username: str, password: str) -> bool:
     """
     Check whether (username, password) is a valid Nebula Basic-auth pair, by
