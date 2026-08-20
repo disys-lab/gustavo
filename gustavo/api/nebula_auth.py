@@ -10,9 +10,13 @@ using the platform admin composer for anything that needs elevated access
 (listing all groups, etc.) and a per-user composer for verifying a specific
 user's own token.
 """
+import hmac
+import os
+
 import requests
 
 from gustavo.api.dependencies import _build_composer, _build_composer_for
+from gustavo.api.session import Session
 
 
 class ManagerUnreachable(Exception):
@@ -152,3 +156,39 @@ def user_groups(cfg: dict, username: str) -> list[str]:
         if username in (group_result.get("reply", {}).get("group_members") or []):
             names.append(group_name)
     return names
+
+
+def resolve_basic_credentials(cfg: dict, identifier: str, secret: str) -> tuple[Session | None, str | None]:
+    """
+    Resolve an "identifier:secret" pair into a Session - shared by /login
+    and any endpoint that wants to accept a Nebula username:secret pair
+    directly (e.g. worker-download's Basic-auth path) instead of requiring a
+    Gustavo session token to be minted first. Returns (session, error) -
+    exactly one is set.
+
+    Same two checks as login: break-glass admin (hard-checked against
+    os.environ, no Nebula reachability required), else Nebula's
+    identity-bound Basic auth (never identity-blind Bearer/token scanning -
+    see verify_db_user_credentials for why that distinction matters).
+    """
+    admin_username = os.environ.get("NEBULA_USERNAME", "nebula")
+    admin_password = os.environ.get("NEBULA_PASSWORD", "nebula")
+    if hmac.compare_digest(identifier, admin_username) and hmac.compare_digest(secret, admin_password):
+        return Session(
+            username=cfg.get("NEBULA_USERNAME", "nebula"),
+            user_type="local",
+            is_admin=True,
+            nebula_secret=cfg.get("NEBULA_PASSWORD", "nebula"),
+        ), None
+
+    try:
+        valid = verify_db_user_credentials(cfg, identifier, secret)
+    except ManagerUnreachable:
+        return None, "Platform services aren't running yet — start them first (or use the admin credentials)."
+
+    if not valid:
+        return None, "Invalid credential"
+
+    permissions = compute_permissions(cfg, identifier)
+    session = Session(username=identifier, user_type="db", is_admin=permissions["admin"], nebula_secret=secret)
+    return session, None
