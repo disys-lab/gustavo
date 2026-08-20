@@ -708,6 +708,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#obtaining-workerenv-automatically" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obtaining worker.env automatically
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#commands" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1823,10 +1834,22 @@
 <li><code>GUSTAVO_CONFIG_FILE</code> pointing to a valid env file with <code>MANAGER_HOST</code>, <code>REDIS_HOST</code>, etc.</li>
 </ol>
 <hr />
+<h2 id="obtaining-workerenv-automatically">Obtaining worker.env automatically</h2>
+<p>Rather than hand-writing the env file, download one scoped to your own
+Nebula identity directly from a running Gustavo instance — see
+<a href="../../api/config/#get-apiconfigworker-download"><code>GET /api/config/worker-download</code></a>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>&lt;username&gt;:&lt;secret&gt;<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/config/worker-download<span class="w"> </span>-o<span class="w"> </span>worker.env
+</code></pre></div>
+<p>This works for any authenticated user, not just admins — a regular user
+gets a file scoped to only the <code>apps</code>/<code>device_groups</code> access they already
+have, safe to hand to a worker node without granting anything extra. Point
+<code>GUSTAVO_CONFIG_FILE</code> at the downloaded file and run <code>gustavo worker up</code>
+as normal.</p>
+<hr />
 <h2 id="commands">Commands</h2>
 <h3 id="up"><code>up</code></h3>
 <p>Deploy the worker container on the current host.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gustavo<span class="w"> </span>worker<span class="w"> </span>up
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gustavo<span class="w"> </span>worker<span class="w"> </span>up
 </code></pre></div>
 <p>The worker container:
 - Connects to the Nebula Manager to register itself
@@ -1835,12 +1858,12 @@
 <hr />
 <h3 id="remove"><code>remove</code></h3>
 <p>Stop and remove the worker container.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gustavo<span class="w"> </span>worker<span class="w"> </span>remove
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gustavo<span class="w"> </span>worker<span class="w"> </span>remove
 </code></pre></div>
 <hr />
 <h3 id="recreate"><code>recreate</code></h3>
 <p>Remove and re-deploy the worker (useful after config changes).</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gustavo<span class="w"> </span>worker<span class="w"> </span>recreate
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gustavo<span class="w"> </span>worker<span class="w"> </span>recreate
 </code></pre></div>
 <p>Equivalent to <code>worker remove</code> followed by <code>worker up</code>.</p>
 <hr />
@@ -1872,6 +1895,14 @@
 <tr>
 <td><code>REDIS_AUTH_TOKEN</code></td>
 <td>Redis password</td>
+</tr>
+<tr>
+<td><code>REGISTRY_HOST</code></td>
+<td>Docker registry address — required; the worker fails to start without it</td>
+</tr>
+<tr>
+<td><code>REGISTRY_PORT</code></td>
+<td>Docker registry port — required; the worker fails to start without it</td>
 </tr>
 <tr>
 <td><code>WORKER_NMODE</code></td>

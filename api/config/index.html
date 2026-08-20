@@ -1115,6 +1115,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#get-apiconfigworker-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/config/worker-download
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2200,6 +2211,42 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 <p class="admonition-title">Warning</p>
 <p>The downloaded file includes plaintext passwords. Handle it securely.</p>
 </div>
+<hr />
+<h3 id="get-apiconfigworker-download"><code>GET /api/config/worker-download</code></h3>
+<p>Download a <code>worker.env</code> scoped to the <strong>caller's own</strong> Nebula identity —
+the way to obtain worker configuration automatically instead of
+hand-writing a <code>worker.env</code> file. Available to any authenticated user, not
+just admins: an admin gets the platform-wide identity, a regular user gets
+their own Nebula username/token, so the returned file only ever carries
+the same <code>apps</code>/<code>device_groups</code> access that caller already has — nothing a
+leaked copy could use to escalate beyond what they can already do.</p>
+<p>Accepts two authentication methods:</p>
+<ul>
+<li><strong>Bearer</strong> — the normal Gustavo session token, obtained from
+  <a href="../auth/#post-apiauthlogin"><code>POST /api/auth/login</code></a> (what the UI's
+  sidebar "Worker config" button uses).</li>
+<li><strong>HTTP Basic</strong> — the caller's Nebula <code>username:secret</code> directly, verified
+  the same identity-bound way <code>/login</code> verifies it. Lets a script on a
+  remote machine fetch its own worker config in a single request, without
+  first minting a session token:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/config/worker-download<span class="w"> </span>-o<span class="w"> </span>worker.env
+</code></pre></div>
+<p><strong>Response:</strong> <code>text/plain</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>MANAGER_HOST=cypress-man.example.edu
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>MANAGER_PORT=8080
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>REDIS_HOST=cypress-man.example.edu
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>REDIS_PORT=6379
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>REDIS_AUTH_TOKEN=...
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>REGISTRY_HOST=cypress-man.example.edu
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>REGISTRY_PORT=5051
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>WORKER_NMODE=host
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>NEBULA_USERNAME=alice
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>NEBULA_PASSWORD=...
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>NEBULA_AUTH_TOKEN=...
+</code></pre></div>
+<p>The resulting file is ready to use directly as <code>GUSTAVO_CONFIG_FILE</code> for
+<a href="../../cli/worker/"><code>gustavo worker up</code></a>.</p>
 <hr />
 <h2 id="config_store-module">config_store module</h2>
 
