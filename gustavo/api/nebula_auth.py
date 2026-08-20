@@ -19,21 +19,29 @@ class ManagerUnreachable(Exception):
     """The Nebula Manager API could not be reached at all."""
 
 
-def verify_db_user_token(cfg: dict, secret: str) -> bool:
+def verify_db_user_credentials(cfg: dict, username: str, password: str) -> bool:
     """
-    Check whether `secret` is a valid Nebula token for some db user, by
-    calling the Manager's /status with it as a Bearer token. Raises
-    ManagerUnreachable if the Manager can't be contacted at all (distinct
-    from an invalid/unrecognized token, which just returns False).
+    Check whether (username, password) is a valid Nebula Basic-auth pair, by
+    calling the Manager's /status with it. Raises ManagerUnreachable if the
+    Manager can't be contacted at all (distinct from a wrong/unrecognized
+    pair, which just returns False).
+
+    Deliberately Basic auth, not Bearer: Nebula's Basic-auth check looks up
+    `username` specifically and compares `password` against that user's own
+    stored hash, so a mismatched pair genuinely fails. Bearer verification
+    has no claimed-username concept at all — it just scans every user's
+    token for any match — so it can't be used here without letting someone
+    pair a valid secret with a different (more privileged) claimed username
+    and have Gustavo believe the claim.
 
     Nebula's 401 response body is plain text ("Unauthorized Access"), not
-    JSON, but the SDK's check_api() always calls response.json() — so an
-    invalid token raises requests.exceptions.JSONDecodeError (a
+    JSON, but the SDK's check_api() always calls response.json() — so a
+    wrong pair raises requests.exceptions.JSONDecodeError (a
     RequestException subclass) here, not a clean non-200 status. Only
     genuine connectivity failures should be treated as "Manager down";
-    anything else reachable-but-unparseable means the credential was wrong.
+    anything else reachable-but-unparseable means the credentials were wrong.
     """
-    comp = _build_composer_for(cfg, token=secret)
+    comp = _build_composer_for(cfg, username=username, password=password)
     try:
         result = comp.nebulaObj.check_api()
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:

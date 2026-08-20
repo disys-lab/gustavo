@@ -81,7 +81,9 @@ async def login(req: LoginRequest):
       - identifier:secret == NEBULA_USERNAME:NEBULA_PASSWORD (env vars, hard
         checked, no Nebula reachability required) -> break-glass admin session.
       - otherwise, identifier is a claimed Nebula username and secret is that
-        user's Nebula token -> verified against the live Manager API.
+        user's Nebula password (== their token, see users.py) -> verified via
+        Nebula Basic auth, which is identity-bound (checked against that
+        specific user's own stored hash), unlike Bearer/token verification.
     """
     if ":" not in req.credential:
         return {"error": True, "response": "Invalid credential format"}
@@ -95,7 +97,7 @@ async def login(req: LoginRequest):
 
     cfg = config_store.get()
     try:
-        valid = nebula_auth.verify_db_user_token(cfg, secret)
+        valid = nebula_auth.verify_db_user_credentials(cfg, identifier, secret)
     except nebula_auth.ManagerUnreachable:
         return {
             "error": True,

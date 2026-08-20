@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function LoginForm() {
-  const [credential, setCredential] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFirebase, setShowFirebase] = useState(false);
@@ -27,11 +28,30 @@ function LoginForm() {
     router.push(redirect);
   };
 
+  // Credentials are generated/displayed elsewhere as one "username:token"
+  // string — if someone pastes the whole thing into either field, split it
+  // into both instead of treating the colon as a literal character.
+  const applyPastedCredential = (value: string): boolean => {
+    const idx = value.indexOf(":");
+    if (idx === -1) return false;
+    setUsername(value.slice(0, idx));
+    setPassword(value.slice(idx + 1));
+    return true;
+  };
+
+  const handleUsernameChange = (value: string) => {
+    if (!applyPastedCredential(value)) setUsername(value);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    if (!applyPastedCredential(value)) setPassword(value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const result = await login(credential);
+    const result = await login(`${username}:${password}`);
     setLoading(false);
     if (result.error) {
       setError(result.message ?? "Login failed");
@@ -67,23 +87,36 @@ function LoginForm() {
         </div>
         <h1 className="mb-1 text-center text-xl font-bold text-gray-900">Sign in to Gustavo</h1>
         <p className="mb-6 text-center text-sm text-gray-500">
-          Paste the access credential you were given
+          Enter the username and token you were given
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="credential">Access credential</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="credential"
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => handleUsernameChange(e.target.value)}
+              placeholder="nebula"
+              required
+              autoComplete="username"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Password / token</Label>
+            <Input
+              id="password"
               type="password"
-              value={credential}
-              onChange={(e) => setCredential(e.target.value)}
-              placeholder="username:token"
+              value={password}
+              onChange={(e) => handlePasswordChange(e.target.value)}
               required
               autoComplete="current-password"
               className="mt-1"
             />
             <p className="mt-1 text-xs text-gray-400">
-              Format: username:token — the platform admin default is nebula:nebula
+              Platform admin default is nebula / nebula. You can also paste your
+              full username:token credential into either field.
             </p>
           </div>
           {error && (
