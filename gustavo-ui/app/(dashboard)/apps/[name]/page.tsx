@@ -4,15 +4,32 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApp, updateApp } from "@/lib/api/apps";
 import { listDeviceGroups } from "@/lib/api/deviceGroups";
+import { listGroups } from "@/lib/api/users";
 import { AppForm, AppFormValues } from "@/components/apps/AppForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useActivityToast } from "@/hooks/use-activity-toast";
+import { useAuth } from "@/lib/context/AuthContext";
 
 export default function EditAppPage() {
   const { name } = useParams<{ name: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
+  const { isAdmin } = useAuth();
+
+  const { data: groupsData } = useQuery({
+    queryKey: ["user-groups"],
+    queryFn: listGroups,
+    enabled: isAdmin,
+    staleTime: 30_000,
+  });
+  const grantingGroups = !groupsData?.error
+    ? (groupsData?.response.groups ?? [])
+        .filter((g) => name in g.apps)
+        .map((g) => ({ name: g.name, perm: g.apps[name] }))
+    : [];
 
   const { data, isLoading } = useQuery({
     queryKey: ["app", name],
@@ -95,6 +112,29 @@ export default function EditAppPage() {
         <span className="text-foreground font-medium">{name}</span>
       </nav>
       <h1 className="text-2xl font-bold mb-6">Edit App: {name}</h1>
+
+      {isAdmin && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-base">Access</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {grantingGroups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No group currently has access to this app — only admins can manage it. Edit a group&apos;s
+                grants from the <Link href="/users/groups" className="underline">Groups</Link> page.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {grantingGroups.map((g) => (
+                  <Badge key={g.name} variant="secondary">{g.name} ({g.perm})</Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <AppForm defaultValues={defaultValues} onSubmit={handleUpdate} submitLabel="Update App" isEdit memberDeviceGroups={memberDeviceGroups} />
     </div>
   );

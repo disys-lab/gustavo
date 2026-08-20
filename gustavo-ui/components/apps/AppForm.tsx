@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRegistryImages, getAppDefaults } from "@/lib/api/apps";
 import { listDeviceGroups } from "@/lib/api/deviceGroups";
+import { getMyGroups } from "@/lib/api/users";
+import { useAuth } from "@/lib/context/AuthContext";
 
 const envVarSchema = z.object({ key: z.string(), value: z.string() });
 const portSchema = z.object({ host: z.number().int().min(0), container: z.number().int().min(0) });
@@ -26,6 +28,7 @@ const appFormSchema = z.object({
   running: z.boolean(),
   privileged: z.boolean(),
   device_groups: z.array(z.string()),
+  owner_group: z.string().optional(),
 });
 
 export type AppFormValues = z.infer<typeof appFormSchema>;
@@ -39,6 +42,16 @@ interface AppFormProps {
 }
 
 export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", isEdit = false, memberDeviceGroups = [] }: AppFormProps) {
+  const { isAdmin } = useAuth();
+
+  const { data: myGroupsData } = useQuery({
+    queryKey: ["my-groups"],
+    queryFn: getMyGroups,
+    enabled: !isEdit && !isAdmin,
+    staleTime: 30_000,
+  });
+  const myGroups: string[] = !myGroupsData?.error ? myGroupsData?.response.groups ?? [] : [];
+
   const { data: registryData } = useQuery({
     queryKey: ["registry-images"],
     queryFn: getRegistryImages,
@@ -99,6 +112,7 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
       running: true,
       privileged: false,
       device_groups: [],
+      owner_group: "",
       ...defaultValues,
     },
   });
@@ -189,6 +203,40 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
           </div>
         </CardContent>
       </Card>
+
+      {/* Owner group — only relevant for non-admins creating a new app */}
+      {!isEdit && !isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Owner Group</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {myGroups.length === 0 ? (
+              <p className="text-sm text-red-600">
+                You&apos;re not a member of any group yet — ask an admin to add you to one before creating apps.
+              </p>
+            ) : myGroups.length === 1 ? (
+              <p className="text-sm text-muted-foreground">
+                This app will be owned by your group <strong>{myGroups[0]}</strong>.
+              </p>
+            ) : (
+              <div>
+                <Label htmlFor="owner_group">Which group should own this app?</Label>
+                <select
+                  id="owner_group"
+                  {...register("owner_group")}
+                  className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                >
+                  <option value="">Select a group…</option>
+                  {myGroups.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Device Groups */}
       <Card>

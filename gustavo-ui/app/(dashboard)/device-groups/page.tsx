@@ -45,9 +45,9 @@ export default function DeviceGroupsPage() {
     }
   }
 
-  const handleCreate = async ({ name }: { name: string }) => {
+  const handleCreate = async ({ name, owner_group }: { name: string; owner_group?: string }) => {
     try {
-      const res = await createDeviceGroup(name);
+      const res = await createDeviceGroup(name, [], owner_group || undefined);
       if (!res.error) {
         toast({ title: "Device group created", description: name });
         queryClient.invalidateQueries({ queryKey: ["device-groups"] });

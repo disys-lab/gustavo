@@ -1,19 +1,24 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { signIn } from "@/lib/api/auth";
+import { login as loginRequest, signInFirebase } from "@/lib/api/auth";
 
 interface AuthContextValue {
   token: string | null;
-  userId: string | null;
+  username: string | null;
+  isAdmin: boolean;
   isAuthenticated: boolean;
-  login: (userId: string, userToken: string) => Promise<{ error: boolean; message?: string }>;
+  firebaseEnabled: boolean;
+  login: (credential: string) => Promise<{ error: boolean; message?: string }>;
+  loginFirebase: (userId: string, userToken: string) => Promise<{ error: boolean; message?: string }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const COOKIE_NAME = "gustavo_token";
-const COOKIE_MAX_AGE = 3600;
+// Matches the backend's default GUSTAVO_SESSION_TTL (12h) — keep in sync so
+// the cookie middleware relies on doesn't expire before the session itself.
+const COOKIE_MAX_AGE = 12 * 3600;
 
 function setAuthCookie(token: string) {
   document.cookie = `${COOKIE_NAME}=${token}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
@@ -23,45 +28,75 @@ function clearAuthCookie() {
   document.cookie = `${COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
 }
 
+function persistSession(token: string, username: string, isAdmin: boolean) {
+  localStorage.setItem("gustavo_token", token);
+  localStorage.setItem("gustavo_username", username);
+  localStorage.setItem("gustavo_is_admin", isAdmin ? "1" : "0");
+  setAuthCookie(token);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   // null = not yet fetched from server
   const [authEnabled, setAuthEnabled] = useState<boolean | null>(null);
+  const [firebaseEnabled, setFirebaseEnabled] = useState(false);
 
-  // Fetch runtime auth status from the API so AUTH_ENABLED can be toggled
-  // via env var without a rebuild (NEXT_PUBLIC_AUTH_ENABLED is baked and ignored here).
+  // Fetch runtime auth status from the API so it can be toggled via env var
+  // without a rebuild (NEXT_PUBLIC_AUTH_ENABLED is baked and ignored here).
   useEffect(() => {
     fetch("/api/auth/status")
       .then((r) => r.json())
-      .then((data) => setAuthEnabled(data.auth_enabled === true))
+      .then((data) => {
+        setAuthEnabled(data.auth_enabled === true);
+        setFirebaseEnabled(data.firebase_enabled === true);
+      })
       .catch(() => setAuthEnabled(true)); // fail-safe: assume auth required
   }, []);
 
-  // Hydrate token from localStorage on mount
+  // Hydrate session from localStorage on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storedToken = localStorage.getItem("gustavo_token");
-    const storedUid = localStorage.getItem("gustavo_uid");
+    const storedUsername = localStorage.getItem("gustavo_username");
+    const storedIsAdmin = localStorage.getItem("gustavo_is_admin");
     if (storedToken) {
       setToken(storedToken);
       setAuthCookie(storedToken);
     }
-    if (storedUid) setUserId(storedUid);
+    if (storedUsername) setUsername(storedUsername);
+    setIsAdmin(storedIsAdmin === "1");
   }, []);
 
-  const login = async (userId: string, userToken: string) => {
+  const login = async (credential: string) => {
     try {
-      const res = await signIn(userId, userToken);
+      const res = await loginRequest(credential);
       if (res.error) {
         return { error: true, message: String(res.response) };
       }
-      const { idToken, localId } = res.response as { idToken: string; localId: string };
-      localStorage.setItem("gustavo_token", idToken);
-      localStorage.setItem("gustavo_uid", localId ?? "");
-      setAuthCookie(idToken);
-      setToken(idToken);
-      setUserId(localId ?? null);
+      const { token: newToken, username: newUsername, is_admin } = res.response;
+      persistSession(newToken, newUsername, is_admin);
+      setToken(newToken);
+      setUsername(newUsername);
+      setIsAdmin(is_admin);
+      return { error: false };
+    } catch (exc) {
+      return { error: true, message: String(exc) };
+    }
+  };
+
+  const loginFirebase = async (userId: string, userToken: string) => {
+    try {
+      const res = await signInFirebase(userId, userToken);
+      if (res.error) {
+        return { error: true, message: String(res.response) };
+      }
+      const { token: newToken, username: newUsername, is_admin } = res.response;
+      persistSession(newToken, newUsername, is_admin);
+      setToken(newToken);
+      setUsername(newUsername);
+      setIsAdmin(is_admin);
       return { error: false };
     } catch (exc) {
       return { error: true, message: String(exc) };
@@ -70,10 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("gustavo_token");
-    localStorage.removeItem("gustavo_uid");
+    localStorage.removeItem("gustavo_username");
+    localStorage.removeItem("gustavo_is_admin");
     clearAuthCookie();
     setToken(null);
-    setUserId(null);
+    setUsername(null);
+    setIsAdmin(false);
     if (authEnabled) {
       window.location.href = "/login";
     }
@@ -84,7 +121,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = authEnabled === false || (authEnabled === true && !!token);
 
   return (
-    <AuthContext.Provider value={{ token, userId, isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{ token, username, isAdmin, isAuthenticated, firebaseEnabled, login, loginFirebase, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

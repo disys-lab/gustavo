@@ -2,13 +2,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, LayoutGrid, Database, Users, Activity, Archive, Settings,
+  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/context/AuthContext";
 import { ActivitySheet } from "@/components/layout/ActivitySheet";
+import { RegenerateCredentialDialog } from "@/components/layout/RegenerateCredentialDialog";
+import { DownloadWorkerConfigButton } from "@/components/layout/DownloadWorkerConfigButton";
 import { useServiceHealth } from "@/lib/hooks/useServiceHealth";
+import { getMyGroups } from "@/lib/api/users";
 
 // "/manager" (Services) is intentionally not in the sidebar — service controls
 // live in the Dashboard's expandable "Manage Platform Services" section.
@@ -18,15 +22,33 @@ const NAV = [
   { href: "/apps",          label: "Apps",          icon: LayoutGrid },
   { href: "/registry",      label: "Registry",      icon: Database },
   { href: "/device-groups", label: "Device Groups", icon: Users },
-  { href: "/monitoring",    label: "Monitoring",    icon: Activity },
-  { href: "/backups",       label: "Backups",       icon: Archive },
-  { href: "/settings",      label: "Settings",      icon: Settings },
+];
+
+// Every one of these hits an admin-only backend route (services/config,
+// monitoring, backups) — a non-admin session gets a clean 403 on all of
+// them, so there's nothing useful to show; hide rather than dead-end.
+const ADMIN_ONLY_NAV = [
+  { href: "/monitoring", label: "Monitoring", icon: Activity },
+  { href: "/backups",    label: "Backups",    icon: Archive },
+  { href: "/settings",   label: "Settings",   icon: Settings },
+  { href: "/users",      label: "Users",      icon: UserCog },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, isAdmin, username } = useAuth();
   const { allUp } = useServiceHealth();
+  const navItems = isAdmin ? [...NAV, ...ADMIN_ONLY_NAV] : NAV;
+
+  // Admins bypass group-based grants entirely, so /me/groups always returns
+  // [] for them — the query is harmless to run either way.
+  const { data: groupsData } = useQuery({
+    queryKey: ["my-groups"],
+    queryFn: getMyGroups,
+    enabled: !!username,
+    staleTime: 60_000,
+  });
+  const myGroups: string[] = !groupsData?.error ? groupsData?.response.groups ?? [] : [];
 
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-white border-r border-gray-200 px-3 py-5 shrink-0">
@@ -42,7 +64,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-col gap-0.5 flex-1">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname.startsWith(href);
           const isManager = href === "/dashboard";
           return (
@@ -72,8 +94,24 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-2 border-t pt-2 space-y-0.5">
+      {username && (
+        <div className="border-t pt-3 px-3">
+          <p className="truncate text-sm font-medium text-gray-900" title={username}>
+            {username}
+          </p>
+          <p className="text-xs text-gray-400">{isAdmin ? "Admin" : "User"}</p>
+          {myGroups.length > 0 && (
+            <p className="truncate text-xs text-gray-400" title={myGroups.join(", ")}>
+              {myGroups.join(", ")}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="mt-2 pt-2 space-y-0.5">
         <ActivitySheet />
+        <RegenerateCredentialDialog />
+        <DownloadWorkerConfigButton />
         <button
           onClick={logout}
           className="w-full rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition-colors text-left"
