@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listRedisBackups, createRedisBackup, restoreRedisBackup, deleteRedisBackup,
   listRegistryBackups, createRegistryBackup, restoreRegistryBackup, deleteRegistryBackup,
+  listMongoBackups, createMongoBackup, restoreMongoBackup, deleteMongoBackup,
 } from "@/lib/api/backups";
 import { BackupTable } from "@/components/backups/BackupTable";
 import { Button } from "@/components/ui/button";
@@ -112,6 +113,14 @@ export default function BackupsPage() {
     deleteRegistryBackup,
   );
 
+  const mongoPanel = useBackupPanel(
+    ["backups-mongo"],
+    listMongoBackups,
+    createMongoBackup,
+    restoreMongoBackup,
+    deleteMongoBackup,
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Backups</h1>
@@ -119,6 +128,7 @@ export default function BackupsPage() {
         <TabsList>
           <TabsTrigger value="redis">Redis</TabsTrigger>
           <TabsTrigger value="registry">Registry</TabsTrigger>
+          <TabsTrigger value="mongo">Mongo</TabsTrigger>
         </TabsList>
 
         <TabsContent value="redis" className="pt-4 space-y-4">
@@ -167,6 +177,31 @@ export default function BackupsPage() {
               selected={registryPanel.selected}
               onSelect={registryPanel.setSelected}
               onDelete={registryPanel.handleDelete}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="mongo" className="pt-4 space-y-4">
+          <div className="flex gap-2">
+            <Button onClick={mongoPanel.handleCreate} disabled={mongoPanel.isRunning}>
+              {mongoPanel.isRunning ? "Running…" : "Create Backup"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={mongoPanel.handleRestore}
+              disabled={!mongoPanel.selected || mongoPanel.isRunning}
+            >
+              Restore Selected
+            </Button>
+          </div>
+          {mongoPanel.isLoading ? (
+            <Skeleton className="h-32" />
+          ) : (
+            <BackupTable
+              backups={mongoPanel.backups}
+              selected={mongoPanel.selected}
+              onSelect={mongoPanel.setSelected}
+              onDelete={mongoPanel.handleDelete}
             />
           )}
         </TabsContent>
