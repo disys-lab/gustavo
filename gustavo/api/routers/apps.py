@@ -108,11 +108,7 @@ async def list_registry_images(_token=Depends(verify_firebase_token)):
     cfg = config_store.get()
     protocol = cfg.get("NEBULA_PROTOCOL", "http")
     host = cfg.get("REGISTRY_HOST", "")
-    # REGISTRY_INTERNAL_PORT, when set, is the registry's raw/directly-reachable
-    # port - distinct from REGISTRY_PORT once a proxy exists in front of it
-    # (see config_store.py). Falls back to REGISTRY_PORT when unset, which is
-    # correct whenever there's no proxy at all.
-    port = cfg.get("REGISTRY_INTERNAL_PORT") or cfg.get("REGISTRY_PORT", "5000")
+    port = cfg.get("REGISTRY_PORT", "5000")
     registry_url = f"{protocol}://{host}:{port}"
 
     try:
