@@ -94,6 +94,12 @@ async def download_worker_config(session: Session = Depends(verify_session_or_ba
     (verify_session_or_basic) — the latter lets a script pull this in one
     request from a remote machine, e.g. `curl -u alice:secret .../worker-download`,
     without first calling /login to mint a session token.
+
+    Also includes REGISTRY_AUTH_USER/PASSWORD - the same Nebula identity,
+    reused as the registry credential too - so a worker can log in to the
+    registry-proxy (see docs/deployment.md's Registry Authentication Proxy
+    section) using this same worker.env, with nothing registry-specific to
+    provision separately.
     """
     cfg = config_store.get()
     username = session.username
@@ -107,6 +113,8 @@ async def download_worker_config(session: Session = Depends(verify_session_or_ba
         f"REDIS_AUTH_TOKEN={cfg.get('REDIS_AUTH_TOKEN', '')}",
         f"REGISTRY_HOST={cfg.get('REGISTRY_HOST', '')}",
         f"REGISTRY_PORT={cfg.get('REGISTRY_PORT', '')}",
+        f"REGISTRY_AUTH_USER={username}",
+        f"REGISTRY_AUTH_PASSWORD={password}",
         f"WORKER_NMODE={cfg.get('WORKER_NMODE', '')}",
         f"NEBULA_USERNAME={username}",
         f"NEBULA_PASSWORD={password}",
