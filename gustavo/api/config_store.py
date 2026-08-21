@@ -58,6 +58,7 @@ DEFAULTS: dict[str, Any] = {
     "MONGO_PASSWORD": "nebula",
     "MONGO_CERTIFICATE_FOLDER_PATH": "/tmp/",
     "MONGO_IMAGE": "mongo:4.0.19",
+    "MONGO_BKP_DIR": "/tmp/",
     # Worker / misc
     "WORKER_NMODE": "host",
 }
