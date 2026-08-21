@@ -40,6 +40,7 @@ def _build_manager(cfg: dict) -> Manager:
     # Registry
     man.REGISTRY_IMAGE = cfg.get("REGISTRY_IMAGE")
     man.REGISTRY_BKP_DIR = cfg.get("REGISTRY_BKP_DIR", "/tmp/")
+    man.REGISTRY_BIND_LOCALHOST = bool(cfg.get("REGISTRY_BIND_LOCALHOST", False))
 
     # Syncer
     man.SYNCER_IMAGE = cfg.get("SYNCER_IMAGE")

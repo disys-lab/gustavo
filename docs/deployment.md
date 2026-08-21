@@ -261,9 +261,29 @@ remote nodes) keep talking to the same external address and port they always hav
 REGISTRY_HOST:REGISTRY_PORT
 ```
 
-nginx terminates that connection, enforces HTTP Basic Auth via an htpasswd file, and
-forwards the request to the real registry container, which was moved to an internal-only
-port (`5051`) that is not exposed outside the host.
+nginx terminates that connection, enforces HTTP Basic Auth, and forwards the request to the
+real registry container, which was moved to an internal-only port (`5051`) that is not
+exposed outside the host.
+
+Credentials are checked against Gustavo's own Nebula-backed users, not a static file: nginx
+delegates the decision to `GET|HEAD|PUT|POST|PATCH|DELETE /api/registry/authorize` via its
+`auth_request` directive, forwarding the client's `Authorization` header automatically. That
+endpoint is just `verify_session_or_basic` (the same dependency `/config/worker-download`
+uses) wrapped in a route that returns 200 on success — any Basic-auth pair that resolves to
+a real Nebula user (via the identity-bound check `/login` also uses) or a valid Gustavo
+session Bearer token is allowed through; anything else gets a 401 before the real registry
+ever sees the request. This means registry access is provisioned and revoked exactly the
+same way as everything else in Gustavo — creating, deleting, or regenerating a user's
+credential in the Users page immediately changes what they can pull/push, with nothing
+registry-specific to manage separately. See [Registry API](api/registry.md) for the endpoint
+itself.
+
+This is currently identity-only (Tier 1): any valid Nebula user can pull/push any repo, the
+same as the old shared htpasswd credential could — just individually attributable and
+revocable now instead of one secret shared by everyone. A future per-repo version (Tier 2)
+would additionally check the requester's `apps` grants against the specific repo being
+pulled/pushed, using the `X-Original-URI`/`X-Original-Method` headers the proxy already
+forwards but the endpoint doesn't yet act on.
 
 One path is deliberately left open without authentication: `/v2/_catalog`. This is the
 registry's repository-listing endpoint and is what `gustavo registry list` calls. Since
@@ -277,7 +297,7 @@ else (pulls, pushes, deletes, tag listings) behind auth.
 | Port | Bound to | Purpose |
 |------|----------|---------|
 | `REGISTRY_PORT` | host, all interfaces | nginx — public-facing entry point, same port every client and downstream app has always used |
-| `5051` | host, loopback-reachable | the real `registry:2` container — no auth, not meant to be reached directly by anyone except nginx |
+| `5051` | host, loopback-only *if* `REGISTRY_BIND_LOCALHOST` is set — see below | the real `registry:2` container — no auth, not meant to be reached directly by anyone except nginx |
 
 `REGISTRY_PORT` in Gustavo's config (`platform.yaml` / Settings page) was changed from
 `REGISTRY_PORT` to `5051`, so the registry container itself now binds to `5051` on the host instead
@@ -291,47 +311,63 @@ downstream when apps are deployed and needs to stay consistent.
 
 ```
 registry-proxy/
-├── nginx.conf
-└── nginx-auth.htpasswd
+└── nginx.conf
 ```
+
+No credentials file lives here anymore — there's nothing left for nginx to read locally,
+since auth is checked live against Gustavo (`/api/registry/authorize`) on every request
+instead of a static file it used to load at startup.
 
 There is no separate `docker-compose.yml` for the proxy. The `registry-proxy` service is
 defined as an additional service inside Gustavo's own `docker-compose.yml`, alongside the
-existing `gustavo` service. This `registry-proxy/` directory just holds the two files nginx
-needs (its config and the credentials file), referenced by relative path from wherever
-Gustavo's compose file lives.
+existing `gustavo` service. This `registry-proxy/` directory just holds the nginx config
+nginx needs, referenced by relative path from wherever Gustavo's compose file lives.
 
 It does not define or manage the `registry` container itself — that container is owned and
 launched separately by Gustavo's own `Manager.runRegistry()` logic, not by Compose.
 
-### Important: lock down port `5051` on the host firewall
+### Important: lock down port `5051`
 
 `5051` is the real, unauthenticated registry. Nothing about Docker's port binding makes
 this local-only by default — `docker run`/the Docker SDK call Gustavo uses publishes ports
 to `0.0.0.0` (all interfaces) unless told otherwise, so `5051` is reachable from the network,
-not just from `localhost`, until the host firewall is explicitly configured to block it.
+not just from `localhost`, until this is explicitly closed off. The whole point of the proxy
+is defeated otherwise: anyone can bypass nginx and the auth layer entirely by talking to
+`5051` directly.
 
-This has to be done on the host, nginx and Docker config alone do not provide this:
+**Preferred: set `REGISTRY_BIND_LOCALHOST: true`** in Gustavo's config (Settings page or
+`platform.yaml`), then restart/recreate the registry service (`gustavo registry recreate`,
+or the equivalent Services-page action). This makes Gustavo itself publish `5051` to
+`127.0.0.1` instead of `0.0.0.0` — only other processes on the same host (nginx) can reach
+it, nothing external can. Off by default, to avoid silently breaking existing deployments
+that pull directly from `5051`; only turn it on once clients have actually been repointed at
+the authenticated port (`REGISTRY_PORT`, i.e. the port nginx listens on), or they'll lose
+registry access entirely the moment it's flipped.
 
-```bash
-sudo ufw deny 5051
-```
-
-Or, if not using `ufw`, an equivalent `iptables` rule restricting `5051` to loopback only.
 Verify after applying:
 
 ```bash
 # from the host itself — should succeed
 curl http://127.0.0.1:5051/v2/_catalog
 
+docker inspect registry --format '{{json .NetworkSettings.Ports}}'
+# should show "HostIp":"127.0.0.1", not "0.0.0.0"
+
 # from any other machine on the network — should fail/time out
 curl http://REGISTRY_HOST:5051/v2/_catalog
 ```
 
-If the second command succeeds from a remote machine, the entire point of the proxy is
-defeated, since anyone could bypass nginx and the auth layer entirely by talking to `5051`
-directly. This check should be repeated any time firewall rules on the host are changed for
-any other reason.
+**Fallback, if the toggle isn't available (older Gustavo build) or host-level defense in
+depth is wanted on top of it:** a firewall rule achieves the same thing independent of
+Gustavo's own port-binding config —
+
+```bash
+sudo ufw deny 5051
+```
+
+— or an equivalent `iptables` rule restricting `5051` to loopback only. This check should
+be repeated any time firewall rules on the host are changed for any other reason, same as
+the toggle-based verification above.
 
 ### Step 1 — Move the real registry off the public port
 
@@ -377,39 +413,13 @@ docker inspect registry --format '{{json .HostConfig.PortBindings}}'
 
 Should show `5051` on the host side.
 
-### Step 2 — Generate the htpasswd credentials file
+### Step 2 — Credentials (no longer needed)
 
-Credentials are stored using Apache's `htpasswd` utility, bcrypt-hashed, via a disposable
-`httpd` container (no need to install `apache2-utils` on the host). Run this from the same
-directory that holds Gustavo's `docker-compose.yml`:
-
-```bash
-mkdir -p registry-proxy && cd registry-proxy
-
-docker run --rm --entrypoint htpasswd httpd:2 -Bbn cypress-user YOUR_PASSWORD > nginx-auth.htpasswd
-
-cd ..
-```
-
-Flags used:
-
-- `-B` — force bcrypt hashing (required; nginx's `auth_basic` module only accepts certain
-  hash formats and the registry/nginx combination here was verified against bcrypt)
-- `-b` — take the password from the command line argument rather than prompting
-  interactively
-- `-n` — print the result to stdout instead of writing to a file in place, so it can be
-  redirected into `nginx-auth.htpasswd`
-
-To add a second user later, append rather than regenerate from scratch:
-
-```bash
-docker run --rm --entrypoint htpasswd httpd:2 -Bbn anotheruser theirpassword >> nginx-auth.htpasswd
-```
-
-Note: if a password ever needs to be **changed** for an existing user, regenerate the
-whole file cleanly (`-Bbn` redirected with `>`, not `>>`) rather than appending, to avoid
-duplicate or conflicting entries for the same username, which caused exactly this kind of
-silent failure during setup.
+There's nothing to generate or manage here anymore. Every Nebula user already has a
+credential (their `username:secret`, the same one used to log into Gustavo) — that's what
+gets checked on every registry request now, live, via `/api/registry/authorize`. Creating a
+user, deleting one, or regenerating a credential from the Users page takes effect on the
+registry immediately, with nothing registry-specific to keep in sync.
 
 ### Step 3 — nginx configuration
 
@@ -419,18 +429,43 @@ silent failure during setup.
 server {
     listen REGISTRY_PORT;
 
+    # Unauthenticated: repo listing stays open, so gustavo registry list
+    # and the dashboard's registry view work without needing credentials.
     location /v2/_catalog {
         proxy_pass http://127.0.0.1:5051;
-        proxy_set_header Host $host;
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
+    # Internal-only: nginx calls this for every /v2/ request below.
+    # Not reachable directly from outside - "internal" enforces that.
+    location = /_registry_auth {
+        internal;
+
+        proxy_pass http://127.0.0.1:GUSTAVO_PORT/api/registry/authorize;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+
+        # Forwarded so a future per-repo (Tier 2) check can see who's
+        # asking and for what. Authorization is forwarded automatically
+        # (default subrequest behavior) - not set explicitly here, but
+        # relied on.
+        proxy_set_header X-Original-URI    $request_uri;
+        proxy_set_header X-Original-Method $request_method;
+    }
+
     location /v2/ {
-        auth_basic "Registry";
-        auth_basic_user_file /etc/nginx/nginx-auth.htpasswd;
+        # The actual decision comes from Gustavo (Nebula-backed), not a
+        # static file. auth_request alone doesn't send WWW-Authenticate
+        # the way auth_basic used to — without it, Docker's client never
+        # learns it should retry with Basic credentials and just accepts
+        # the first unauthenticated 401 as final. "always" so it's added
+        # on error responses too, not just 2xx/3xx.
+        auth_request /_registry_auth;
+        add_header WWW-Authenticate 'Basic realm="Registry"' always;
 
         proxy_pass http://127.0.0.1:5051;
-        proxy_set_header Host $host;
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_read_timeout 900;
     }
@@ -439,20 +474,35 @@ server {
 
 What each block does:
 
-- `location /v2/_catalog` — exact-path match, no `auth_basic` directive, so nginx proxies
-  this straight through with no credential check. This is what makes
-  `gustavo registry list` (and the dashboard's registry view) work without needing
-  Gustavo to supply credentials.
+- `location /v2/_catalog` — exact-path match, no `auth_request`, so nginx proxies this
+  straight through with no credential check.
+- `location = /_registry_auth` — `internal` means it can only be reached via nginx's own
+  `auth_request` mechanism, never directly by a client. This is the sub-request nginx fires
+  for every `/v2/` call below, forwarding the original `Authorization` header automatically
+  (default subrequest behavior). `proxy_pass_request_body off` / `Content-Length ""` because
+  the check doesn't need the request body (a docker push's actual image data), only the
+  headers.
 - `location /v2/` — catches everything else under the registry's v2 API: manifest
-  pulls/pushes, blob uploads, tag listings, deletes. `auth_basic` here means nginx will
-  return `401 Unauthorized` with a `WWW-Authenticate: Basic realm="Registry"` challenge
-  unless valid credentials matching an entry in `nginx-auth.htpasswd` are supplied.
-- `proxy_read_timeout 900` on the authenticated block — large image layer uploads/downloads
+  pulls/pushes, blob uploads, tag listings, deletes. `auth_request` fires the sub-request
+  above first; a non-2xx response there (401) makes nginx return that status to the client
+  directly, without the real request ever reaching the registry.
+- `proxy_set_header Host $http_host` (not `$host`) — `$host` strips the port from the Host
+  header. A registry's blob-upload flow can construct absolute self-referential URLs for its
+  redirect steps using that header; with the port missing it defaults to `80`, breaking
+  `docker push` specifically (`docker pull` never hits this — no redirect chain involved) with
+  a `connection refused` error on port 80. `$http_host` preserves the port as the client
+  actually sent it.
+- `proxy_read_timeout 900` on the registry-facing block — large image layer uploads/downloads
   can take a while; this avoids nginx timing out a slow push/pull.
 
+`GUSTAVO_PORT` above is whatever host port Gustavo's own container publishes (`3000` in the
+compose example below) — `_registry_auth` reaches it over `127.0.0.1` because
+`registry-proxy` runs in host network mode, same as it reaches the registry itself at
+`127.0.0.1:5051`.
+
 `nginx`'s location-matching picks the more specific match (`= ` exact or longest prefix)
-over the general one, so `/v2/_catalog` is correctly intercepted before falling through to
-the catch-all `/v2/` block.
+over the general one, so `/v2/_catalog` and `/_registry_auth` are correctly intercepted
+before falling through to the catch-all `/v2/` block.
 
 ### Step 4 — Add the proxy service to Gustavo's `docker-compose.yml`
 
@@ -487,7 +537,6 @@ services:
     network_mode: "host"
     volumes:
       - ./registry-proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./registry-proxy/nginx-auth.htpasswd:/etc/nginx/nginx-auth.htpasswd:ro
 ```
 
 `network_mode: "host"` on `registry-proxy` is required, not optional: `proxy_pass` targets
@@ -566,23 +615,40 @@ curl http://REGISTRY_HOST:REGISTRY_PORT/v2/_catalog
 # Anonymous pull attempt — should 401
 docker pull REGISTRY_HOST:REGISTRY_PORT/some-image:latest
 
-# Authenticated pull — should succeed after login
+# Authenticated pull — use a real Nebula user's own username:secret
+# (the same credential they log into Gustavo with), not a separate
+# registry-specific account
 docker login REGISTRY_HOST:REGISTRY_PORT
 docker pull REGISTRY_HOST:REGISTRY_PORT/some-image:latest
 
+# A push exercises the auth check on PUT/PATCH, not just GET, and is a
+# good end-to-end sanity check after any nginx change
+docker tag some-image:latest REGISTRY_HOST:REGISTRY_PORT/some-image:test
+docker push REGISTRY_HOST:REGISTRY_PORT/some-image:test
+
 # Gustavo's own registry list, from inside its container
 docker exec gustavo curl -s http://REGISTRY_HOST:REGISTRY_PORT/v2/_catalog
+
+# The check endpoint directly, bypassing Docker's own login negotiation —
+# useful for isolating whether a failure is in nginx/Gustavo's wiring or
+# in Docker's client-side auth handshake
+curl -u someuser:theirsecret http://REGISTRY_HOST:REGISTRY_PORT/v2/some-image/manifests/latest
 ```
 
 ### Important Notes
 
-`/v2/_catalog` is public to anyone who can reach port `REGISTRY_PORT` on the network, no credentials
-required. Repository names and the existence of images are visible to anyone, but actually
-pulling, pushing, or deleting image content still requires valid credentials from
-`nginx-auth.htpasswd`. This was an explicit, deliberate simplification: per-source-IP
-allowlisting (restricting the anonymous catalog exception to Gustavo's container only) was
-attempted first but added complexity without a corresponding benefit, since Gustavo's
-container could not consistently reach nginx under an IP-based allowlist while also
-preserving the requirement that every client, including downstream deployed apps and remote
-nodes, address the registry at the same consistent `REGISTRY_HOST:REGISTRY_PORT`.
+`/v2/_catalog` is public to anyone who can reach port `REGISTRY_PORT` on the network, no
+credentials required. Repository names and the existence of images are visible to anyone,
+but actually pulling, pushing, or deleting image content still requires a valid Nebula
+credential, checked live via `/api/registry/authorize`. This was an explicit, deliberate
+simplification: per-source-IP allowlisting (restricting the anonymous catalog exception to
+Gustavo's container only) was attempted first but added complexity without a corresponding
+benefit, since Gustavo's container could not consistently reach nginx under an IP-based
+allowlist while also preserving the requirement that every client, including downstream
+deployed apps and remote nodes, address the registry at the same consistent
+`REGISTRY_HOST:REGISTRY_PORT`.
+
+This is currently identity-only: any valid Nebula user, admin or not, can pull and push any
+repository — not scoped to the `apps`/`device_groups` grants that gate everything else in
+Gustavo. See the note on Tier 1 vs. Tier 2 above.
 

@@ -1,4 +1,5 @@
 from crypt import methods
+import os
 import click
 import yaml
 import docker
@@ -261,6 +262,24 @@ def createWorker(name, device_group, image, prefix, expire_time):
     except Exception as e:
         return {"error": True, "response": e}
 
+    # Composer(mode="CLI") loads GUSTAVO_CONFIG_FILE via load_dotenv(), which
+    # populates os.environ for the whole process - not just attributes
+    # NebulaBase itself defines. registry_auth_user/password (read by the
+    # worker's own docker_engine.py via ParseIt) are picked up this way
+    # rather than as a Composer/NebulaBase attribute, so the registry-proxy
+    # credential doesn't need protected-file changes to flow through.
+    registry_auth_user = os.getenv("REGISTRY_AUTH_USER")
+    registry_auth_password = os.getenv("REGISTRY_AUTH_PASSWORD")
+    # Only pass these through if both are actually set - an included but
+    # empty/"None" value would defeat docker_engine.py's own registry_user
+    # is not None / != "skip" check, which is what it uses to decide
+    # whether to attempt a registry login at all.
+    registry_auth_env = (
+        [f"REGISTRY_AUTH_USER={registry_auth_user}", f"REGISTRY_AUTH_PASSWORD={registry_auth_password}"]
+        if registry_auth_user and registry_auth_password
+        else []
+    )
+
     client = docker.from_env()
 
     if not search("_" + device_group, name):
@@ -295,7 +314,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
                     "NEBULA_MANAGER_PORT=" + str(bcmp.MANAGER_PORT),
                     "NEBULA_MANAGER_PROTOCOL=" + str(bcmp.NEBULA_PROTOCOL),
                     "NEBULA_MANAGER_CHECK_IN_TIME=5",
-                ],
+                ] + registry_auth_env,
                 name=name,
                 restart_policy={"Name": "always"},
                 volumes=[str(bcmp.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],
@@ -325,7 +344,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
                     "NEBULA_MANAGER_PORT=" + str(bcmp.MANAGER_PORT),
                     "NEBULA_MANAGER_PROTOCOL=" + str(bcmp.NEBULA_PROTOCOL),
                     "NEBULA_MANAGER_CHECK_IN_TIME=5",
-                ],
+                ] + registry_auth_env,
                 name=name,
                 restart_policy={"Name": "always"},
                 volumes=[str(bcmp.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],
