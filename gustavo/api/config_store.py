@@ -45,6 +45,18 @@ DEFAULTS: dict[str, Any] = {
     # it on without also repointing anything that reads REGISTRY_HOST/PORT at
     # an authenticated front door breaks direct registry access entirely.
     "REGISTRY_BIND_LOCALHOST": False,
+    # Port Gustavo's own container uses to talk to the registry directly for
+    # its own purposes (the Registry page's image/tag listing). Empty by
+    # default, meaning "same as REGISTRY_PORT" - correct whenever there's no
+    # proxy in front of the registry, since REGISTRY_PORT already points at
+    # the raw registry in that case. Only needs to be set when a registry
+    # proxy exists and REGISTRY_PORT has been repointed at it: a container
+    # on the same host as a network_mode:"host" proxy generally can't loop
+    # back to it through the host's own public hostname (no Docker-managed
+    # hairpin NAT for host-networked ports, unlike normal published ports),
+    # so Gustavo's own calls need the registry's real, directly-reachable
+    # port here instead.
+    "REGISTRY_INTERNAL_PORT": "",
     # Syncer
     "SYNCER_IMAGE": "ghcr.io/disys-lab/dregsy:latest",
     "SYNCER_NMODE": "host",
