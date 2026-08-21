@@ -285,27 +285,32 @@ would additionally check the requester's `apps` grants against the specific repo
 pulled/pushed, using the `X-Original-URI`/`X-Original-Method` headers the proxy already
 forwards but the endpoint doesn't yet act on.
 
-One path is deliberately left open without authentication: `/v2/_catalog`. This is the
-registry's repository-listing endpoint and is what `gustavo registry list` calls. Since
-Gustavo's container could not reliably reach the proxy under per-IP allowlisting without
-breaking the "always address the registry as `REGISTRY_HOST:REGISTRY_PORT`"
-requirement, the simplest fix was to make the catalog endpoint public and gate everything
-else (pulls, pushes, deletes, tag listings) behind auth.
+Two paths are deliberately left open without authentication: `/v2/_catalog` (repository
+listing) and `/v2/{repo}/tags/list` (tag listing for a given repo). Browsing what images and
+tags exist is not a secret — only pulling/pushing the actual image data is. Everything else
+under `/v2/` (manifest/blob reads and writes — the actual pull/push traffic) stays behind
+`auth_request`.
 
 ### Port layout
 
-| Port | Bound to | Purpose |
-|------|----------|---------|
-| `REGISTRY_PORT` | host, all interfaces | nginx — public-facing entry point, same port every client and downstream app has always used |
-| `5051` | host, loopback-only *if* `REGISTRY_BIND_LOCALHOST` is set — see below | the real `registry:2` container — no auth, not meant to be reached directly by anyone except nginx |
+`REGISTRY_PORT` means exactly one thing everywhere in Gustavo — the port every client (the
+Settings page, downstream app deployments, workers, Gustavo's own catalog/tag calls) uses to
+reach "the registry". Once a proxy is in front of the real registry, this is the proxy's
+port, and stays that way permanently — nothing needs to be temporarily pointed at the raw
+registry to bootstrap it.
 
-`REGISTRY_PORT` in Gustavo's config (`platform.yaml` / Settings page) was changed from
-`REGISTRY_PORT` to `5051`, so the registry container itself now binds to `5051` on the host instead
-of `REGISTRY_PORT`. nginx claims `REGISTRY_PORT`.
+The raw `registry:2` container's own bind port is a **separate** config key,
+`REGISTRY_CONTAINER_PORT`. Empty by default (falls back to `REGISTRY_PORT`, correct for any
+deployment with no proxy); set it explicitly once a proxy exists, so the raw container and
+the proxy aren't both trying to bind the same port.
 
-`REGISTRY_HOST` in Gustavo's config stays as the external FQDN
-(`REGISTRY_HOST`), unchanged, since that value is also what gets used
-downstream when apps are deployed and needs to stay consistent.
+| Port | Config key | Bound to | Purpose |
+|------|-----------|----------|---------|
+| `REGISTRY_PORT` (e.g. `5001`) | `REGISTRY_PORT` | host, all interfaces | nginx — public-facing entry point, same port every client and downstream app has always used |
+| `5051` | `REGISTRY_CONTAINER_PORT` | host, loopback-only *if* `REGISTRY_BIND_LOCALHOST` is set — see below | the real `registry:2` container — no auth, not meant to be reached directly by anyone except nginx |
+
+`REGISTRY_HOST` in Gustavo's config stays as the external FQDN, unchanged, since that value
+is also what gets used downstream when apps are deployed and needs to stay consistent.
 
 ### Directory structure
 
@@ -371,41 +376,19 @@ the toggle-based verification above.
 
 ### Step 1 — Move the real registry off the public port
 
-This step has an ordering requirement tied to how Gustavo launches the registry container.
-`runRegistry()` reads `REGISTRY_PORT` from config at the moment it starts the container, so
-the value has to already be `5051` *before* the registry is first brought up, not changed
- afterward while it's running.
+Set both config keys up front, in Gustavo's Settings page (or `platform.yaml` directly) —
+no juggling or temporary values needed, since `REGISTRY_PORT` and `REGISTRY_CONTAINER_PORT`
+are independent from the start:
 
-On initial setup, the sequence is:
+```
+REGISTRY_PORT: 5001              # nginx's port — what everything else keeps using
+REGISTRY_CONTAINER_PORT: 5051    # the raw registry container's own bind port
+```
 
-1. In Gustavo's Settings page (or `platform.yaml` directly), set:
+Then start (or restart/recreate) the registry service from Gustavo — it binds to
+`REGISTRY_CONTAINER_PORT` (`5051`), leaving `REGISTRY_PORT` (`5001`) free for nginx.
 
-   ```
-   REGISTRY_PORT: 5051
-   ```
-
-2. Start the registry service from Gustavo (first-time `gustavo registry run`, or the
-   equivalent action in the UI) **with `REGISTRY_PORT` still set to `5051`**. This is what
-   makes the container actually bind to `5051` on the host.
-
-3. Once the registry container is confirmed up and bound to `5051` (see the check below),
-   go back into Settings and change `REGISTRY_PORT` back to `REGISTRY_PORT`.
-
-This last step does not restart or move the already-running registry container, since
-Gustavo only applies `REGISTRY_PORT` when a service is launched or restarted. It updates
-the config value that everything else (Gustavo's UI calls, downstream app deployments,
-`REGISTRY_HOST`/`REGISTRY_PORT` consistency) reads going forward, so that the
-externally-visible, documented address stays `REGISTRY_HOST:REGISTRY_PORT` even
-though the registry container itself is still physically listening on `5051` underneath
-the proxy.
-
-**Do not restart or re-run the registry service after switching `REGISTRY_PORT` back to
-`REGISTRY_PORT`.** Doing so would cause Gustavo to relaunch the registry container bound to `REGISTRY_PORT`
-instead of `5051`, which collides with nginx and breaks the whole setup. The config value
-shown in Settings after this point is intentionally out of sync with the container's actual
-bound port — that mismatch is expected and is what makes the proxy arrangement work.
-
-Confirm the registry container is actually bound to `5051` before flipping the config back:
+Confirm the registry container is actually bound to `5051`:
 
 ```bash
 docker inspect registry --format '{{json .HostConfig.PortBindings}}'
@@ -432,6 +415,17 @@ server {
     # Unauthenticated: repo listing stays open, so gustavo registry list
     # and the dashboard's registry view work without needing credentials.
     location /v2/_catalog {
+        proxy_pass http://127.0.0.1:5051;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Unauthenticated: tag listing is the other half of "browsing is free" -
+    # same rationale as /v2/_catalog above. Regex (not a plain prefix) so it
+    # matches namespaced repo names containing slashes (e.g. foo/bar/tags/list)
+    # without also matching /v2/<name>/manifests/... or /v2/<name>/blobs/...,
+    # which must stay behind auth_request below.
+    location ~ ^/v2/(?<repo_name>.+)/tags/list$ {
         proxy_pass http://127.0.0.1:5051;
         proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -476,6 +470,10 @@ What each block does:
 
 - `location /v2/_catalog` — exact-path match, no `auth_request`, so nginx proxies this
   straight through with no credential check.
+- `location ~ ^/v2/(?<repo_name>.+)/tags/list$` — regex match, same treatment as
+  `/v2/_catalog`. Must be a regex (not a plain prefix) so it only catches the `tags/list`
+  suffix and doesn't accidentally also match `/v2/<name>/manifests/...` or
+  `/v2/<name>/blobs/...` under the same repo name, which still need auth.
 - `location = /_registry_auth` — `internal` means it can only be reached via nginx's own
   `auth_request` mechanism, never directly by a client. This is the sub-request nginx fires
   for every `/v2/` call below, forwarding the original `Authorization` header automatically
@@ -483,9 +481,9 @@ What each block does:
   the check doesn't need the request body (a docker push's actual image data), only the
   headers.
 - `location /v2/` — catches everything else under the registry's v2 API: manifest
-  pulls/pushes, blob uploads, tag listings, deletes. `auth_request` fires the sub-request
-  above first; a non-2xx response there (401) makes nginx return that status to the client
-  directly, without the real request ever reaching the registry.
+  pulls/pushes, blob uploads, deletes. `auth_request` fires the sub-request above first; a
+  non-2xx response there (401) makes nginx return that status to the client directly, without
+  the real request ever reaching the registry.
 - `proxy_set_header Host $http_host` (not `$host`) — `$host` strips the port from the Host
   header. A registry's blob-upload flow can construct absolute self-referential URLs for its
   redirect steps using that header; with the port missing it defaults to `80`, breaking
@@ -500,8 +498,9 @@ compose example below) — `_registry_auth` reaches it over `127.0.0.1` because
 `registry-proxy` runs in host network mode, same as it reaches the registry itself at
 `127.0.0.1:5051`.
 
-`nginx`'s location-matching picks the more specific match (`= ` exact or longest prefix)
-over the general one, so `/v2/_catalog` and `/_registry_auth` are correctly intercepted
+`nginx`'s location-matching picks the exact match first, then a matching regex location
+(regardless of file order relative to prefix locations) over the longest plain-prefix match,
+so `/v2/_catalog`, the `tags/list` regex, and `/_registry_auth` are all correctly intercepted
 before falling through to the catch-all `/v2/` block.
 
 ### Step 4 — Add the proxy service to Gustavo's `docker-compose.yml`
@@ -637,16 +636,16 @@ curl -u someuser:theirsecret http://REGISTRY_HOST:REGISTRY_PORT/v2/some-image/ma
 
 ### Important Notes
 
-`/v2/_catalog` is public to anyone who can reach port `REGISTRY_PORT` on the network, no
-credentials required. Repository names and the existence of images are visible to anyone,
-but actually pulling, pushing, or deleting image content still requires a valid Nebula
-credential, checked live via `/api/registry/authorize`. This was an explicit, deliberate
-simplification: per-source-IP allowlisting (restricting the anonymous catalog exception to
-Gustavo's container only) was attempted first but added complexity without a corresponding
-benefit, since Gustavo's container could not consistently reach nginx under an IP-based
-allowlist while also preserving the requirement that every client, including downstream
-deployed apps and remote nodes, address the registry at the same consistent
-`REGISTRY_HOST:REGISTRY_PORT`.
+`/v2/_catalog` and `/v2/{repo}/tags/list` are public to anyone who can reach port
+`REGISTRY_PORT` on the network, no credentials required. Repository names, tags, and the
+existence of images are visible to anyone, but actually pulling, pushing, or deleting image
+content still requires a valid Nebula credential, checked live via `/api/registry/authorize`.
+This was an explicit, deliberate simplification: per-source-IP allowlisting (restricting the
+anonymous catalog/tag exception to Gustavo's container only) was attempted first but added
+complexity without a corresponding benefit, since Gustavo's container could not consistently
+reach nginx under an IP-based allowlist while also preserving the requirement that every
+client, including downstream deployed apps and remote nodes, address the registry at the
+same consistent `REGISTRY_HOST:REGISTRY_PORT`.
 
 This is currently identity-only: any valid Nebula user, admin or not, can pull and push any
 repository — not scoped to the `apps`/`device_groups` grants that gate everything else in
