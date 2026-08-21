@@ -90,6 +90,7 @@ class Manager(NebulaBase):
         self.REDIS_IMAGE = None
         self.REDIS_BKP_DIR = "/tmp/"
         self.REGISTRY_BKP_DIR = "/tmp/"  # Added Registry Backup Directory
+        self.REGISTRY_BIND_LOCALHOST = False
         self.MONGO_IMAGE = None
         self.MANAGER_IMAGE = None
 
@@ -191,6 +192,11 @@ class Manager(NebulaBase):
         else:
             self.REGISTRY_BKP_DIR = "/tmp/"
             logging.error(f"REGISTRY_BKP_DIR undefined in os.environ, defaulting to {self.REGISTRY_BKP_DIR}")
+
+        if "REGISTRY_BIND_LOCALHOST" in os.environ.keys():
+            self.REGISTRY_BIND_LOCALHOST = os.getenv("REGISTRY_BIND_LOCALHOST").lower() in ("1", "true", "yes", "on")
+        else:
+            self.REGISTRY_BIND_LOCALHOST = False
 
         if "SYNCER_IMAGE" in os.environ.keys():
             self.SYNCER_IMAGE = os.getenv("SYNCER_IMAGE")
@@ -295,11 +301,16 @@ class Manager(NebulaBase):
                     return {"error": False, "response": f"Could not create directory: {self.REGISTRY_BKP_DIR} "}
 
             try:
+                registry_port_binding = (
+                    {"5000": ("127.0.0.1", self.REGISTRY_PORT)}
+                    if self.REGISTRY_BIND_LOCALHOST
+                    else {"5000": self.REGISTRY_PORT}
+                )
                 client.containers.run(
                     image=self.REGISTRY_IMAGE,
                     detach=True,
                     security_opt=["label=disable"],
-                    ports={"5000": self.REGISTRY_PORT},
+                    ports=registry_port_binding,
                     name="registry",
                     restart_policy={"Name": "always"},
                     volumes=[
