@@ -12,7 +12,7 @@ import { useActivityToast } from "@/hooks/use-activity-toast";
 import { uploadConfig, downloadConfig } from "@/lib/api/config";
 import type { PlatformConfig } from "@/lib/types/platform";
 
-type ConfigField = { key: keyof PlatformConfig; label: string; type?: "text" | "password" };
+type ConfigField = { key: keyof PlatformConfig; label: string; type?: "text" | "password" | "checkbox"; hint?: string };
 
 const PASSWORD_KEYS: Array<keyof PlatformConfig> = [
   "NEBULA_PASSWORD", "NEBULA_AUTH_TOKEN", "REDIS_AUTH_TOKEN", "MONGO_PASSWORD",
@@ -50,6 +50,17 @@ const MONGO_FIELDS: ConfigField[] = [
 const REGISTRY_FIELDS: ConfigField[] = [
   { key: "REGISTRY_HOST", label: "Registry Host" },
   { key: "REGISTRY_PORT", label: "Registry Port" },
+  {
+    key: "REGISTRY_INTERNAL_PORT",
+    label: "Registry Internal Port",
+    hint: "Leave blank unless a registry-proxy sits in front of the registry. Port Gustavo's own container uses to reach the registry directly for the Registry page (image/tag listing) and new-app image suggestions — only needs to differ from Registry Port when that port has been repointed at an authenticating proxy.",
+  },
+  {
+    key: "REGISTRY_BIND_LOCALHOST",
+    label: "Bind registry to localhost only",
+    type: "checkbox",
+    hint: "Publishes the registry container's port to 127.0.0.1 instead of 0.0.0.0 — only reachable from other processes on this host (e.g. an authenticated proxy), not directly from the network. Takes effect on the next registry restart/recreate. Do not enable until everything that pulls images (apps, workers) has been repointed at an authenticated front door — this closes direct access immediately.",
+  },
   { key: "REGISTRY_IMAGE", label: "Registry Image" },
   { key: "REGISTRY_BKP_DIR", label: "Backup Directory" },
   { key: "REGISTRY_DATA_PATH", label: "Registry Data Path (host path to live data dir)" },
@@ -65,17 +76,32 @@ function FieldGrid({ fields, register }: {
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {fields.map(({ key, label, type = "text" }) => (
+      {fields.map(({ key, label, type = "text", hint }) => (
         <div key={key}>
-          <Label htmlFor={key} className="text-xs">{label}</Label>
-          <Input
-            id={key}
-            type={type}
-            {...register(key)}
-            className="mt-1"
-            autoComplete="off"
-            placeholder={type === "password" ? "Leave blank to keep current" : undefined}
-          />
+          {type === "checkbox" ? (
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                id={key}
+                type="checkbox"
+                {...register(key)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor={key} className="text-xs">{label}</Label>
+            </div>
+          ) : (
+            <>
+              <Label htmlFor={key} className="text-xs">{label}</Label>
+              <Input
+                id={key}
+                type={type}
+                {...register(key)}
+                className="mt-1"
+                autoComplete="off"
+                placeholder={type === "password" ? "Leave blank to keep current" : undefined}
+              />
+            </>
+          )}
+          {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
         </div>
       ))}
     </div>
