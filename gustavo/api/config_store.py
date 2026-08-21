@@ -38,6 +38,13 @@ DEFAULTS: dict[str, Any] = {
     "REGISTRY_IMAGE": "registry:2",
     "REGISTRY_BKP_DIR": "/tmp/",
     "REGISTRY_DATA_PATH": "",  # Host path to live registry data dir (e.g. /data/registry/docker)
+    # When true, the registry container's port is published to 127.0.0.1 only
+    # instead of 0.0.0.0 - only reachable from other processes on the same
+    # host (e.g. an authenticated nginx proxy in front of it), not directly
+    # from the network. Off by default to preserve existing behavior; turning
+    # it on without also repointing anything that reads REGISTRY_HOST/PORT at
+    # an authenticated front door breaks direct registry access entirely.
+    "REGISTRY_BIND_LOCALHOST": False,
     # Syncer
     "SYNCER_IMAGE": "ghcr.io/disys-lab/dregsy:latest",
     "SYNCER_NMODE": "host",
