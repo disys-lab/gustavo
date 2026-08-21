@@ -19,7 +19,7 @@ export interface PlatformConfig {
   REGISTRY_BKP_DIR: string;
   REGISTRY_DATA_PATH: string;
   REGISTRY_BIND_LOCALHOST: boolean;
-  REGISTRY_INTERNAL_PORT: string;
+  REGISTRY_CONTAINER_PORT: string;
   // Syncer
   SYNCER_IMAGE: string;
   SYNCER_NMODE: string;
