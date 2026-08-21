@@ -1,5 +1,5 @@
 """
-/api/backups — Redis and Registry backup management.
+/api/backups — Redis, Registry, and Mongo backup management.
 
 Handler methods are ported verbatim from gustavo/pages/5_Backups.py (no Streamlit imports).
 
@@ -12,12 +12,19 @@ GET    /api/backups/registry                       → list backup dirs
 POST   /api/backups/registry/create                → copy docker/ dir → job_id
 POST   /api/backups/registry/restore/{dirname}     → copy back → job_id
 DELETE /api/backups/registry/{dirname}             → delete
+
+GET    /api/backups/mongo                       → list .archive.gz files
+POST   /api/backups/mongo/create                → mongodump → job_id
+POST   /api/backups/mongo/restore/{filename}    → mongorestore --drop → job_id
+DELETE /api/backups/mongo/{filename}            → delete
 """
 import datetime
+import io
 import logging
 import os
 import shutil
 import subprocess
+import tarfile
 import time
 
 import docker
@@ -53,6 +60,15 @@ def _registry_live_path() -> str:
 
 def _redis_auth_token() -> str:
     return config_store.get().get("REDIS_AUTH_TOKEN", "")
+
+
+def _mongo_bkp_dir() -> str:
+    return config_store.get().get("MONGO_BKP_DIR", "/tmp/")
+
+
+def _mongo_auth() -> tuple[str, str]:
+    cfg = config_store.get()
+    return cfg.get("MONGO_USERNAME", ""), cfg.get("MONGO_PASSWORD", "")
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +158,123 @@ def _delete_redis_backup_handler(filename: str) -> dict:
             os.remove(backup_path)
             return {"error": False, "response": f"Redis backup deleted: {filename}"}
         return {"error": True, "response": f"Redis backup not found: {filename}"}
+    except Exception as exc:
+        return {"error": True, "response": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Mongo backup handlers
+#
+# Mongo runs with auth enabled (MONGO_INITDB_ROOT_USERNAME/PASSWORD, see
+# Manager.runMongo) and no host bind-mount for its data directory - unlike
+# Redis's dump.rdb, there's no shared path to just rename a file out of. So
+# instead: run mongodump/mongorestore *inside* the container against a
+# container-local path, then use get_archive/put_archive (docker-py's
+# docker-cp equivalents) to move the single compressed archive file in and
+# out. cmd is passed as a list, not an interpolated string, so credentials
+# never go through any shell-quoting/splitting at all.
+# ---------------------------------------------------------------------------
+
+def _create_mongo_backup_handler() -> dict:
+    bkp_dir = _mongo_bkp_dir()
+    username, password = _mongo_auth()
+    client = docker.from_env()
+    container_path = "/tmp/mongo_backup.archive.gz"
+    try:
+        mongo_container = client.containers.get("mongo")
+    except docker.errors.NotFound:
+        return {"error": True, "response": "Mongo container not found."}
+    except docker.errors.APIError as exc:
+        return {"error": True, "response": f"Docker API error: {exc}"}
+
+    try:
+        dump_cmd = [
+            "mongodump", "--username", username, "--password", password,
+            "--authenticationDatabase", "admin", f"--archive={container_path}", "--gzip",
+        ]
+        exec_result = mongo_container.exec_run(dump_cmd)
+        if exec_result.exit_code != 0:
+            return {"error": True, "response": f"mongodump failed: {exec_result.output.decode()}"}
+
+        bits, _stat = mongo_container.get_archive(container_path)
+        tar_bytes = io.BytesIO(b"".join(bits))
+        mongo_container.exec_run(["rm", "-f", container_path])
+
+        os.makedirs(bkp_dir, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"mongo_backup_{timestamp}.archive.gz"
+        with tarfile.open(fileobj=tar_bytes) as tar:
+            member = tar.getmembers()[0]
+            with open(os.path.join(bkp_dir, backup_filename), "wb") as out_f:
+                out_f.write(tar.extractfile(member).read())
+        return {"error": False, "response": f"Mongo backup created: {backup_filename}"}
+    except docker.errors.APIError as exc:
+        return {"error": True, "response": f"Docker API error: {exc}"}
+    except Exception as exc:
+        return {"error": True, "response": f"Unexpected error: {exc}"}
+
+
+def _restore_mongo_backup_handler(filename: str) -> dict:
+    bkp_dir = _mongo_bkp_dir()
+    backup_file_path = os.path.join(bkp_dir, filename)
+    if not os.path.exists(backup_file_path):
+        return {"error": True, "response": f"Mongo backup file not found: {filename}"}
+
+    username, password = _mongo_auth()
+    client = docker.from_env()
+    container_path = "/tmp/mongo_restore.archive.gz"
+    try:
+        mongo_container = client.containers.get("mongo")
+    except docker.errors.NotFound:
+        return {"error": True, "response": "Mongo container not found."}
+    except docker.errors.APIError as exc:
+        return {"error": True, "response": f"Docker API error: {exc}"}
+
+    try:
+        tar_bytes = io.BytesIO()
+        with tarfile.open(fileobj=tar_bytes, mode="w") as tar:
+            tar.add(backup_file_path, arcname=os.path.basename(container_path))
+        mongo_container.put_archive(os.path.dirname(container_path), tar_bytes.getvalue())
+
+        restore_cmd = [
+            "mongorestore", "--username", username, "--password", password,
+            "--authenticationDatabase", "admin", f"--archive={container_path}", "--gzip", "--drop",
+        ]
+        exec_result = mongo_container.exec_run(restore_cmd)
+        mongo_container.exec_run(["rm", "-f", container_path])
+        if exec_result.exit_code != 0:
+            return {"error": True, "response": f"mongorestore failed: {exec_result.output.decode()}"}
+        return {"error": False, "response": f"Mongo restored from {filename}"}
+    except docker.errors.APIError as exc:
+        return {"error": True, "response": f"Docker API error: {exc}"}
+    except Exception as exc:
+        return {"error": True, "response": f"Unexpected error during Mongo restore: {exc}"}
+
+
+def _list_mongo_backups_handler() -> dict:
+    bkp_dir = _mongo_bkp_dir()
+    try:
+        os.makedirs(bkp_dir, exist_ok=True)
+        files = [f for f in os.listdir(bkp_dir) if f.startswith("mongo_backup_") and f.endswith(".archive.gz")]
+        backups = []
+        for f in files:
+            fp = os.path.join(bkp_dir, f)
+            ts = datetime.datetime.fromtimestamp(os.path.getmtime(fp))
+            backups.append({"filename": f, "timestamp": ts.strftime("%Y-%m-%d %H:%M:%S")})
+        return {"error": False, "response": backups}
+    except Exception as exc:
+        logging.error(f"list_mongo_backups: {exc}")
+        return {"error": True, "response": str(exc)}
+
+
+def _delete_mongo_backup_handler(filename: str) -> dict:
+    bkp_dir = _mongo_bkp_dir()
+    backup_path = os.path.join(bkp_dir, filename)
+    try:
+        if os.path.exists(backup_path):
+            os.remove(backup_path)
+            return {"error": False, "response": f"Mongo backup deleted: {filename}"}
+        return {"error": True, "response": f"Mongo backup not found: {filename}"}
     except Exception as exc:
         return {"error": True, "response": str(exc)}
 
@@ -308,3 +441,31 @@ async def restore_registry_backup(dirname: str, _session=Depends(require_admin))
 @router.delete("/registry/{dirname}")
 async def delete_registry_backup(dirname: str, _session=Depends(require_admin)):
     return _delete_registry_backup_handler(dirname)
+
+
+# ---------------------------------------------------------------------------
+# Mongo routes
+# ---------------------------------------------------------------------------
+
+@router.get("/mongo")
+async def list_mongo_backups(_session=Depends(require_admin)):
+    return _list_mongo_backups_handler()
+
+
+@router.post("/mongo/create")
+async def create_mongo_backup(_session=Depends(require_admin)):
+    job_id = background.create_job({"type": "mongo_backup", "action": "create"})
+    background.run_in_background(_create_mongo_backup_handler, job_id)
+    return {"error": False, "response": {"job_id": job_id, "status": "running"}}
+
+
+@router.post("/mongo/restore/{filename}")
+async def restore_mongo_backup(filename: str, _session=Depends(require_admin)):
+    job_id = background.create_job({"type": "mongo_backup", "action": "restore", "filename": filename})
+    background.run_in_background(_restore_mongo_backup_handler, job_id, filename)
+    return {"error": False, "response": {"job_id": job_id, "status": "running"}}
+
+
+@router.delete("/mongo/{filename}")
+async def delete_mongo_backup(filename: str, _session=Depends(require_admin)):
+    return _delete_mongo_backup_handler(filename)
