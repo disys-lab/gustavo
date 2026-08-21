@@ -26,3 +26,16 @@ export const restoreRegistryBackup = (dirname: string) =>
 
 export const deleteRegistryBackup = (dirname: string) =>
   apiClient.delete<ApiResponse>(`/backups/registry/${dirname}`).then((r) => r.data);
+
+// Mongo
+export const listMongoBackups = () =>
+  apiClient.get<ApiResponse<BackupEntry[]>>("/backups/mongo").then((r) => r.data);
+
+export const createMongoBackup = () =>
+  apiClient.post<ApiResponse<{ job_id: string }>>("/backups/mongo/create").then((r) => r.data);
+
+export const restoreMongoBackup = (filename: string) =>
+  apiClient.post<ApiResponse<{ job_id: string }>>(`/backups/mongo/restore/${filename}`).then((r) => r.data);
+
+export const deleteMongoBackup = (filename: string) =>
+  apiClient.delete<ApiResponse>(`/backups/mongo/${filename}`).then((r) => r.data);
