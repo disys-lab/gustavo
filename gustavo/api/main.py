@@ -20,6 +20,7 @@ from gustavo.api.routers import (
     backups as backups_router,
     auth as auth_router,
     users as users_router,
+    registry as registry_router,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +65,7 @@ app.include_router(dg_router.router,         prefix="/api/device-groups", tags=[
 app.include_router(monitoring_router.router, prefix="/api/monitoring",    tags=["monitoring"])
 app.include_router(backups_router.router,    prefix="/api/backups",       tags=["backups"])
 app.include_router(users_router.router,      prefix="/api/users",         tags=["users"])
+app.include_router(registry_router.router,   prefix="/api/registry",      tags=["registry"])
 
 
 @app.get("/health")
