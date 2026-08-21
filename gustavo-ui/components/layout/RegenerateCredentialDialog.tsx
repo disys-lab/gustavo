@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { regenerateMyToken } from "@/lib/api/users";
+import { copyToClipboard } from "@/lib/utils";
 
 export function RegenerateCredentialDialog() {
   const [open, setOpen] = useState(false);
@@ -43,8 +44,12 @@ export function RegenerateCredentialDialog() {
 
   const handleCopy = async () => {
     if (!credential) return;
-    await navigator.clipboard.writeText(credential);
-    setCopied(true);
+    const ok = await copyToClipboard(credential);
+    if (ok) {
+      setCopied(true);
+    } else {
+      setError("Copy failed — select the text above and copy it manually.");
+    }
   };
 
   return (

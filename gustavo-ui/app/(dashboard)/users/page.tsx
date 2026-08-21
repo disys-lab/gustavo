@@ -18,10 +18,12 @@ import {
 import { Copy, Check, KeyRound, Trash2 } from "lucide-react";
 import { listUsers, createUser, deleteUser, regenerateUserToken, listGroups } from "@/lib/api/users";
 import { useActivityToast } from "@/hooks/use-activity-toast";
+import { copyToClipboard } from "@/lib/utils";
 import type { NebulaUser } from "@/lib/types/users";
 
 function CredentialReveal({ credential }: { credential: string }) {
   const [copied, setCopied] = useState(false);
+  const { toast } = useActivityToast();
   return (
     <>
       <Alert>
@@ -33,8 +35,12 @@ function CredentialReveal({ credential }: { credential: string }) {
           size="sm"
           variant="ghost"
           onClick={async () => {
-            await navigator.clipboard.writeText(credential);
-            setCopied(true);
+            const ok = await copyToClipboard(credential);
+            if (ok) {
+              setCopied(true);
+            } else {
+              toast({ variant: "destructive", title: "Copy failed", description: "Select the text above and copy it manually." });
+            }
           }}
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
