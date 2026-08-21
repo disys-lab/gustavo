@@ -1885,7 +1885,7 @@
 
     <div class="doc doc-contents first">
 
-        <p>/api/backups — Redis and Registry backup management.</p>
+        <p>/api/backups — Redis, Registry, and Mongo backup management.</p>
 <p>Handler methods are ported verbatim from gustavo/pages/5_Backups.py (no Streamlit imports).</p>
 <p>GET    /api/backups/redis                       → list .rdb files
 POST   /api/backups/redis/create                → BGSAVE → job_id
@@ -1895,6 +1895,10 @@ DELETE /api/backups/redis/{filename}            → delete</p>
 POST   /api/backups/registry/create                → copy docker/ dir → job_id
 POST   /api/backups/registry/restore/{dirname}     → copy back → job_id
 DELETE /api/backups/registry/{dirname}             → delete</p>
+<p>GET    /api/backups/mongo                       → list .archive.gz files
+POST   /api/backups/mongo/create                → mongodump → job_id
+POST   /api/backups/mongo/restore/{filename}    → mongorestore --drop → job_id
+DELETE /api/backups/mongo/{filename}            → delete</p>
 
 
 
