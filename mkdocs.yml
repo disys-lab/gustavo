@@ -53,6 +53,7 @@ nav:
     - Monitoring: api/monitoring.md
     - Backups: api/backups.md
     - Users: api/users.md
+    - Registry Auth: api/registry.md
   - Web UI:
     - Overview: ui/index.md
     - Dashboard: ui/dashboard.md
