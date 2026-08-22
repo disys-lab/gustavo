@@ -2350,40 +2350,47 @@ revocable now instead of one secret shared by everyone. A future per-repo versio
 would additionally check the requester's <code>apps</code> grants against the specific repo being
 pulled/pushed, using the <code>X-Original-URI</code>/<code>X-Original-Method</code> headers the proxy already
 forwards but the endpoint doesn't yet act on.</p>
-<p>One path is deliberately left open without authentication: <code>/v2/_catalog</code>. This is the
-registry's repository-listing endpoint and is what <code>gustavo registry list</code> calls. Since
-Gustavo's container could not reliably reach the proxy under per-IP allowlisting without
-breaking the "always address the registry as <code>REGISTRY_HOST:REGISTRY_PORT</code>"
-requirement, the simplest fix was to make the catalog endpoint public and gate everything
-else (pulls, pushes, deletes, tag listings) behind auth.</p>
+<p>Two paths are deliberately left open without authentication: <code>/v2/_catalog</code> (repository
+listing) and <code>/v2/{repo}/tags/list</code> (tag listing for a given repo). Browsing what images and
+tags exist is not a secret — only pulling/pushing the actual image data is. Everything else
+under <code>/v2/</code> (manifest/blob reads and writes — the actual pull/push traffic) stays behind
+<code>auth_request</code>.</p>
 <h3 id="port-layout">Port layout</h3>
+<p><code>REGISTRY_PORT</code> means exactly one thing everywhere in Gustavo — the port every client (the
+Settings page, downstream app deployments, workers, Gustavo's own catalog/tag calls) uses to
+reach "the registry". Once a proxy is in front of the real registry, this is the proxy's
+port, and stays that way permanently — nothing needs to be temporarily pointed at the raw
+registry to bootstrap it.</p>
+<p>The raw <code>registry:2</code> container's own bind port is a <strong>separate</strong> config key,
+<code>REGISTRY_CONTAINER_PORT</code>. Empty by default (falls back to <code>REGISTRY_PORT</code>, correct for any
+deployment with no proxy); set it explicitly once a proxy exists, so the raw container and
+the proxy aren't both trying to bind the same port.</p>
 <table>
 <thead>
 <tr>
 <th>Port</th>
+<th>Config key</th>
 <th>Bound to</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td><code>REGISTRY_PORT</code> (e.g. <code>5001</code>)</td>
 <td><code>REGISTRY_PORT</code></td>
 <td>host, all interfaces</td>
 <td>nginx — public-facing entry point, same port every client and downstream app has always used</td>
 </tr>
 <tr>
 <td><code>5051</code></td>
+<td><code>REGISTRY_CONTAINER_PORT</code></td>
 <td>host, loopback-only <em>if</em> <code>REGISTRY_BIND_LOCALHOST</code> is set — see below</td>
 <td>the real <code>registry:2</code> container — no auth, not meant to be reached directly by anyone except nginx</td>
 </tr>
 </tbody>
 </table>
-<p><code>REGISTRY_PORT</code> in Gustavo's config (<code>platform.yaml</code> / Settings page) was changed from
-<code>REGISTRY_PORT</code> to <code>5051</code>, so the registry container itself now binds to <code>5051</code> on the host instead
-of <code>REGISTRY_PORT</code>. nginx claims <code>REGISTRY_PORT</code>.</p>
-<p><code>REGISTRY_HOST</code> in Gustavo's config stays as the external FQDN
-(<code>REGISTRY_HOST</code>), unchanged, since that value is also what gets used
-downstream when apps are deployed and needs to stay consistent.</p>
+<p><code>REGISTRY_HOST</code> in Gustavo's config stays as the external FQDN, unchanged, since that value
+is also what gets used downstream when apps are deployed and needs to stay consistent.</p>
 <h3 id="directory-structure">Directory structure</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>registry-proxy/
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>└── nginx.conf
@@ -2431,40 +2438,15 @@ Gustavo's own port-binding config —</p>
 be repeated any time firewall rules on the host are changed for any other reason, same as
 the toggle-based verification above.</p>
 <h3 id="step-1-move-the-real-registry-off-the-public-port">Step 1 — Move the real registry off the public port</h3>
-<p>This step has an ordering requirement tied to how Gustavo launches the registry container.
-<code>runRegistry()</code> reads <code>REGISTRY_PORT</code> from config at the moment it starts the container, so
-the value has to already be <code>5051</code> <em>before</em> the registry is first brought up, not changed
- afterward while it's running.</p>
-<p>On initial setup, the sequence is:</p>
-<ol>
-<li>In Gustavo's Settings page (or <code>platform.yaml</code> directly), set:</li>
-</ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>REGISTRY_PORT: 5051
+<p>Set both config keys up front, in Gustavo's Settings page (or <code>platform.yaml</code> directly) —
+no juggling or temporary values needed, since <code>REGISTRY_PORT</code> and <code>REGISTRY_CONTAINER_PORT</code>
+are independent from the start:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>REGISTRY_PORT: 5001              # nginx's port — what everything else keeps using
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>REGISTRY_CONTAINER_PORT: 5051    # the raw registry container's own bind port
 </code></pre></div>
-<ol>
-<li>
-<p>Start the registry service from Gustavo (first-time <code>gustavo registry run</code>, or the
-   equivalent action in the UI) <strong>with <code>REGISTRY_PORT</code> still set to <code>5051</code></strong>. This is what
-   makes the container actually bind to <code>5051</code> on the host.</p>
-</li>
-<li>
-<p>Once the registry container is confirmed up and bound to <code>5051</code> (see the check below),
-   go back into Settings and change <code>REGISTRY_PORT</code> back to <code>REGISTRY_PORT</code>.</p>
-</li>
-</ol>
-<p>This last step does not restart or move the already-running registry container, since
-Gustavo only applies <code>REGISTRY_PORT</code> when a service is launched or restarted. It updates
-the config value that everything else (Gustavo's UI calls, downstream app deployments,
-<code>REGISTRY_HOST</code>/<code>REGISTRY_PORT</code> consistency) reads going forward, so that the
-externally-visible, documented address stays <code>REGISTRY_HOST:REGISTRY_PORT</code> even
-though the registry container itself is still physically listening on <code>5051</code> underneath
-the proxy.</p>
-<p><strong>Do not restart or re-run the registry service after switching <code>REGISTRY_PORT</code> back to
-<code>REGISTRY_PORT</code>.</strong> Doing so would cause Gustavo to relaunch the registry container bound to <code>REGISTRY_PORT</code>
-instead of <code>5051</code>, which collides with nginx and breaks the whole setup. The config value
-shown in Settings after this point is intentionally out of sync with the container's actual
-bound port — that mismatch is expected and is what makes the proxy arrangement work.</p>
-<p>Confirm the registry container is actually bound to <code>5051</code> before flipping the config back:</p>
+<p>Then start (or restart/recreate) the registry service from Gustavo — it binds to
+<code>REGISTRY_CONTAINER_PORT</code> (<code>5051</code>), leaving <code>REGISTRY_PORT</code> (<code>5001</code>) free for nginx.</p>
+<p>Confirm the registry container is actually bound to <code>5051</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>docker<span class="w"> </span>inspect<span class="w"> </span>registry<span class="w"> </span>--format<span class="w"> </span><span class="s1">'{{json .HostConfig.PortBindings}}'</span>
 </code></pre></div>
 <p>Should show <code>5051</code> on the host side.</p>
@@ -2487,44 +2469,59 @@ registry immediately, with nothing registry-specific to keep in sync.</p>
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
 <a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">    </span><span class="c1"># Internal-only: nginx calls this for every /v2/ request below.</span>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">    </span><span class="c1"># Not reachable directly from outside - "internal" enforces that.</span>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">/_registry_auth</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">        </span><span class="kn">internal</span><span class="p">;</span>
-<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>
-<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:GUSTAVO_PORT/api/registry/authorize</span><span class="p">;</span>
-<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">        </span><span class="kn">proxy_pass_request_body</span><span class="w"> </span><span class="no">off</span><span class="p">;</span>
-<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Content-Length</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
-<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>
-<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">        </span><span class="c1"># Forwarded so a future per-repo (Tier 2) check can see who's</span>
-<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="w">        </span><span class="c1"># asking and for what. Authorization is forwarded automatically</span>
-<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">        </span><span class="c1"># (default subrequest behavior) - not set explicitly here, but</span>
-<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">        </span><span class="c1"># relied on.</span>
-<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Original-URI</span><span class="w">    </span><span class="nv">$request_uri</span><span class="p">;</span>
-<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Original-Method</span><span class="w"> </span><span class="nv">$request_method</span><span class="p">;</span>
-<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>
-<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/v2/</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a><span class="w">        </span><span class="c1"># The actual decision comes from Gustavo (Nebula-backed), not a</span>
-<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a><span class="w">        </span><span class="c1"># static file. auth_request alone doesn't send WWW-Authenticate</span>
-<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a><span class="w">        </span><span class="c1"># the way auth_basic used to — without it, Docker's client never</span>
-<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a><span class="w">        </span><span class="c1"># learns it should retry with Basic credentials and just accepts</span>
-<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a><span class="w">        </span><span class="c1"># the first unauthenticated 401 as final. "always" so it's added</span>
-<a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a><span class="w">        </span><span class="c1"># on error responses too, not just 2xx/3xx.</span>
-<a id="__codelineno-15-36" name="__codelineno-15-36" href="#__codelineno-15-36"></a><span class="w">        </span><span class="kn">auth_request</span><span class="w"> </span><span class="s">/_registry_auth</span><span class="p">;</span>
-<a id="__codelineno-15-37" name="__codelineno-15-37" href="#__codelineno-15-37"></a><span class="w">        </span><span class="kn">add_header</span><span class="w"> </span><span class="s">WWW-Authenticate</span><span class="w"> </span><span class="s">'Basic</span><span class="w"> </span><span class="s">realm="Registry"'</span><span class="w"> </span><span class="s">always</span><span class="p">;</span>
-<a id="__codelineno-15-38" name="__codelineno-15-38" href="#__codelineno-15-38"></a>
-<a id="__codelineno-15-39" name="__codelineno-15-39" href="#__codelineno-15-39"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:5051</span><span class="p">;</span>
-<a id="__codelineno-15-40" name="__codelineno-15-40" href="#__codelineno-15-40"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$http_host</span><span class="p">;</span>
-<a id="__codelineno-15-41" name="__codelineno-15-41" href="#__codelineno-15-41"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
-<a id="__codelineno-15-42" name="__codelineno-15-42" href="#__codelineno-15-42"></a><span class="w">        </span><span class="kn">proxy_read_timeout</span><span class="w"> </span><span class="mi">900</span><span class="p">;</span>
-<a id="__codelineno-15-43" name="__codelineno-15-43" href="#__codelineno-15-43"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-15-44" name="__codelineno-15-44" href="#__codelineno-15-44"></a><span class="p">}</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">    </span><span class="c1"># Unauthenticated: tag listing is the other half of "browsing is free" -</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">    </span><span class="c1"># same rationale as /v2/_catalog above. Regex (not a plain prefix) so it</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="c1"># matches namespaced repo names containing slashes (e.g. foo/bar/tags/list)</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">    </span><span class="c1"># without also matching /v2/&lt;name&gt;/manifests/... or /v2/&lt;name&gt;/blobs/...,</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="w">    </span><span class="c1"># which must stay behind auth_request below.</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="p">~</span><span class="w"> </span><span class="sr">^/v2/(?&lt;repo_name&gt;.+)/tags/list$</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:5051</span><span class="p">;</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$http_host</span><span class="p">;</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">    </span><span class="c1"># Internal-only: nginx calls this for every /v2/ request below.</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">    </span><span class="c1"># Not reachable directly from outside - "internal" enforces that.</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">/_registry_auth</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="w">        </span><span class="kn">internal</span><span class="p">;</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:GUSTAVO_PORT/api/registry/authorize</span><span class="p">;</span>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="w">        </span><span class="kn">proxy_pass_request_body</span><span class="w"> </span><span class="no">off</span><span class="p">;</span>
+<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Content-Length</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>
+<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a><span class="w">        </span><span class="c1"># Forwarded so a future per-repo (Tier 2) check can see who's</span>
+<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a><span class="w">        </span><span class="c1"># asking and for what. Authorization is forwarded automatically</span>
+<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a><span class="w">        </span><span class="c1"># (default subrequest behavior) - not set explicitly here, but</span>
+<a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a><span class="w">        </span><span class="c1"># relied on.</span>
+<a id="__codelineno-15-36" name="__codelineno-15-36" href="#__codelineno-15-36"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Original-URI</span><span class="w">    </span><span class="nv">$request_uri</span><span class="p">;</span>
+<a id="__codelineno-15-37" name="__codelineno-15-37" href="#__codelineno-15-37"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Original-Method</span><span class="w"> </span><span class="nv">$request_method</span><span class="p">;</span>
+<a id="__codelineno-15-38" name="__codelineno-15-38" href="#__codelineno-15-38"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-15-39" name="__codelineno-15-39" href="#__codelineno-15-39"></a>
+<a id="__codelineno-15-40" name="__codelineno-15-40" href="#__codelineno-15-40"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/v2/</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-41" name="__codelineno-15-41" href="#__codelineno-15-41"></a><span class="w">        </span><span class="c1"># The actual decision comes from Gustavo (Nebula-backed), not a</span>
+<a id="__codelineno-15-42" name="__codelineno-15-42" href="#__codelineno-15-42"></a><span class="w">        </span><span class="c1"># static file. auth_request alone doesn't send WWW-Authenticate</span>
+<a id="__codelineno-15-43" name="__codelineno-15-43" href="#__codelineno-15-43"></a><span class="w">        </span><span class="c1"># the way auth_basic used to — without it, Docker's client never</span>
+<a id="__codelineno-15-44" name="__codelineno-15-44" href="#__codelineno-15-44"></a><span class="w">        </span><span class="c1"># learns it should retry with Basic credentials and just accepts</span>
+<a id="__codelineno-15-45" name="__codelineno-15-45" href="#__codelineno-15-45"></a><span class="w">        </span><span class="c1"># the first unauthenticated 401 as final. "always" so it's added</span>
+<a id="__codelineno-15-46" name="__codelineno-15-46" href="#__codelineno-15-46"></a><span class="w">        </span><span class="c1"># on error responses too, not just 2xx/3xx.</span>
+<a id="__codelineno-15-47" name="__codelineno-15-47" href="#__codelineno-15-47"></a><span class="w">        </span><span class="kn">auth_request</span><span class="w"> </span><span class="s">/_registry_auth</span><span class="p">;</span>
+<a id="__codelineno-15-48" name="__codelineno-15-48" href="#__codelineno-15-48"></a><span class="w">        </span><span class="kn">add_header</span><span class="w"> </span><span class="s">WWW-Authenticate</span><span class="w"> </span><span class="s">'Basic</span><span class="w"> </span><span class="s">realm="Registry"'</span><span class="w"> </span><span class="s">always</span><span class="p">;</span>
+<a id="__codelineno-15-49" name="__codelineno-15-49" href="#__codelineno-15-49"></a>
+<a id="__codelineno-15-50" name="__codelineno-15-50" href="#__codelineno-15-50"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:5051</span><span class="p">;</span>
+<a id="__codelineno-15-51" name="__codelineno-15-51" href="#__codelineno-15-51"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$http_host</span><span class="p">;</span>
+<a id="__codelineno-15-52" name="__codelineno-15-52" href="#__codelineno-15-52"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
+<a id="__codelineno-15-53" name="__codelineno-15-53" href="#__codelineno-15-53"></a><span class="w">        </span><span class="kn">proxy_read_timeout</span><span class="w"> </span><span class="mi">900</span><span class="p">;</span>
+<a id="__codelineno-15-54" name="__codelineno-15-54" href="#__codelineno-15-54"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-15-55" name="__codelineno-15-55" href="#__codelineno-15-55"></a><span class="p">}</span>
 </code></pre></div>
 <p>What each block does:</p>
 <ul>
 <li><code>location /v2/_catalog</code> — exact-path match, no <code>auth_request</code>, so nginx proxies this
   straight through with no credential check.</li>
+<li><code>location ~ ^/v2/(?&lt;repo_name&gt;.+)/tags/list$</code> — regex match, same treatment as
+  <code>/v2/_catalog</code>. Must be a regex (not a plain prefix) so it only catches the <code>tags/list</code>
+  suffix and doesn't accidentally also match <code>/v2/&lt;name&gt;/manifests/...</code> or
+  <code>/v2/&lt;name&gt;/blobs/...</code> under the same repo name, which still need auth.</li>
 <li><code>location = /_registry_auth</code> — <code>internal</code> means it can only be reached via nginx's own
   <code>auth_request</code> mechanism, never directly by a client. This is the sub-request nginx fires
   for every <code>/v2/</code> call below, forwarding the original <code>Authorization</code> header automatically
@@ -2532,9 +2529,9 @@ registry immediately, with nothing registry-specific to keep in sync.</p>
   the check doesn't need the request body (a docker push's actual image data), only the
   headers.</li>
 <li><code>location /v2/</code> — catches everything else under the registry's v2 API: manifest
-  pulls/pushes, blob uploads, tag listings, deletes. <code>auth_request</code> fires the sub-request
-  above first; a non-2xx response there (401) makes nginx return that status to the client
-  directly, without the real request ever reaching the registry.</li>
+  pulls/pushes, blob uploads, deletes. <code>auth_request</code> fires the sub-request above first; a
+  non-2xx response there (401) makes nginx return that status to the client directly, without
+  the real request ever reaching the registry.</li>
 <li><code>proxy_set_header Host $http_host</code> (not <code>$host</code>) — <code>$host</code> strips the port from the Host
   header. A registry's blob-upload flow can construct absolute self-referential URLs for its
   redirect steps using that header; with the port missing it defaults to <code>80</code>, breaking
@@ -2548,8 +2545,9 @@ registry immediately, with nothing registry-specific to keep in sync.</p>
 compose example below) — <code>_registry_auth</code> reaches it over <code>127.0.0.1</code> because
 <code>registry-proxy</code> runs in host network mode, same as it reaches the registry itself at
 <code>127.0.0.1:5051</code>.</p>
-<p><code>nginx</code>'s location-matching picks the more specific match (<code>=</code> exact or longest prefix)
-over the general one, so <code>/v2/_catalog</code> and <code>/_registry_auth</code> are correctly intercepted
+<p><code>nginx</code>'s location-matching picks the exact match first, then a matching regex location
+(regardless of file order relative to prefix locations) over the longest plain-prefix match,
+so <code>/v2/_catalog</code>, the <code>tags/list</code> regex, and <code>/_registry_auth</code> are all correctly intercepted
 before falling through to the catch-all <code>/v2/</code> block.</p>
 <h3 id="step-4-add-the-proxy-service-to-gustavos-docker-composeyml">Step 4 — Add the proxy service to Gustavo's <code>docker-compose.yml</code></h3>
 <p>The <code>registry-proxy</code> service is added directly into the same compose file that already
@@ -2655,16 +2653,16 @@ silently stop applying after an update.</p>
 <a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a>curl<span class="w"> </span>-u<span class="w"> </span>someuser:theirsecret<span class="w"> </span>http://REGISTRY_HOST:REGISTRY_PORT/v2/some-image/manifests/latest
 </code></pre></div>
 <h3 id="important-notes">Important Notes</h3>
-<p><code>/v2/_catalog</code> is public to anyone who can reach port <code>REGISTRY_PORT</code> on the network, no
-credentials required. Repository names and the existence of images are visible to anyone,
-but actually pulling, pushing, or deleting image content still requires a valid Nebula
-credential, checked live via <code>/api/registry/authorize</code>. This was an explicit, deliberate
-simplification: per-source-IP allowlisting (restricting the anonymous catalog exception to
-Gustavo's container only) was attempted first but added complexity without a corresponding
-benefit, since Gustavo's container could not consistently reach nginx under an IP-based
-allowlist while also preserving the requirement that every client, including downstream
-deployed apps and remote nodes, address the registry at the same consistent
-<code>REGISTRY_HOST:REGISTRY_PORT</code>.</p>
+<p><code>/v2/_catalog</code> and <code>/v2/{repo}/tags/list</code> are public to anyone who can reach port
+<code>REGISTRY_PORT</code> on the network, no credentials required. Repository names, tags, and the
+existence of images are visible to anyone, but actually pulling, pushing, or deleting image
+content still requires a valid Nebula credential, checked live via <code>/api/registry/authorize</code>.
+This was an explicit, deliberate simplification: per-source-IP allowlisting (restricting the
+anonymous catalog/tag exception to Gustavo's container only) was attempted first but added
+complexity without a corresponding benefit, since Gustavo's container could not consistently
+reach nginx under an IP-based allowlist while also preserving the requirement that every
+client, including downstream deployed apps and remote nodes, address the registry at the
+same consistent <code>REGISTRY_HOST:REGISTRY_PORT</code>.</p>
 <p>This is currently identity-only: any valid Nebula user, admin or not, can pull and push any
 repository — not scoped to the <code>apps</code>/<code>device_groups</code> grants that gate everything else in
 Gustavo. See the note on Tier 1 vs. Tier 2 above.</p>
