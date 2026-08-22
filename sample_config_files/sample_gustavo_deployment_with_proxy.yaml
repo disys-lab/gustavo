@@ -1,0 +1,26 @@
+services:
+  gustavo:
+    image: ghcr.io/disys-lab/gustavo:0.5.0 #cypress-man.atrc.okstate.edu:5051/gustavo:port-fix-e25d87a
+    container_name: gustavo
+    platform: linux/amd64
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./config:/etc/gustavo
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/:/tmp/
+    environment:
+      PYTHONWARNINGS: "ignore"
+      GUSTAVO_API_CONFIG: /etc/gustavo/platform.yaml
+      AUTH_ENABLED: "true"
+      NEBULA_USERNAME: "admin"
+      NEBULA_PASSWORD: "<admin-token>"
+    restart: unless-stopped
+
+  registry-proxy:
+    image: nginx:1.27-alpine
+    container_name: registry-proxy
+    restart: always
+    network_mode: "host"
+    volumes:
+      - ./registry-proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
