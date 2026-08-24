@@ -14,9 +14,7 @@ else:
 package_data = {
         "gustavo": [
             "images/*",
-            "styles/*",
             "src/*",
-            "gui/*",
             "sample_config_files/*",
         ]
     }
@@ -78,10 +76,6 @@ setup(
         "retrying==1.3.3",
         "docker==7.1.0",
         "python-on-whales==0.70.0",
-        "streamlit==1.37.0",
-        "streamlit-card==1.0.0",
-        "streamlit-pills==0.3.0",
-        "plotly==5.20.0",
         "colorlog==6.9.0"
     ],
     python_requires=">={}".format(python_version),

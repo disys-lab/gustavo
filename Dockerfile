@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# ── Python base (mirrors Dockerfile.streamlit exactly) ───────────────────────
+# ── Python base ────────────────────────────────────────────────────────────
 # All apt steps in one layer so apt lists are always fresh and then cleaned up,
 # preventing stale GPG signatures from being cached across builds.
 RUN apt-get -y update && apt-get -y upgrade && \
@@ -49,9 +49,11 @@ COPY . .
 RUN PACKAGE_VERSION=${gustavo_version} pip install --no-cache-dir -e . --no-deps
 
 # ── Next.js UI build ─────────────────────────────────────────────────────────
-# NEXT_PUBLIC_AUTH_ENABLED is baked in at build time (Next.js requirement for client vars)
+# NEXT_PUBLIC_AUTH_ENABLED and NEXT_PUBLIC_GUSTAVO_VERSION are baked in at build
+# time (Next.js requirement for client vars).
 # Default: true (production). Override with --build-arg NEXT_PUBLIC_AUTH_ENABLED=false
 ENV NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
+ENV NEXT_PUBLIC_GUSTAVO_VERSION=${gustavo_version}
 
 WORKDIR /app/gustavo-ui
 # Ensure all gustavo images are available to Next.js at build time

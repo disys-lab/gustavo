@@ -9,7 +9,6 @@ from gustavo.src.Cache import Cache
 from gustavo.src.Cache import ErrorHandling
 from gustavo.src.Manager import Manager
 from gustavo.utils import *
-from streamlit.web import cli
 import os, pkg_resources
 import logging
 
@@ -70,24 +69,6 @@ def cache():
 @gustavo.group(help="Utility commands")
 def utils():
     pass
-
-# @click.version_option(version=VERSION)
-# @gustavo.group(help="Start the Gustavo GUI")
-# def gui():
-#     pass
-
-@gustavo.command(
-    help="Start the Gustavo GUI"
-)
-@click.option(
-    "--port", "-p", help="specify port for serving GUI", prompt=True, default=8501
-)
-def gui(port):
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    gui_runner_file = os.path.join(cwd,"🏠Home.py")
-    logging.info(f"GUI Runner File: {gui_runner_file}")
-
-    cli.main_run([gui_runner_file, "--server.headless", "true", "--server.port", int(port)])
 
 @utils.command(
     help='specify JSON {"username": "...", "password": "..."}', name="syncer-auth-token"

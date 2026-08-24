@@ -119,6 +119,12 @@ export function Sidebar() {
           Sign out
         </button>
       </div>
+
+      {process.env.NEXT_PUBLIC_GUSTAVO_VERSION && (
+        <p className="px-3 pt-1 text-[11px] text-gray-300">
+          v{process.env.NEXT_PUBLIC_GUSTAVO_VERSION.replace(/^v/, "")}
+        </p>
+      )}
     </aside>
   );
 }
