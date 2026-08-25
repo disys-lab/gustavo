@@ -31,11 +31,18 @@ Groups are roles. Each one has:
   permission checks (same as the break-glass admin, just as a regular
   Nebula account instead of the fixed `nebula`/`nebula` credential).
 - **Pruning allowed** — lets members prune unused images.
-- **App / device-group grants** — shown read-only on this page. These are
-  usually set automatically: when a non-admin user creates an app, Gustavo
-  grants their group `rw` on it immediately after creation (see
-  [Apps API](../api/apps.md)). Admins can see which group(s) hold access to
-  a given app from that app's detail page.
+- **App / device-group grants** — listed on each group's row, and directly
+  manageable via that row's **Grants** button. These are usually set
+  automatically the first time: when a non-admin user creates an app or
+  device group, Gustavo grants their own group `rw` on it immediately after
+  creation (see [Apps API](../api/apps.md)). The **Grants** dialog covers
+  everything after that — pick an app or device group; if it's not yet
+  granted to this group, choose a permission and **Grant** it; if it's
+  already granted, the dialog shows the current permission and lets you
+  either change it (**Update**) or **Revoke** it entirely. Adding, changing,
+  or removing one grant never disturbs the group's other grants. Admins can
+  also see which group(s) hold access to a given app from that app's detail
+  page (read-only there — manage it from the Groups page).
 
 ## Self-service credential rotation
 

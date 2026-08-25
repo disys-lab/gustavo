@@ -17,6 +17,25 @@ A **group is a role**: `admin`, `pruning_allowed`, and the `apps`/
 Nebula token is allowed to do — Nebula enforces this itself on every write,
 Gustavo doesn't re-implement the check.
 
+## Managing grants
+
+An app or device group's `apps`/`device_groups` grant most commonly gets
+set once, automatically: when a non-admin creates one, Gustavo immediately
+grants their own group `rw` on it (see [Apps API](apps.md) and
+[Device Groups API](device-groups.md)). `POST /groups/{name}/grants` and its
+inverse `.../grants/revoke` exist for everything that automatic grant
+doesn't cover — retroactively granting an *existing* app/device-group to a
+group, moving access after the fact, or taking it away entirely.
+
+Both routes fetch the group's current `apps` or `device_groups` map first,
+then merge in (or remove) exactly one `{resource_name: perm}` entry and
+write the whole map back — they never touch the group's other grants.
+`PUT /groups/{name}` can still set `apps`/`device_groups` directly too, but
+doing so replaces the *entire* map; anything not included in that request
+gets silently dropped. Use the grant/revoke routes for single-resource
+changes and reach for the raw `PUT` only when you actually mean to replace
+the whole grant set at once.
+
 ## Credentials, not passwords
 
 `create_user` and the two `regenerate-token` routes each generate a random
@@ -38,5 +57,7 @@ losing a credential just means generating a new one.
 | GET | `/api/users/me/groups` | any | Which groups I belong to (used by the Apps page's owner-group picker) |
 | GET | `/api/users/groups` | admin | List groups (roles) with full detail |
 | POST | `/api/users/groups` | admin | Create a group |
-| PUT | `/api/users/groups/{name}` | admin | Update a group's members/flags/grants |
+| PUT | `/api/users/groups/{name}` | admin | Update a group's members/flags/grants — replaces the entire `apps`/`device_groups` map if included |
+| POST | `/api/users/groups/{name}/grants` | admin | Grant (or update the permission of) one app or device group for this group |
+| POST | `/api/users/groups/{name}/grants/revoke` | admin | Revoke one app or device group's grant from this group |
 | DELETE | `/api/users/groups/{name}` | admin | Delete a group |
