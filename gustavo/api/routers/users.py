@@ -21,11 +21,14 @@ GET    /api/users/me/groups              → the names of groups I belong to (an
 GET    /api/users/groups                 → list groups (roles) with full detail
 POST   /api/users/groups                 → create a group
 PUT    /api/users/groups/{name}          → update a group
+POST   /api/users/groups/{name}/grants   → grant a group access to one app or device group
+POST   /api/users/groups/{name}/grants/revoke → revoke a group's access to one app or device group
 DELETE /api/users/groups/{name}          → delete a group
 """
 import logging
 import re
 import secrets as _secrets
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -62,6 +65,17 @@ class GroupUpdateRequest(BaseModel):
     admin: bool | None = None
     pruning_allowed: bool | None = None
     cron_jobs: dict[str, str] | None = None
+
+
+class GroupGrantRequest(BaseModel):
+    resource_type: Literal["app", "device_group"]
+    resource_name: str
+    perm: Literal["ro", "rw"]
+
+
+class GroupRevokeRequest(BaseModel):
+    resource_type: Literal["app", "device_group"]
+    resource_name: str
 
 
 def _new_secret() -> str:
@@ -264,6 +278,58 @@ async def update_group(name: str, req: GroupUpdateRequest, _session=Depends(requ
         return {"error": False, "response": f"Group '{name}' updated"}
     except Exception as exc:
         logging.error(f"update_group {name} failed: {exc}")
+        return {"error": True, "response": str(exc)}
+
+
+@router.post("/groups/{name}/grants")
+async def add_group_grant(name: str, req: GroupGrantRequest, _session=Depends(require_admin)):
+    """Grant a group access to one existing app or device group.
+
+    Merges a single {resource_name: perm} entry into the group's apps/
+    device_groups map without disturbing its other entries — same
+    fetch-then-merge pattern create_app uses for its own owner_group grant,
+    just exposed directly so an admin can grant existing resources to any
+    group after the fact.
+    """
+    cfg = config_store.get()
+    comp = _build_composer(cfg)
+    field = "apps" if req.resource_type == "app" else "device_groups"
+    try:
+        group_result = comp.nebulaObj.list_user_group(name)
+        if group_result.get("status_code") != 200:
+            return {"error": True, "response": f"Group '{name}' not found"}
+        existing = group_result.get("reply", {}).get(field) or {}
+        result = comp.nebulaObj.update_user_group(name, {field: {**existing, req.resource_name: req.perm}})
+        if result.get("status_code") != 200:
+            return {"error": True, "response": f"Failed to update group (status {result.get('status_code')})"}
+        return {"error": False, "response": f"Granted '{req.resource_name}' ({req.perm}) to group '{name}'"}
+    except Exception as exc:
+        logging.error(f"add_group_grant {name} failed: {exc}")
+        return {"error": True, "response": str(exc)}
+
+
+@router.post("/groups/{name}/grants/revoke")
+async def remove_group_grant(name: str, req: GroupRevokeRequest, _session=Depends(require_admin)):
+    """Revoke a group's access to one app or device group (the inverse of add_group_grant).
+
+    POST rather than DELETE-with-body to match the existing apps/add,
+    apps/remove convention in device_groups.py.
+    """
+    cfg = config_store.get()
+    comp = _build_composer(cfg)
+    field = "apps" if req.resource_type == "app" else "device_groups"
+    try:
+        group_result = comp.nebulaObj.list_user_group(name)
+        if group_result.get("status_code") != 200:
+            return {"error": True, "response": f"Group '{name}' not found"}
+        existing = dict(group_result.get("reply", {}).get(field) or {})
+        existing.pop(req.resource_name, None)
+        result = comp.nebulaObj.update_user_group(name, {field: existing})
+        if result.get("status_code") != 200:
+            return {"error": True, "response": f"Failed to update group (status {result.get('status_code')})"}
+        return {"error": False, "response": f"Revoked '{req.resource_name}' from group '{name}'"}
+    except Exception as exc:
+        logging.error(f"remove_group_grant {name} failed: {exc}")
         return {"error": True, "response": str(exc)}
 
 
