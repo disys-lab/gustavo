@@ -4,7 +4,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listDeviceGroups, createDeviceGroup, deleteDeviceGroup,
   addAppsToDeviceGroup, removeAppsFromDeviceGroup,
+  downloadWorkerEnv, downloadWorkerCompose, downloadWorkerScript, downloadWorkerScriptWindows,
 } from "@/lib/api/deviceGroups";
+import { downloadTextFile } from "@/lib/utils";
 import { DeviceGroupForm } from "@/components/device-groups/DeviceGroupForm";
 import { AppSelector } from "@/components/device-groups/AppSelector";
 import { Button } from "@/components/ui/button";
@@ -90,6 +92,19 @@ export default function DeviceGroupsPage() {
       }
     } catch (exc) {
       toast({ variant: "destructive", title: "Failed", description: String(exc) });
+    }
+  };
+
+  const handleWorkerDownload = async (
+    dg: string,
+    fetcher: (name: string) => Promise<string>,
+    filename: string
+  ) => {
+    try {
+      const text = await fetcher(dg);
+      downloadTextFile(text, filename);
+    } catch (exc) {
+      toast({ variant: "destructive", title: "Download failed", description: String(exc) });
     }
   };
 
@@ -179,6 +194,41 @@ export default function DeviceGroupsPage() {
                   >
                     Add Selected Apps
                   </Button>
+                </div>
+
+                {/* Three independent worker-launch modalities — pick one, no dependency between them */}
+                <div className="border-t pt-3">
+                  <p className="text-sm font-medium mb-2">Get worker config</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWorkerDownload(dg, downloadWorkerEnv, `worker-${dg}.env`)}
+                    >
+                      Native (.env)
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWorkerDownload(dg, downloadWorkerCompose, `docker-compose-${dg}.yml`)}
+                    >
+                      Docker Compose
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWorkerDownload(dg, downloadWorkerScript, `worker-${dg}.command`)}
+                    >
+                      Launcher script (Mac/Linux)
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleWorkerDownload(dg, downloadWorkerScriptWindows, `worker-${dg}.bat`)}
+                    >
+                      Launcher script (Windows)
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
