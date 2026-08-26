@@ -4,6 +4,17 @@ Gustavo is a container orchestration framework constructed for Demo A3 under Res
 Gustavo is designed to be a one stop shop for administering applications in an **autonomous, self aware** fashion.
 Gustavo is available as a **web-based GUI** (via Docker containers) or via **Command Line Interface** and can be run on Linux/Mac Environments as well as under Windows with the help of Windows Subsystem for Linux (WSL).
 
+## Try it now
+
+Two commands, no setup, no existing Nebula platform required:
+
+```bash
+curl -o docker-compose.yml https://raw.githubusercontent.com/disys-lab/gustavo/main/sample_config_files/docker-compose.quickstart.yml
+docker compose up -d
+```
+
+Open [http://localhost:3000](http://localhost:3000). See the [Quickstart](https://disys-lab.github.io/gustavo/quickstart.md) for connecting this to a real Nebula platform.
+
 ## Documentation
 
 Gustavo's documentation is hosted at: **[https://disys-lab.github.io/gustavo/](https://disys-lab.github.io/gustavo/)**

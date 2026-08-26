@@ -1,0 +1,30 @@
+# Quickstart compose file - brings up just the Gustavo container itself so
+# you can look around the UI immediately. No pre-existing config needed:
+# Gustavo falls back to built-in defaults if ./config/platform.yaml doesn't
+# exist yet, and creates it on first save from the Settings page.
+#
+# Usage:
+#   curl -o docker-compose.yml https://raw.githubusercontent.com/disys-lab/gustavo/main/sample_config_files/docker-compose.quickstart.yml
+#   docker compose up -d
+#
+# Then open http://localhost:3000 and connect it to a real Nebula platform
+# from the Settings page. See docs/quickstart.md for the full walkthrough,
+# and docs/deployment.md for a production-ready compose file (pinned admin
+# credentials, session secret, AUTH_ENABLED=true).
+services:
+  gustavo:
+    image: ghcr.io/disys-lab/gustavo:latest
+    container_name: gustavo
+    platform: linux/amd64
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config:/etc/gustavo
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
+    environment:
+      GUSTAVO_API_CONFIG: /etc/gustavo/platform.yaml
+      AUTH_ENABLED: "false"   # No login - fastest way to look around. Flip to
+                              # "true" once you're deploying this for real;
+                              # see docs/deployment.md#production.
+    restart: unless-stopped
