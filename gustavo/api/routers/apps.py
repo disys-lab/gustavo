@@ -75,7 +75,20 @@ class AppUpdateRequest(BaseModel):
 @router.get("/defaults")
 async def get_app_defaults(_token=Depends(verify_firebase_token)):
     """Return default env vars for new app creation with real (unmasked) values.
-    Values are read directly from config_store so secrets are never exposed to the browser."""
+    Values are read directly from config_store so secrets are never exposed to
+    the browser.
+
+    Deliberately does NOT include NEBULA_AUTH_TOKEN/MANAGER_AUTH: env_vars get
+    baked into a real container environment variable wherever the app is
+    deployed (see docs/cli/apps.md's env_vars format), and base64 is encoding,
+    not encryption - anyone with docker/shell access on that device group's
+    machine can trivially recover it. Auto-filling either a shared platform
+    secret or (worse) the creating user's own personal Nebula credential means
+    that credential lands in plaintext on whatever remote hardware the app
+    happens to be assigned to, which may not be a machine the creator
+    controls or trusts. An app that genuinely needs to call back into the
+    Manager should have its creator deliberately supply a credential scoped
+    for that purpose, not have one silently defaulted in."""
     cfg = config_store.get()
     keygen_public_key = "06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc"
     return {
@@ -87,8 +100,6 @@ async def get_app_defaults(_token=Depends(verify_firebase_token)):
                 "REDIS_DB_PWD":      cfg.get("REDIS_AUTH_TOKEN", ""),
                 "MANAGER_HOST":      cfg.get("MANAGER_HOST", ""),
                 "MANAGER_PORT":      cfg.get("MANAGER_PORT", ""),
-                "NEBULA_AUTH_TOKEN": cfg.get("NEBULA_AUTH_TOKEN", ""),
-                "MANAGER_AUTH":      cfg.get("NEBULA_AUTH_TOKEN", ""),
                 "SLEEP_SECS":        "600",
                 "KEYGEN_PUBLIC_KEY": keygen_public_key,
             }
