@@ -16,9 +16,14 @@ import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { listGroups, createGroup, updateGroup, deleteGroup } from "@/lib/api/users";
+import { listGroups, createGroup, updateGroup, deleteGroup, addGroupGrant, removeGroupGrant } from "@/lib/api/users";
+import { listApps } from "@/lib/api/apps";
+import { listDeviceGroups } from "@/lib/api/deviceGroups";
 import { useActivityToast } from "@/hooks/use-activity-toast";
 import type { UserGroup } from "@/lib/types/users";
+
+const selectClass =
+  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm";
 
 interface GroupFormState {
   name: string;
@@ -131,6 +136,182 @@ function toMembers(text: string): string[] {
   return text.split(",").map((m) => m.trim()).filter(Boolean);
 }
 
+function GrantDialog({ group, onChanged }: { group: UserGroup; onChanged: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [resourceType, setResourceType] = useState<"app" | "device_group">("app");
+  const [resourceName, setResourceName] = useState("");
+  const [perm, setPerm] = useState<"ro" | "rw">("rw");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useActivityToast();
+
+  const { data: appsData } = useQuery({ queryKey: ["apps"], queryFn: listApps, enabled: open });
+  const { data: dgData } = useQuery({ queryKey: ["device-groups"], queryFn: listDeviceGroups, enabled: open });
+
+  const appNames: string[] = [];
+  if (appsData && !appsData.error && appsData.response) {
+    const resp = appsData.response as Record<string, unknown>;
+    if (Array.isArray(resp.apps)) appNames.push(...(resp.apps as string[]));
+  }
+  const dgNames: string[] = [];
+  if (dgData && !dgData.error && dgData.response) {
+    const resp = dgData.response as Record<string, unknown>;
+    if (Array.isArray(resp.device_groups)) {
+      dgNames.push(...(resp.device_groups as { name: string }[]).map((d) => d.name));
+    }
+  }
+  const options = resourceType === "app" ? appNames : dgNames;
+
+  // Already-granted state drives the whole adaptive part of this dialog: whichever
+  // resource is currently selected, look it up in this group's own apps/device_groups
+  // map (already loaded with the group, no extra fetch) to see if it's already granted.
+  const grantMap = resourceType === "app" ? group.apps : group.device_groups;
+  const currentPerm = resourceName ? grantMap[resourceName] : undefined;
+  const isGranted = currentPerm !== undefined;
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) {
+      setResourceType("app");
+      setResourceName("");
+      setPerm("rw");
+      setError(null);
+    }
+  };
+
+  const handleResourceNameChange = (name: string) => {
+    setResourceName(name);
+    const existing = resourceType === "app" ? group.apps[name] : group.device_groups[name];
+    setPerm(existing ?? "rw");
+  };
+
+  const handleGrant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resourceName) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await addGroupGrant(group.name, resourceType, resourceName, perm);
+      if (res.error) {
+        setError(String(res.response));
+      } else {
+        toast({ title: isGranted ? "Grant updated" : "Grant added", description: `${resourceName} (${perm}) → ${group.name}` });
+        setOpen(false);
+        onChanged();
+      }
+    } catch (exc) {
+      setError(String(exc));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (!resourceName) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await removeGroupGrant(group.name, resourceType, resourceName);
+      if (res.error) {
+        setError(String(res.response));
+      } else {
+        toast({ title: "Grant revoked", description: `${resourceName} ← ${group.name}` });
+        setOpen(false);
+        onChanged();
+      }
+    } catch (exc) {
+      setError(String(exc));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">Grants</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Grants for &apos;{group.name}&apos;</DialogTitle>
+          <DialogDescription>
+            Pick an app or device group. Already granted to this group? Change its permission or revoke it.
+            Not granted yet? Add it.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleGrant} className="space-y-4">
+          <div>
+            <Label htmlFor="grant-type">Resource type</Label>
+            <select
+              id="grant-type"
+              className={`${selectClass} mt-1`}
+              value={resourceType}
+              onChange={(e) => {
+                setResourceType(e.target.value as "app" | "device_group");
+                setResourceName("");
+                setPerm("rw");
+              }}
+            >
+              <option value="app">App</option>
+              <option value="device_group">Device group</option>
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="grant-name">{resourceType === "app" ? "App" : "Device group"}</Label>
+            <select
+              id="grant-name"
+              className={`${selectClass} mt-1`}
+              value={resourceName}
+              onChange={(e) => handleResourceNameChange(e.target.value)}
+              required
+            >
+              <option value="" disabled>Select…</option>
+              {options.map((name) => (
+                <option key={name} value={name}>
+                  {name}{name in grantMap ? ` (currently ${grantMap[name]})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="grant-perm">Permission</Label>
+            <select
+              id="grant-perm"
+              className={`${selectClass} mt-1`}
+              value={perm}
+              onChange={(e) => setPerm(e.target.value as "ro" | "rw")}
+            >
+              <option value="rw">Read/write</option>
+              <option value="ro">Read-only</option>
+            </select>
+          </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter>
+            {isGranted && (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-red-600 hover:text-red-700"
+                disabled={loading}
+                onClick={handleRevoke}
+              >
+                {loading ? "Revoking…" : "Revoke"}
+              </Button>
+            )}
+            <Button type="submit" disabled={loading || !resourceName}>
+              {loading ? "Saving…" : isGranted ? "Update" : "Grant"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function GroupsPage() {
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
@@ -161,8 +342,8 @@ export default function GroupsPage() {
         <div>
           <h1 className="text-2xl font-bold">Groups</h1>
           <p className="text-sm text-gray-500">
-            Roles, backed directly by Nebula user_groups. App/device-group grants are shown
-            here read-only — they&apos;re usually set automatically when a member creates an app.
+            Roles, backed directly by Nebula user_groups. Grants are set automatically when a
+            member creates an app, or added directly here via each group&apos;s &quot;Add grant&quot;.
           </p>
         </div>
         <GroupFormDialog
@@ -215,6 +396,7 @@ export default function GroupsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <GrantDialog group={g} onChanged={refresh} />
                   <GroupFormDialog
                     title={`Edit ${g.name}`}
                     trigger={<Button size="sm" variant="outline">Edit</Button>}

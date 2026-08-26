@@ -38,6 +38,28 @@ as normal.
 
 ---
 
+## Bringing a worker up without the CLI
+
+The steps above assume `gustavo` is installed on the worker node. If it
+isn't — or you'd rather not install it just to run a worker — each device
+group's page in the UI (or the equivalent API routes directly) offers
+three more ways to get the same worker running, none of which need the
+`gustavo` package at all:
+
+- A **device-group-scoped `worker.env`** (same as above, plus
+  `DEVICE_GROUP` already filled in)
+- A **self-contained `docker-compose.yml`** — `docker compose up -d` and
+  it's running, no companion file needed
+- A **self-contained launcher script** — `.command` for macOS/Linux,
+  `.bat` for Windows — double-click it and it's running
+
+See [Device Groups UI](../ui/device-groups.md#get-worker-config) for the
+download buttons, or
+[Device Groups API](../api/device-groups.md#worker-config-downloads) to
+fetch any of them directly from a script.
+
+---
+
 ## Commands
 
 ### `up`

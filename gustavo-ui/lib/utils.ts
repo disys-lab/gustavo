@@ -5,6 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function downloadTextFile(text: string, filename: string) {
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // navigator.clipboard only exists in secure contexts (HTTPS, or localhost) -
 // it's undefined on plain HTTP served from a real hostname, which is how
 // Gustavo is commonly deployed. Falls back to the legacy execCommand('copy')

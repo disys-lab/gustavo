@@ -29,5 +29,20 @@ export const createGroup = (group: Omit<UserGroup, "name"> & { name: string }) =
 export const updateGroup = (name: string, partial: Partial<Omit<UserGroup, "name">>) =>
   apiClient.put<ApiResponse<string>>(`/users/groups/${name}`, partial).then((r) => r.data);
 
+export const addGroupGrant = (
+  name: string,
+  resource_type: "app" | "device_group",
+  resource_name: string,
+  perm: "ro" | "rw"
+) =>
+  apiClient
+    .post<ApiResponse<string>>(`/users/groups/${name}/grants`, { resource_type, resource_name, perm })
+    .then((r) => r.data);
+
+export const removeGroupGrant = (name: string, resource_type: "app" | "device_group", resource_name: string) =>
+  apiClient
+    .post<ApiResponse<string>>(`/users/groups/${name}/grants/revoke`, { resource_type, resource_name })
+    .then((r) => r.data);
+
 export const deleteGroup = (name: string) =>
   apiClient.delete<ApiResponse<string>>(`/users/groups/${name}`).then((r) => r.data);

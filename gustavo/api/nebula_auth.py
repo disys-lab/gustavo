@@ -10,6 +10,7 @@ using the platform admin composer for anything that needs elevated access
 (listing all groups, etc.) and a per-user composer for verifying a specific
 user's own token.
 """
+import base64
 import hmac
 import os
 
@@ -192,3 +193,39 @@ def resolve_basic_credentials(cfg: dict, identifier: str, secret: str) -> tuple[
     permissions = compute_permissions(cfg, identifier)
     session = Session(username=identifier, user_type="db", is_admin=permissions["admin"], nebula_secret=secret)
     return session, None
+
+
+def build_worker_env(
+    cfg: dict, username: str, secret: str, device_group: str,
+    prefix: str = "gustavo-reports", expire_time: str = "10",
+) -> dict[str, str]:
+    """
+    Container-facing env vars for a gustavo-worker — the exact variable names
+    and value shapes utils.py's createWorker() passes to docker.containers.run(),
+    which is the only place in this codebase that specifies what the worker
+    image actually reads (that logic itself lives in the separate
+    gustavo-worker image). Single source of truth for every worker-config
+    download format that bakes literal values directly into the artifact
+    (docker-compose.yml, the docker-run script) — the native `gustavo worker
+    up` CLI path stays on its own separate, pre-translation worker.env shape,
+    since it's NebulaBase's own dotenv loader that does this same translation
+    on the CLI side.
+    """
+    return {
+        "DEVICE_GROUP": device_group,
+        "REDIS_HOST": str(cfg.get("REDIS_HOST", "")),
+        "REDIS_PORT": str(cfg.get("REDIS_PORT", "")),
+        "REDIS_AUTH_TOKEN": str(cfg.get("REDIS_AUTH_TOKEN", "")),
+        "REDIS_EXPIRE_TIME": str(expire_time),
+        "REDIS_KEY_PREFIX": prefix,
+        "REGISTRY_HOST": f"http://{cfg.get('REGISTRY_HOST', '')}:{cfg.get('REGISTRY_PORT', '')}/",
+        "MAX_RESTART_WAIT_IN_SECONDS": "0",
+        "NEBULA_MANAGER_AUTH_USER": username,
+        "NEBULA_MANAGER_AUTH_PASSWORD": secret,
+        "NEBULA_MANAGER_HOST": str(cfg.get("MANAGER_HOST", "")),
+        "NEBULA_MANAGER_PORT": str(cfg.get("MANAGER_PORT", "")),
+        "NEBULA_MANAGER_PROTOCOL": str(cfg.get("NEBULA_PROTOCOL", "http")),
+        "NEBULA_MANAGER_CHECK_IN_TIME": "5",
+        "REGISTRY_AUTH_USER": username,
+        "REGISTRY_AUTH_PASSWORD": secret,
+    }
