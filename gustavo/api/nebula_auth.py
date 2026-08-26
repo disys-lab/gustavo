@@ -198,6 +198,7 @@ def resolve_basic_credentials(cfg: dict, identifier: str, secret: str) -> tuple[
 def build_worker_env(
     cfg: dict, username: str, secret: str, device_group: str,
     prefix: str = "gustavo-reports", expire_time: str = "10",
+    gpu_enabled: bool = False,
 ) -> dict[str, str]:
     """
     Container-facing env vars for a gustavo-worker — the exact variable names
@@ -210,8 +211,13 @@ def build_worker_env(
     up` CLI path stays on its own separate, pre-translation worker.env shape,
     since it's NebulaBase's own dotenv loader that does this same translation
     on the CLI side.
+
+    gpu_enabled controls GPU_ENABLED, which the worker reads once at startup
+    and applies to every container it launches (app or cron job) - it's a
+    property of the hardware that worker runs on, not of any individual app,
+    so it only belongs here, not in an app's own env_vars.
     """
-    return {
+    env = {
         "DEVICE_GROUP": device_group,
         "REDIS_HOST": str(cfg.get("REDIS_HOST", "")),
         "REDIS_PORT": str(cfg.get("REDIS_PORT", "")),
@@ -229,3 +235,6 @@ def build_worker_env(
         "REGISTRY_AUTH_USER": username,
         "REGISTRY_AUTH_PASSWORD": secret,
     }
+    if gpu_enabled:
+        env["GPU_ENABLED"] = "true"
+    return env

@@ -25,6 +25,7 @@ export default function DeviceGroupsPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedApps, setSelectedApps] = useState<Record<string, string[]>>({});
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [gpuEnabled, setGpuEnabled] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
 
@@ -97,11 +98,11 @@ export default function DeviceGroupsPage() {
 
   const handleWorkerDownload = async (
     dg: string,
-    fetcher: (name: string) => Promise<string>,
+    fetcher: (name: string, gpu?: boolean) => Promise<string>,
     filename: string
   ) => {
     try {
-      const text = await fetcher(dg);
+      const text = await fetcher(dg, gpuEnabled[dg] ?? false);
       downloadTextFile(text, filename);
     } catch (exc) {
       toast({ variant: "destructive", title: "Download failed", description: String(exc) });
@@ -199,6 +200,19 @@ export default function DeviceGroupsPage() {
                 {/* Three independent worker-launch modalities — pick one, no dependency between them */}
                 <div className="border-t pt-3">
                   <p className="text-sm font-medium mb-2">Get worker config</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      id={`gpu-enabled-${dg}`}
+                      type="checkbox"
+                      checked={gpuEnabled[dg] ?? false}
+                      onChange={(e) => setGpuEnabled((prev) => ({ ...prev, [dg]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <label htmlFor={`gpu-enabled-${dg}`} className="text-xs text-muted-foreground">
+                      GPU Enabled — grants every container this worker launches GPU access. Only
+                      enable this for hardware that actually has a GPU.
+                    </label>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       size="sm"

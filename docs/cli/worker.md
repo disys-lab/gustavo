@@ -36,6 +36,9 @@ have, safe to hand to a worker node without granting anything extra. Point
 `GUSTAVO_CONFIG_FILE` at the downloaded file and run `gustavo worker up`
 as normal.
 
+Add `?gpu=true` to the URL to include `GPU_ENABLED=true` in the downloaded
+file — only do this for hardware that actually has a GPU.
+
 ---
 
 ## Bringing a worker up without the CLI
@@ -75,6 +78,21 @@ The worker container:
 - Polls for assigned applications and manages their container lifecycle
 - Reports CPU, memory, disk, and container metrics to Redis at `CACHE_EXPIRE_TIME` intervals
 
+Add `--gpu` on hardware that actually has a GPU `nvidia-container-toolkit`
+can expose:
+
+```bash
+gustavo worker up --gpu
+```
+
+This grants every container the worker launches — every app, every cron
+job — GPU access. It's a property of this machine, not of any individual
+app, so there's nothing to set in an app's own config. Only enable it on a
+device that genuinely has a GPU: requesting one that isn't there fails the
+container creation outright, and since every failure path in the worker
+exits the whole process (not just that one container), a mismatched `--gpu`
+takes the entire worker down.
+
 ---
 
 ### `remove`
@@ -113,6 +131,7 @@ Equivalent to `worker remove` followed by `worker up`.
 | `WORKER_NMODE` | Docker network mode for the worker container (default: `host`) |
 | `NEBULA_USERNAME` | Nebula API credentials |
 | `NEBULA_PASSWORD` | Nebula API credentials |
+| `GPU_ENABLED` | Optional. Grants every container this worker launches GPU access — only set on hardware with an actual GPU (default: unset/`false`) |
 
 ---
 

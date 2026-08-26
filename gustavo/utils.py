@@ -217,7 +217,7 @@ def handleCreateApp(bcmp, app_name, app_config, device_groups):
     return {"error": False, "response": "App {} created successfully".format(app_name)}
 
 
-def createWorker(name, device_group, image, prefix, expire_time):
+def createWorker(name, device_group, image, prefix, expire_time, gpu_enabled=False):
 
     """
     Creates a worker container for a specific device group, image, a prefix and an expire time
@@ -239,6 +239,10 @@ def createWorker(name, device_group, image, prefix, expire_time):
 
     expire_time : string
         The expire time for cache content on redis
+
+    gpu_enabled : bool
+        Grant every container this worker launches GPU access via GPU_ENABLED - only use this
+        for a device group whose hardware actually has a GPU nvidia-container-toolkit can expose.
 
     """
 
@@ -279,6 +283,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
         if registry_auth_user and registry_auth_password
         else []
     )
+    gpu_env = ["GPU_ENABLED=true"] if gpu_enabled else []
 
     client = docker.from_env()
 
@@ -314,7 +319,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
                     "NEBULA_MANAGER_PORT=" + str(bcmp.MANAGER_PORT),
                     "NEBULA_MANAGER_PROTOCOL=" + str(bcmp.NEBULA_PROTOCOL),
                     "NEBULA_MANAGER_CHECK_IN_TIME=5",
-                ] + registry_auth_env,
+                ] + registry_auth_env + gpu_env,
                 name=name,
                 restart_policy={"Name": "always"},
                 volumes=[str(bcmp.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],
@@ -344,7 +349,7 @@ def createWorker(name, device_group, image, prefix, expire_time):
                     "NEBULA_MANAGER_PORT=" + str(bcmp.MANAGER_PORT),
                     "NEBULA_MANAGER_PROTOCOL=" + str(bcmp.NEBULA_PROTOCOL),
                     "NEBULA_MANAGER_CHECK_IN_TIME=5",
-                ] + registry_auth_env,
+                ] + registry_auth_env + gpu_env,
                 name=name,
                 restart_policy={"Name": "always"},
                 volumes=[str(bcmp.DOCKER_HOST_SOCKET) + ":/var/run/docker.sock:rw"],

@@ -265,10 +265,14 @@ def _batch_quote(value: str) -> str:
 
 
 @router.get("/{name}/worker-env", response_class=PlainTextResponse)
-async def download_worker_env(name: str, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_env(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
     """Native `gustavo worker up` env file for this device group, scoped to the
     caller's own Nebula identity — same shape as /api/config/worker-download,
-    plus DEVICE_GROUP so the CLI invocation needs one less flag."""
+    plus DEVICE_GROUP so the CLI invocation needs one less flag.
+
+    gpu=true adds GPU_ENABLED - only set this for a device group whose
+    hardware actually has a GPU nvidia-container-toolkit can grant access
+    to; the worker applies it to every container it launches on that device."""
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     username = session.username
@@ -290,17 +294,22 @@ async def download_worker_env(name: str, session: Session = Depends(verify_sessi
         f"NEBULA_PASSWORD={password}",
         f"NEBULA_AUTH_TOKEN={auth_token}",
     ]
+    if gpu:
+        lines.append("GPU_ENABLED=true")
     return "\n".join(lines) + "\n"
 
 
 @router.get("/{name}/worker-compose", response_class=PlainTextResponse)
-async def download_worker_compose(name: str, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_compose(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
     """Self-contained docker-compose.yml for this device group's worker — every
     value baked in directly, no companion .env file. Independent of worker-env:
-    changing/regenerating one has no effect on the other."""
+    changing/regenerating one has no effect on the other.
+
+    gpu=true adds GPU_ENABLED - only for a device group whose hardware
+    actually has a GPU."""
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
-    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name)
+    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
     service: dict = {
         "image": _WORKER_IMAGE,
         "container_name": f"worker_{name}",
@@ -318,13 +327,16 @@ async def download_worker_compose(name: str, session: Session = Depends(verify_s
 
 
 @router.get("/{name}/worker-script", response_class=PlainTextResponse)
-async def download_worker_script(name: str, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_script(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
     """Self-contained launcher script for this device group's worker — a single
     `docker run` invocation with every value baked in directly. Independent of
-    both worker-env and worker-compose; downloading this needs nothing else."""
+    both worker-env and worker-compose; downloading this needs nothing else.
+
+    gpu=true adds GPU_ENABLED - only for a device group whose hardware
+    actually has a GPU."""
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
-    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name)
+    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
     # shlex.quote, not naive f-string interpolation: these values include
     # admin-set secrets that can contain anything (quotes, $, backticks) -
     # unescaped, that's a shell-injection risk in a script meant to be
@@ -344,14 +356,17 @@ async def download_worker_script(name: str, session: Session = Depends(verify_se
 
 
 @router.get("/{name}/worker-script-windows", response_class=PlainTextResponse)
-async def download_worker_script_windows(name: str, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_script_windows(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
     """Same as worker-script, as a double-click-able Windows .bat instead of
     a bash script — cmd.exe's syntax and quoting are different enough (no
     set -e, ^ instead of \\ for line continuation, its own escaping rules)
-    that it needs its own generator rather than reusing the bash one."""
+    that it needs its own generator rather than reusing the bash one.
+
+    gpu=true adds GPU_ENABLED - only for a device group whose hardware
+    actually has a GPU."""
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
-    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name)
+    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
     container_name = _batch_quote(f"worker_{name}")
     args = [f"docker run -d --name {container_name} --restart unless-stopped"]
     if cfg.get("WORKER_NMODE") == "host":

@@ -25,16 +25,26 @@ export const removeAppsFromDeviceGroup = (name: string, apps: string[]) =>
 // Three independent worker-launch modalities — the user picks one. Each
 // returns a self-contained artifact; downloading one has no effect on the
 // others (see nebula_auth.build_worker_env's docstring for why).
-export const downloadWorkerEnv = (name: string) =>
-  apiClient.get(`/device-groups/${name}/worker-env`, { responseType: "text" }).then((r) => r.data as string);
-
-export const downloadWorkerCompose = (name: string) =>
-  apiClient.get(`/device-groups/${name}/worker-compose`, { responseType: "text" }).then((r) => r.data as string);
-
-export const downloadWorkerScript = (name: string) =>
-  apiClient.get(`/device-groups/${name}/worker-script`, { responseType: "text" }).then((r) => r.data as string);
-
-export const downloadWorkerScriptWindows = (name: string) =>
+//
+// gpu grants every container this worker launches GPU access (GPU_ENABLED) -
+// only pass true for a device group whose hardware actually has a GPU
+// nvidia-container-toolkit can expose.
+export const downloadWorkerEnv = (name: string, gpu = false) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text" })
+    .get(`/device-groups/${name}/worker-env`, { responseType: "text", params: { gpu } })
+    .then((r) => r.data as string);
+
+export const downloadWorkerCompose = (name: string, gpu = false) =>
+  apiClient
+    .get(`/device-groups/${name}/worker-compose`, { responseType: "text", params: { gpu } })
+    .then((r) => r.data as string);
+
+export const downloadWorkerScript = (name: string, gpu = false) =>
+  apiClient
+    .get(`/device-groups/${name}/worker-script`, { responseType: "text", params: { gpu } })
+    .then((r) => r.data as string);
+
+export const downloadWorkerScriptWindows = (name: string, gpu = false) =>
+  apiClient
+    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text", params: { gpu } })
     .then((r) => r.data as string);

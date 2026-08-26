@@ -106,6 +106,11 @@ Accepts two authentication methods:
 curl -u alice:her_secret http://<gustavo-host>:<port>/api/config/worker-download -o worker.env
 ```
 
+Add `?gpu=true` to include `GPU_ENABLED=true` in the downloaded file —
+only for hardware that actually has a GPU `nvidia-container-toolkit` can
+expose. Applies to every container that worker launches, not to any
+individual app.
+
 **Response:** `text/plain`
 
 ```

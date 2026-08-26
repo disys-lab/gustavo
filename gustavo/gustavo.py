@@ -629,8 +629,15 @@ def deleteDeviceGroups(name="bca"):
     help="expiration time for keeping logs in redis cache",
     default="10",
 )
-def workerUp(name, device_group, image, prefix, expire_time):
-    createWorker(name, device_group, image, prefix, expire_time)
+@click.option(
+    "--gpu",
+    is_flag=True,
+    default=False,
+    help="grant every container this worker launches GPU access - only use this on hardware "
+         "that actually has a GPU nvidia-container-toolkit can expose",
+)
+def workerUp(name, device_group, image, prefix, expire_time, gpu):
+    createWorker(name, device_group, image, prefix, expire_time, gpu_enabled=gpu)
 
 
 @worker.command(help="remove a worker", name="remove")

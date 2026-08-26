@@ -218,6 +218,12 @@ CACHE_EXPIRE_TIME=120
 
 # Worker container network mode
 WORKER_NMODE=host
+
+# Optional - only set this on hardware that actually has a GPU
+# nvidia-container-toolkit can expose. Applies to every container this
+# worker launches (apps and cron jobs alike) - it's a property of this
+# machine, not of any individual app.
+# GPU_ENABLED=true
 ```
 
 #### Deploy the worker

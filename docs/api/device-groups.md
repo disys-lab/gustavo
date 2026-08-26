@@ -113,6 +113,12 @@ All four accept the same two authentication methods as
 require the caller to actually have access to this device group — admin,
 or a member of a group it's granted to — otherwise `403`.
 
+All four also accept an optional `?gpu=true` query param, which adds
+`GPU_ENABLED=true` to the generated worker config — only use this for a
+device group whose hardware actually has a GPU `nvidia-container-toolkit`
+can expose. It applies to every container that worker launches, not to
+any individual app.
+
 ---
 
 ### `GET /api/device-groups/{name}/worker-env`
