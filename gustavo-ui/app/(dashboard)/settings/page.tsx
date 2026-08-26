@@ -1,21 +1,25 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useConfig } from "@/lib/context/ConfigContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger,
+} from "@/components/ui/dialog";
 import { useActivityToast } from "@/hooks/use-activity-toast";
-import { uploadConfig, downloadConfig } from "@/lib/api/config";
+import { uploadConfig, downloadConfig, rotateMongoCredential } from "@/lib/api/config";
 import type { PlatformConfig } from "@/lib/types/platform";
 
 type ConfigField = { key: keyof PlatformConfig; label: string; type?: "text" | "password" | "checkbox"; hint?: string };
 
 const PASSWORD_KEYS: Array<keyof PlatformConfig> = [
-  "NEBULA_PASSWORD", "NEBULA_AUTH_TOKEN", "REDIS_AUTH_TOKEN", "MONGO_PASSWORD",
+  "NEBULA_PASSWORD", "NEBULA_AUTH_TOKEN", "REDIS_AUTH_TOKEN",
 ];
 
 const MANAGER_FIELDS: ConfigField[] = [
@@ -42,7 +46,6 @@ const MONGO_FIELDS: ConfigField[] = [
   { key: "MONGO_HOST", label: "Mongo Host" },
   { key: "MONGO_PORT", label: "Mongo Port" },
   { key: "MONGO_USERNAME", label: "Mongo Username" },
-  { key: "MONGO_PASSWORD", label: "Mongo Password", type: "password" },
   { key: "MONGO_IMAGE", label: "Mongo Image" },
   { key: "MONGO_CERTIFICATE_FOLDER_PATH", label: "Certificate Folder" },
 ];
@@ -105,6 +108,68 @@ function FieldGrid({ fields, register }: {
         </div>
       ))}
     </div>
+  );
+}
+
+function RotateMongoCredentialButton() {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useActivityToast();
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) setError(null);
+  };
+
+  const handleRotate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await rotateMongoCredential();
+      if (res.error) {
+        setError(String(res.response));
+      } else {
+        toast({
+          title: "Mongo credential rotated",
+          description: "Remove and recreate the Manager service (Dashboard) to apply it.",
+        });
+        setOpen(false);
+      }
+    } catch (exc) {
+      setError(String(exc));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button type="button" size="sm" variant="outline">Rotate Credential</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Rotate Mongo credential</DialogTitle>
+          <DialogDescription>
+            Backs up platform.yaml, then generates a new password and applies it on the live Mongo
+            instance and in platform config. The username never changes. This does{" "}
+            <strong>not</strong> restart Manager automatically — remove and recreate the Manager
+            service from the Dashboard afterward for it to pick up the new credential.
+          </DialogDescription>
+        </DialogHeader>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <DialogFooter>
+          <Button type="button" disabled={loading} onClick={handleRotate}>
+            {loading ? "Rotating…" : "Rotate Credential"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -226,6 +291,13 @@ export default function SettingsPage() {
             <AccordionTrigger className="text-sm font-semibold">MongoDB</AccordionTrigger>
             <AccordionContent>
               <FieldGrid fields={MONGO_FIELDS} register={register} />
+              <div className="mt-4 flex items-center justify-between rounded-md border px-3 py-2">
+                <div>
+                  <p className="text-xs font-medium">Mongo Password</p>
+                  <p className="text-xs text-muted-foreground">•••••••• (rotate to change)</p>
+                </div>
+                <RotateMongoCredentialButton />
+              </div>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="registry" className="border-b-0">
