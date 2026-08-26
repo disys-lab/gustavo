@@ -69,6 +69,8 @@ nav:
     - Manager: src/manager.md
     - Composer: src/composer.md
     - Cache: src/cache.md
+  - Case Studies:
+    - "NASA HOME (CU Boulder, 2023)": demos/nasa-home.md
   - Developer Guide: contributing.md
   - Troubleshooting: troubleshooting.md
 
