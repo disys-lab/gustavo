@@ -6,9 +6,15 @@ POST /api/config                 → partial/full update, persists to YAML + .en
 POST /api/config/upload          → parse .env file upload, merge into config
 GET  /api/config/download        → return current config as manager.env text
 GET  /api/config/worker-download → worker.env, scoped to the caller's own Nebula identity
+POST /api/config/mongo/rotate    → rotate the Mongo password in place (does not touch Manager)
 """
 import base64
 import logging
+import secrets
+import shutil
+from datetime import datetime, timezone
+
+import pymongo
 from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi.responses import PlainTextResponse
 
@@ -121,3 +127,56 @@ async def download_worker_config(session: Session = Depends(verify_session_or_ba
         f"NEBULA_AUTH_TOKEN={auth_token}",
     ]
     return "\n".join(lines) + "\n"
+
+
+@router.post("/mongo/rotate")
+async def rotate_mongo_credential(_session=Depends(require_admin)):
+    """
+    Rotate the Mongo password in place - same username throughout, no new
+    user, no roles to copy, nothing to drop afterward. Deliberately does not
+    touch Manager: Manager's MONGO_URL is only ever built once, at container
+    creation (see Manager.runManager()), so it keeps using its already-open
+    connection under the old password until it's manually removed/recreated
+    from the Dashboard - that's the step that actually picks up this change.
+
+    Backing up platform.yaml is a hard precondition, not best-effort: if it
+    fails, nothing else runs. That backup is the recovery path if the new
+    password turns out to be wrong for any reason - revert Mongo's password
+    to the value in the .bak file, restore it over platform.yaml, restart
+    the gustavo container so it reloads that file, then remove/recreate
+    Manager again.
+    """
+    cfg = config_store.get()
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    backup_path = config_store.CONFIG_PATH.with_name(
+        f"{config_store.CONFIG_PATH.name}.bak-{timestamp}-pre-mongo-rotate"
+    )
+    try:
+        shutil.copy2(config_store.CONFIG_PATH, backup_path)
+    except Exception as exc:
+        logging.error(f"mongo credential rotation: platform.yaml backup failed: {exc}")
+        return {"error": True, "response": f"Failed to rotate credential: could not back up platform.yaml ({exc})"}
+
+    username = cfg.get("MONGO_USERNAME", "")
+    new_password = secrets.token_urlsafe(32)
+    try:
+        client = pymongo.MongoClient(
+            host=cfg.get("MONGO_HOST", ""),
+            port=int(cfg.get("MONGO_PORT", 27017) or 27017),
+            username=username,
+            password=cfg.get("MONGO_PASSWORD", ""),
+            authSource="admin",
+            serverSelectionTimeoutMS=5000,
+        )
+        client.admin.command("updateUser", username, pwd=new_password)
+        client.close()
+    except Exception as exc:
+        logging.error(f"mongo credential rotation: password change failed: {exc}")
+        return {"error": True, "response": f"Failed to rotate credential: could not update Mongo password ({exc})"}
+
+    config_store.update({"MONGO_PASSWORD": new_password})
+    return {
+        "error": False,
+        "response": "Mongo credential rotated. Remove and recreate the Manager service to apply it.",
+    }

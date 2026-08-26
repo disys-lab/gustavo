@@ -6,3 +6,8 @@ pyyaml>=6.0.1
 python-dotenv>=1.0.1
 PyJWT>=2.8.0
 cryptography>=42.0.0
+# Upper-bounded: pymongo 4.14+ requires wire version 8 (MongoDB 4.2+) and
+# refuses to connect at all to this codebase's actual default MONGO_IMAGE
+# (mongo:4.0.19, wire version 7) - confirmed 4.13.2 still connects to it,
+# 4.17.0 does not. Re-test this ceiling before raising it.
+pymongo>=4.6.0,<4.14

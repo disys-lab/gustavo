@@ -23,3 +23,9 @@ export const downloadConfig = () =>
 // user, admin or not (see gustavo/api/routers/config.py).
 export const downloadWorkerConfig = () =>
   apiClient.get("/config/worker-download", { responseType: "text" }).then((r) => r.data as string);
+
+// Rotates the Mongo password in place (same username). Backs up platform.yaml
+// first as a hard precondition; does not touch Manager — see
+// gustavo/api/routers/config.py for the full sequence and recovery steps.
+export const rotateMongoCredential = () =>
+  apiClient.post<ApiResponse<string>>("/config/mongo/rotate").then((r) => r.data);
