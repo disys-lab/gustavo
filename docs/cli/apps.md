@@ -152,6 +152,9 @@ app_name:                          # (REQUIRED) top-level key must match the app
 !!! warning "Do not include image tags in `docker_image`"
     Specify the image name only — no `:latest` or version tag. Nebula manages image resolution via the local registry. Including a tag may cause unexpected behaviour.
 
+!!! warning "Only include NEBULA_AUTH_TOKEN/MANAGER_AUTH if this app actually needs it"
+    `env_vars` become real environment variables on whatever device group the app is deployed to. `NEBULA_AUTH_TOKEN` is `base64("username:password")` — encoding, not encryption — so anyone with Docker or shell access on that device can trivially recover the plaintext credential. Only add it for apps that genuinely need to call back into the Nebula Manager themselves (e.g. a comms/reporting container), and prefer a credential scoped for that purpose over your own personal login. The create-app form's auto-filled defaults deliberately leave this out for exactly this reason.
+
 !!! note "APP_ID"
     The `APP_ID` env var is automatically set to the application name if not provided. All Nebula apps must have `APP_ID` in their env_vars to register with the cache.
 
