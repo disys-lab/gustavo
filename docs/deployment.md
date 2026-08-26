@@ -524,8 +524,8 @@ services:
       PYTHONWARNINGS: "ignore"
       GUSTAVO_API_CONFIG: /etc/gustavo/platform.yaml
       AUTH_ENABLED: "true"
-      AUTH_ENDPOINT: "https://us-central1-blockalytics-6ebbb.cloudfunctions.net/datachat"
-      FIREBASE_API_KEY: "AIzaSyCzqiJpsZQbNbJ1LDXoelzjW7Iuvdj8GQg"
+      AUTH_ENDPOINT: "https://your-auth-endpoint.example.com"
+      FIREBASE_API_KEY: "your-firebase-web-api-key"
       CUSTOM_TOKEN_URL: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken"
     restart: unless-stopped
 
