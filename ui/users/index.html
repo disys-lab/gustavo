@@ -1815,11 +1815,18 @@ flag on the user).</p>
   permission checks (same as the break-glass admin, just as a regular
   Nebula account instead of the fixed <code>nebula</code>/<code>nebula</code> credential).</li>
 <li><strong>Pruning allowed</strong> — lets members prune unused images.</li>
-<li><strong>App / device-group grants</strong> — shown read-only on this page. These are
-  usually set automatically: when a non-admin user creates an app, Gustavo
-  grants their group <code>rw</code> on it immediately after creation (see
-  <a href="../../api/apps/">Apps API</a>). Admins can see which group(s) hold access to
-  a given app from that app's detail page.</li>
+<li><strong>App / device-group grants</strong> — listed on each group's row, and directly
+  manageable via that row's <strong>Grants</strong> button. These are usually set
+  automatically the first time: when a non-admin user creates an app or
+  device group, Gustavo grants their own group <code>rw</code> on it immediately after
+  creation (see <a href="../../api/apps/">Apps API</a>). The <strong>Grants</strong> dialog covers
+  everything after that — pick an app or device group; if it's not yet
+  granted to this group, choose a permission and <strong>Grant</strong> it; if it's
+  already granted, the dialog shows the current permission and lets you
+  either change it (<strong>Update</strong>) or <strong>Revoke</strong> it entirely. Adding, changing,
+  or removing one grant never disturbs the group's other grants. Admins can
+  also see which group(s) hold access to a given app from that app's detail
+  page (read-only there — manage it from the Groups page).</li>
 </ul>
 <h2 id="self-service-credential-rotation">Self-service credential rotation</h2>
 <p>Every logged-in user (not just admins) can rotate their own credential from

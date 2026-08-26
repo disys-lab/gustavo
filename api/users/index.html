@@ -1195,6 +1195,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#gustavo.api.routers.users.add_group_grant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_group_grant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gustavo.api.routers.users.remove_group_grant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        remove_group_grant
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1210,6 +1232,17 @@
     <span class="md-ellipsis">
       
         Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-grants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing grants
       
     </span>
   </a>
@@ -1876,6 +1909,8 @@ GET    /api/users/me/groups              → the names of groups I belong to (an
 <p>GET    /api/users/groups                 → list groups (roles) with full detail
 POST   /api/users/groups                 → create a group
 PUT    /api/users/groups/{name}          → update a group
+POST   /api/users/groups/{name}/grants   → grant a group access to one app or device group
+POST   /api/users/groups/{name}/grants/revoke → revoke a group's access to one app or device group
 DELETE /api/users/groups/{name}          → delete a group</p>
 
 
@@ -1922,49 +1957,49 @@ otherwise swallow the literal "me" path first.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/users.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-168">168</a></span>
-<span class="normal"><a href="#__codelineno-0-169">169</a></span>
-<span class="normal"><a href="#__codelineno-0-170">170</a></span>
-<span class="normal"><a href="#__codelineno-0-171">171</a></span>
-<span class="normal"><a href="#__codelineno-0-172">172</a></span>
-<span class="normal"><a href="#__codelineno-0-173">173</a></span>
-<span class="normal"><a href="#__codelineno-0-174">174</a></span>
-<span class="normal"><a href="#__codelineno-0-175">175</a></span>
-<span class="normal"><a href="#__codelineno-0-176">176</a></span>
-<span class="normal"><a href="#__codelineno-0-177">177</a></span>
-<span class="normal"><a href="#__codelineno-0-178">178</a></span>
-<span class="normal"><a href="#__codelineno-0-179">179</a></span>
-<span class="normal"><a href="#__codelineno-0-180">180</a></span>
-<span class="normal"><a href="#__codelineno-0-181">181</a></span>
-<span class="normal"><a href="#__codelineno-0-182">182</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-182">182</a></span>
 <span class="normal"><a href="#__codelineno-0-183">183</a></span>
 <span class="normal"><a href="#__codelineno-0-184">184</a></span>
 <span class="normal"><a href="#__codelineno-0-185">185</a></span>
 <span class="normal"><a href="#__codelineno-0-186">186</a></span>
 <span class="normal"><a href="#__codelineno-0-187">187</a></span>
 <span class="normal"><a href="#__codelineno-0-188">188</a></span>
-<span class="normal"><a href="#__codelineno-0-189">189</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/me/regenerate-token"</span><span class="p">)</span>
-<a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">regenerate_my_token</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
-<a id="__codelineno-0-170" name="__codelineno-0-170"></a><span class="w">    </span><span class="sd">"""Self-service credential rotation — no admin required, no old-secret confirmation</span>
-<a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">    needed since the caller is already authenticated via their current session.</span>
-<a id="__codelineno-0-172" name="__codelineno-0-172"></a>
-<a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">    Declared BEFORE /{username}/regenerate-token: FastAPI matches path routes</span>
-<a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">    in declaration order, and a dynamic /{username}/... segment would</span>
-<a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">    otherwise swallow the literal "me" path first.</span>
-<a id="__codelineno-0-176" name="__codelineno-0-176"></a><span class="sd">    """</span>
-<a id="__codelineno-0-177" name="__codelineno-0-177"></a>    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">user_type</span> <span class="o">!=</span> <span class="s2">"db"</span><span class="p">:</span>
-<a id="__codelineno-0-178" name="__codelineno-0-178"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"This account type doesn't have a Nebula token to regenerate"</span><span class="p">}</span>
-<a id="__codelineno-0-179" name="__codelineno-0-179"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-180" name="__codelineno-0-180"></a>    <span class="n">comp</span> <span class="o">=</span> <span class="n">_build_composer</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
-<a id="__codelineno-0-181" name="__codelineno-0-181"></a>    <span class="n">secret</span> <span class="o">=</span> <span class="n">_new_secret</span><span class="p">()</span>
-<a id="__codelineno-0-182" name="__codelineno-0-182"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-183" name="__codelineno-0-183"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_user</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="p">{</span><span class="s2">"token"</span><span class="p">:</span> <span class="n">secret</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">:</span> <span class="n">secret</span><span class="p">})</span>
-<a id="__codelineno-0-184" name="__codelineno-0-184"></a>        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status_code"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
-<a id="__codelineno-0-185" name="__codelineno-0-185"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Failed to regenerate token (status </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'status_code'</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span><span class="p">}</span>
-<a id="__codelineno-0-186" name="__codelineno-0-186"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"username"</span><span class="p">:</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="s2">"credential"</span><span class="p">:</span> <span class="n">_credential</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">secret</span><span class="p">)}}</span>
-<a id="__codelineno-0-187" name="__codelineno-0-187"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-<a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"regenerate_my_token for </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
+<span class="normal"><a href="#__codelineno-0-189">189</a></span>
+<span class="normal"><a href="#__codelineno-0-190">190</a></span>
+<span class="normal"><a href="#__codelineno-0-191">191</a></span>
+<span class="normal"><a href="#__codelineno-0-192">192</a></span>
+<span class="normal"><a href="#__codelineno-0-193">193</a></span>
+<span class="normal"><a href="#__codelineno-0-194">194</a></span>
+<span class="normal"><a href="#__codelineno-0-195">195</a></span>
+<span class="normal"><a href="#__codelineno-0-196">196</a></span>
+<span class="normal"><a href="#__codelineno-0-197">197</a></span>
+<span class="normal"><a href="#__codelineno-0-198">198</a></span>
+<span class="normal"><a href="#__codelineno-0-199">199</a></span>
+<span class="normal"><a href="#__codelineno-0-200">200</a></span>
+<span class="normal"><a href="#__codelineno-0-201">201</a></span>
+<span class="normal"><a href="#__codelineno-0-202">202</a></span>
+<span class="normal"><a href="#__codelineno-0-203">203</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/me/regenerate-token"</span><span class="p">)</span>
+<a id="__codelineno-0-183" name="__codelineno-0-183"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">regenerate_my_token</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184"></a><span class="w">    </span><span class="sd">"""Self-service credential rotation — no admin required, no old-secret confirmation</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185"></a><span class="sd">    needed since the caller is already authenticated via their current session.</span>
+<a id="__codelineno-0-186" name="__codelineno-0-186"></a>
+<a id="__codelineno-0-187" name="__codelineno-0-187"></a><span class="sd">    Declared BEFORE /{username}/regenerate-token: FastAPI matches path routes</span>
+<a id="__codelineno-0-188" name="__codelineno-0-188"></a><span class="sd">    in declaration order, and a dynamic /{username}/... segment would</span>
+<a id="__codelineno-0-189" name="__codelineno-0-189"></a><span class="sd">    otherwise swallow the literal "me" path first.</span>
+<a id="__codelineno-0-190" name="__codelineno-0-190"></a><span class="sd">    """</span>
+<a id="__codelineno-0-191" name="__codelineno-0-191"></a>    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">user_type</span> <span class="o">!=</span> <span class="s2">"db"</span><span class="p">:</span>
+<a id="__codelineno-0-192" name="__codelineno-0-192"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"This account type doesn't have a Nebula token to regenerate"</span><span class="p">}</span>
+<a id="__codelineno-0-193" name="__codelineno-0-193"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-194" name="__codelineno-0-194"></a>    <span class="n">comp</span> <span class="o">=</span> <span class="n">_build_composer</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-195" name="__codelineno-0-195"></a>    <span class="n">secret</span> <span class="o">=</span> <span class="n">_new_secret</span><span class="p">()</span>
+<a id="__codelineno-0-196" name="__codelineno-0-196"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-197" name="__codelineno-0-197"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_user</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="p">{</span><span class="s2">"token"</span><span class="p">:</span> <span class="n">secret</span><span class="p">,</span> <span class="s2">"password"</span><span class="p">:</span> <span class="n">secret</span><span class="p">})</span>
+<a id="__codelineno-0-198" name="__codelineno-0-198"></a>        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status_code"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-199" name="__codelineno-0-199"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Failed to regenerate token (status </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'status_code'</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span><span class="p">}</span>
+<a id="__codelineno-0-200" name="__codelineno-0-200"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"username"</span><span class="p">:</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="s2">"credential"</span><span class="p">:</span> <span class="n">_credential</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">secret</span><span class="p">)}}</span>
+<a id="__codelineno-0-201" name="__codelineno-0-201"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-202" name="__codelineno-0-202"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"regenerate_my_token for </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-203" name="__codelineno-0-203"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1992,21 +2027,174 @@ whether a non-admin needs to pick an owner_group when creating an app.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/users.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-207">207</a></span>
-<span class="normal"><a href="#__codelineno-0-208">208</a></span>
-<span class="normal"><a href="#__codelineno-0-209">209</a></span>
-<span class="normal"><a href="#__codelineno-0-210">210</a></span>
-<span class="normal"><a href="#__codelineno-0-211">211</a></span>
-<span class="normal"><a href="#__codelineno-0-212">212</a></span>
-<span class="normal"><a href="#__codelineno-0-213">213</a></span>
-<span class="normal"><a href="#__codelineno-0-214">214</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-207" name="__codelineno-0-207"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/me/groups"</span><span class="p">)</span>
-<a id="__codelineno-0-208" name="__codelineno-0-208"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_groups</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
-<a id="__codelineno-0-209" name="__codelineno-0-209"></a><span class="w">    </span><span class="sd">"""Which groups the caller belongs to — used by the Apps page to decide</span>
-<a id="__codelineno-0-210" name="__codelineno-0-210"></a><span class="sd">    whether a non-admin needs to pick an owner_group when creating an app."""</span>
-<a id="__codelineno-0-211" name="__codelineno-0-211"></a>    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">is_admin</span><span class="p">:</span>
-<a id="__codelineno-0-212" name="__codelineno-0-212"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"groups"</span><span class="p">:</span> <span class="p">[]}}</span>
-<a id="__codelineno-0-213" name="__codelineno-0-213"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-214" name="__codelineno-0-214"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"groups"</span><span class="p">:</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">user_groups</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)}}</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-221">221</a></span>
+<span class="normal"><a href="#__codelineno-0-222">222</a></span>
+<span class="normal"><a href="#__codelineno-0-223">223</a></span>
+<span class="normal"><a href="#__codelineno-0-224">224</a></span>
+<span class="normal"><a href="#__codelineno-0-225">225</a></span>
+<span class="normal"><a href="#__codelineno-0-226">226</a></span>
+<span class="normal"><a href="#__codelineno-0-227">227</a></span>
+<span class="normal"><a href="#__codelineno-0-228">228</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-221" name="__codelineno-0-221"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/me/groups"</span><span class="p">)</span>
+<a id="__codelineno-0-222" name="__codelineno-0-222"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_groups</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
+<a id="__codelineno-0-223" name="__codelineno-0-223"></a><span class="w">    </span><span class="sd">"""Which groups the caller belongs to — used by the Apps page to decide</span>
+<a id="__codelineno-0-224" name="__codelineno-0-224"></a><span class="sd">    whether a non-admin needs to pick an owner_group when creating an app."""</span>
+<a id="__codelineno-0-225" name="__codelineno-0-225"></a>    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">is_admin</span><span class="p">:</span>
+<a id="__codelineno-0-226" name="__codelineno-0-226"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"groups"</span><span class="p">:</span> <span class="p">[]}}</span>
+<a id="__codelineno-0-227" name="__codelineno-0-227"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-228" name="__codelineno-0-228"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"groups"</span><span class="p">:</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">user_groups</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)}}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="gustavo.api.routers.users.add_group_grant" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_group_grant</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">))</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Grant a group access to one existing app or device group.</p>
+<p>Merges a single {resource_name: perm} entry into the group's apps/
+device_groups map without disturbing its other entries — same
+fetch-then-merge pattern create_app uses for its own owner_group grant,
+just exposed directly so an admin can grant existing resources to any
+group after the fact.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>gustavo/api/routers/users.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-284">284</a></span>
+<span class="normal"><a href="#__codelineno-0-285">285</a></span>
+<span class="normal"><a href="#__codelineno-0-286">286</a></span>
+<span class="normal"><a href="#__codelineno-0-287">287</a></span>
+<span class="normal"><a href="#__codelineno-0-288">288</a></span>
+<span class="normal"><a href="#__codelineno-0-289">289</a></span>
+<span class="normal"><a href="#__codelineno-0-290">290</a></span>
+<span class="normal"><a href="#__codelineno-0-291">291</a></span>
+<span class="normal"><a href="#__codelineno-0-292">292</a></span>
+<span class="normal"><a href="#__codelineno-0-293">293</a></span>
+<span class="normal"><a href="#__codelineno-0-294">294</a></span>
+<span class="normal"><a href="#__codelineno-0-295">295</a></span>
+<span class="normal"><a href="#__codelineno-0-296">296</a></span>
+<span class="normal"><a href="#__codelineno-0-297">297</a></span>
+<span class="normal"><a href="#__codelineno-0-298">298</a></span>
+<span class="normal"><a href="#__codelineno-0-299">299</a></span>
+<span class="normal"><a href="#__codelineno-0-300">300</a></span>
+<span class="normal"><a href="#__codelineno-0-301">301</a></span>
+<span class="normal"><a href="#__codelineno-0-302">302</a></span>
+<span class="normal"><a href="#__codelineno-0-303">303</a></span>
+<span class="normal"><a href="#__codelineno-0-304">304</a></span>
+<span class="normal"><a href="#__codelineno-0-305">305</a></span>
+<span class="normal"><a href="#__codelineno-0-306">306</a></span>
+<span class="normal"><a href="#__codelineno-0-307">307</a></span>
+<span class="normal"><a href="#__codelineno-0-308">308</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-284" name="__codelineno-0-284"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/groups/</span><span class="si">{name}</span><span class="s2">/grants"</span><span class="p">)</span>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add_group_grant</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">req</span><span class="p">:</span> <span class="n">GroupGrantRequest</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">)):</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="w">    </span><span class="sd">"""Grant a group access to one existing app or device group.</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a><span class="sd">    Merges a single {resource_name: perm} entry into the group's apps/</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a><span class="sd">    device_groups map without disturbing its other entries — same</span>
+<a id="__codelineno-0-290" name="__codelineno-0-290"></a><span class="sd">    fetch-then-merge pattern create_app uses for its own owner_group grant,</span>
+<a id="__codelineno-0-291" name="__codelineno-0-291"></a><span class="sd">    just exposed directly so an admin can grant existing resources to any</span>
+<a id="__codelineno-0-292" name="__codelineno-0-292"></a><span class="sd">    group after the fact.</span>
+<a id="__codelineno-0-293" name="__codelineno-0-293"></a><span class="sd">    """</span>
+<a id="__codelineno-0-294" name="__codelineno-0-294"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-295" name="__codelineno-0-295"></a>    <span class="n">comp</span> <span class="o">=</span> <span class="n">_build_composer</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-296" name="__codelineno-0-296"></a>    <span class="n">field</span> <span class="o">=</span> <span class="s2">"apps"</span> <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">resource_type</span> <span class="o">==</span> <span class="s2">"app"</span> <span class="k">else</span> <span class="s2">"device_groups"</span>
+<a id="__codelineno-0-297" name="__codelineno-0-297"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-298" name="__codelineno-0-298"></a>        <span class="n">group_result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_user_group</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-299" name="__codelineno-0-299"></a>        <span class="k">if</span> <span class="n">group_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status_code"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-300" name="__codelineno-0-300"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Group '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' not found"</span><span class="p">}</span>
+<a id="__codelineno-0-301" name="__codelineno-0-301"></a>        <span class="n">existing</span> <span class="o">=</span> <span class="n">group_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reply"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<a id="__codelineno-0-302" name="__codelineno-0-302"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_user_group</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="p">{</span><span class="o">**</span><span class="n">existing</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">resource_name</span><span class="p">:</span> <span class="n">req</span><span class="o">.</span><span class="n">perm</span><span class="p">}})</span>
+<a id="__codelineno-0-303" name="__codelineno-0-303"></a>        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status_code"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-304" name="__codelineno-0-304"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Failed to update group (status </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'status_code'</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span><span class="p">}</span>
+<a id="__codelineno-0-305" name="__codelineno-0-305"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Granted '</span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">resource_name</span><span class="si">}</span><span class="s2">' (</span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">perm</span><span class="si">}</span><span class="s2">) to group '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">}</span>
+<a id="__codelineno-0-306" name="__codelineno-0-306"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-307" name="__codelineno-0-307"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"add_group_grant </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-308" name="__codelineno-0-308"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="gustavo.api.routers.users.remove_group_grant" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">remove_group_grant</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">))</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Revoke a group's access to one app or device group (the inverse of add_group_grant).</p>
+<p>POST rather than DELETE-with-body to match the existing apps/add,
+apps/remove convention in device_groups.py.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>gustavo/api/routers/users.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-311">311</a></span>
+<span class="normal"><a href="#__codelineno-0-312">312</a></span>
+<span class="normal"><a href="#__codelineno-0-313">313</a></span>
+<span class="normal"><a href="#__codelineno-0-314">314</a></span>
+<span class="normal"><a href="#__codelineno-0-315">315</a></span>
+<span class="normal"><a href="#__codelineno-0-316">316</a></span>
+<span class="normal"><a href="#__codelineno-0-317">317</a></span>
+<span class="normal"><a href="#__codelineno-0-318">318</a></span>
+<span class="normal"><a href="#__codelineno-0-319">319</a></span>
+<span class="normal"><a href="#__codelineno-0-320">320</a></span>
+<span class="normal"><a href="#__codelineno-0-321">321</a></span>
+<span class="normal"><a href="#__codelineno-0-322">322</a></span>
+<span class="normal"><a href="#__codelineno-0-323">323</a></span>
+<span class="normal"><a href="#__codelineno-0-324">324</a></span>
+<span class="normal"><a href="#__codelineno-0-325">325</a></span>
+<span class="normal"><a href="#__codelineno-0-326">326</a></span>
+<span class="normal"><a href="#__codelineno-0-327">327</a></span>
+<span class="normal"><a href="#__codelineno-0-328">328</a></span>
+<span class="normal"><a href="#__codelineno-0-329">329</a></span>
+<span class="normal"><a href="#__codelineno-0-330">330</a></span>
+<span class="normal"><a href="#__codelineno-0-331">331</a></span>
+<span class="normal"><a href="#__codelineno-0-332">332</a></span>
+<span class="normal"><a href="#__codelineno-0-333">333</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-311" name="__codelineno-0-311"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/groups/</span><span class="si">{name}</span><span class="s2">/grants/revoke"</span><span class="p">)</span>
+<a id="__codelineno-0-312" name="__codelineno-0-312"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">remove_group_grant</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">req</span><span class="p">:</span> <span class="n">GroupRevokeRequest</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">require_admin</span><span class="p">)):</span>
+<a id="__codelineno-0-313" name="__codelineno-0-313"></a><span class="w">    </span><span class="sd">"""Revoke a group's access to one app or device group (the inverse of add_group_grant).</span>
+<a id="__codelineno-0-314" name="__codelineno-0-314"></a>
+<a id="__codelineno-0-315" name="__codelineno-0-315"></a><span class="sd">    POST rather than DELETE-with-body to match the existing apps/add,</span>
+<a id="__codelineno-0-316" name="__codelineno-0-316"></a><span class="sd">    apps/remove convention in device_groups.py.</span>
+<a id="__codelineno-0-317" name="__codelineno-0-317"></a><span class="sd">    """</span>
+<a id="__codelineno-0-318" name="__codelineno-0-318"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-319" name="__codelineno-0-319"></a>    <span class="n">comp</span> <span class="o">=</span> <span class="n">_build_composer</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-320" name="__codelineno-0-320"></a>    <span class="n">field</span> <span class="o">=</span> <span class="s2">"apps"</span> <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">resource_type</span> <span class="o">==</span> <span class="s2">"app"</span> <span class="k">else</span> <span class="s2">"device_groups"</span>
+<a id="__codelineno-0-321" name="__codelineno-0-321"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-322" name="__codelineno-0-322"></a>        <span class="n">group_result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_user_group</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-323" name="__codelineno-0-323"></a>        <span class="k">if</span> <span class="n">group_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status_code"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-324" name="__codelineno-0-324"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Group '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' not found"</span><span class="p">}</span>
+<a id="__codelineno-0-325" name="__codelineno-0-325"></a>        <span class="n">existing</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">group_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reply"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span>
+<a id="__codelineno-0-326" name="__codelineno-0-326"></a>        <span class="n">existing</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-327" name="__codelineno-0-327"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_user_group</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">existing</span><span class="p">})</span>
+<a id="__codelineno-0-328" name="__codelineno-0-328"></a>        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status_code"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-329" name="__codelineno-0-329"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Failed to update group (status </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'status_code'</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span><span class="p">}</span>
+<a id="__codelineno-0-330" name="__codelineno-0-330"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Revoked '</span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">resource_name</span><span class="si">}</span><span class="s2">' from group '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">}</span>
+<a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-332" name="__codelineno-0-332"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"remove_group_grant </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-333" name="__codelineno-0-333"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2030,6 +2218,22 @@ authenticated user can call for their own account.</p>
 <code>device_groups</code> <code>ro</code>/<code>rw</code> maps are what actually govern what a user's own
 Nebula token is allowed to do — Nebula enforces this itself on every write,
 Gustavo doesn't re-implement the check.</p>
+<h2 id="managing-grants">Managing grants</h2>
+<p>An app or device group's <code>apps</code>/<code>device_groups</code> grant most commonly gets
+set once, automatically: when a non-admin creates one, Gustavo immediately
+grants their own group <code>rw</code> on it (see <a href="../apps/">Apps API</a> and
+<a href="../device-groups/">Device Groups API</a>). <code>POST /groups/{name}/grants</code> and its
+inverse <code>.../grants/revoke</code> exist for everything that automatic grant
+doesn't cover — retroactively granting an <em>existing</em> app/device-group to a
+group, moving access after the fact, or taking it away entirely.</p>
+<p>Both routes fetch the group's current <code>apps</code> or <code>device_groups</code> map first,
+then merge in (or remove) exactly one <code>{resource_name: perm}</code> entry and
+write the whole map back — they never touch the group's other grants.
+<code>PUT /groups/{name}</code> can still set <code>apps</code>/<code>device_groups</code> directly too, but
+doing so replaces the <em>entire</em> map; anything not included in that request
+gets silently dropped. Use the grant/revoke routes for single-resource
+changes and reach for the raw <code>PUT</code> only when you actually mean to replace
+the whole grant set at once.</p>
 <h2 id="credentials-not-passwords">Credentials, not passwords</h2>
 <p><code>create_user</code> and the two <code>regenerate-token</code> routes each generate a random
 secret server-side and register it as that user's Nebula <code>token</code>. The
@@ -2100,7 +2304,19 @@ losing a credential just means generating a new one.</p>
 <td>PUT</td>
 <td><code>/api/users/groups/{name}</code></td>
 <td>admin</td>
-<td>Update a group's members/flags/grants</td>
+<td>Update a group's members/flags/grants — replaces the entire <code>apps</code>/<code>device_groups</code> map if included</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/users/groups/{name}/grants</code></td>
+<td>admin</td>
+<td>Grant (or update the permission of) one app or device group for this group</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/users/groups/{name}/grants/revoke</code></td>
+<td>admin</td>
+<td>Revoke one app or device group's grant from this group</td>
 </tr>
 <tr>
 <td>DELETE</td>

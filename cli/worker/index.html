@@ -719,6 +719,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bringing-a-worker-up-without-the-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bringing a worker up without the CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#commands" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1873,6 +1884,25 @@ gets a file scoped to only the <code>apps</code>/<code>device_groups</code> acce
 have, safe to hand to a worker node without granting anything extra. Point
 <code>GUSTAVO_CONFIG_FILE</code> at the downloaded file and run <code>gustavo worker up</code>
 as normal.</p>
+<hr />
+<h2 id="bringing-a-worker-up-without-the-cli">Bringing a worker up without the CLI</h2>
+<p>The steps above assume <code>gustavo</code> is installed on the worker node. If it
+isn't — or you'd rather not install it just to run a worker — each device
+group's page in the UI (or the equivalent API routes directly) offers
+three more ways to get the same worker running, none of which need the
+<code>gustavo</code> package at all:</p>
+<ul>
+<li>A <strong>device-group-scoped <code>worker.env</code></strong> (same as above, plus
+  <code>DEVICE_GROUP</code> already filled in)</li>
+<li>A <strong>self-contained <code>docker-compose.yml</code></strong> — <code>docker compose up -d</code> and
+  it's running, no companion file needed</li>
+<li>A <strong>self-contained launcher script</strong> — <code>.command</code> for macOS/Linux,
+  <code>.bat</code> for Windows — double-click it and it's running</li>
+</ul>
+<p>See <a href="../../ui/device-groups/#get-worker-config">Device Groups UI</a> for the
+download buttons, or
+<a href="../../api/device-groups/#worker-config-downloads">Device Groups API</a> to
+fetch any of them directly from a script.</p>
 <hr />
 <h2 id="commands">Commands</h2>
 <h3 id="up"><code>up</code></h3>

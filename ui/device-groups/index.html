@@ -1405,6 +1405,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#get-worker-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get worker config
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1845,6 +1856,51 @@
 <h2 id="app-assignment">App assignment</h2>
 <p>Apps can belong to multiple device groups. When an app is assigned to a group, all worker nodes in that group will pull and run the app's Docker container.</p>
 <p>Changes take effect on the next Nebula sync cycle on each worker.</p>
+<hr />
+<h2 id="get-worker-config">Get worker config</h2>
+<p>Each device group's row has a <strong>Get worker config</strong> section with four
+download buttons — pick whichever fits how you want to bring a worker up
+for that group. They're independent: downloading one has no bearing on
+the others, and none of them needs a second file alongside it.</p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Downloads</th>
+<th>Use it when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Native (.env)</strong></td>
+<td><code>worker-{group}.env</code></td>
+<td>You have <code>gustavo</code> installed and want to run <code>gustavo worker up</code> directly.</td>
+</tr>
+<tr>
+<td><strong>Docker Compose</strong></td>
+<td><code>docker-compose-{group}.yml</code></td>
+<td>You'd rather manage the worker as a compose service — <code>docker compose up -d</code> and it's running.</td>
+</tr>
+<tr>
+<td><strong>Launcher script (Mac/Linux)</strong></td>
+<td><code>worker-{group}.command</code></td>
+<td>You want a single double-click-and-go file on macOS (or a plain terminal script on Linux) — no compose file, no <code>.env</code>, nothing else to keep track of.</td>
+</tr>
+<tr>
+<td><strong>Launcher script (Windows)</strong></td>
+<td><code>worker-{group}.bat</code></td>
+<td>Same idea, for Windows — double-click in Explorer to run, no setup.</td>
+</tr>
+</tbody>
+</table>
+<p>Every filename includes the device group's name, so downloads for
+different groups never collide or silently overwrite each other in your
+downloads folder.</p>
+<p>All four require you to actually have access to the device group whose
+button you clicked — same permission check as everything else on this
+page. See <a href="../../api/device-groups/#worker-config-downloads">Device Groups API</a>
+for the underlying endpoints, including how to fetch these the same way
+from a script over SSH instead of clicking a button.</p>
 
 
 
