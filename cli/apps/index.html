@@ -2092,6 +2092,10 @@
 <p class="admonition-title">Do not include image tags in <code>docker_image</code></p>
 <p>Specify the image name only — no <code>:latest</code> or version tag. Nebula manages image resolution via the local registry. Including a tag may cause unexpected behaviour.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Only include NEBULA_AUTH_TOKEN/MANAGER_AUTH if this app actually needs it</p>
+<p><code>env_vars</code> become real environment variables on whatever device group the app is deployed to. <code>NEBULA_AUTH_TOKEN</code> is <code>base64("username:password")</code> — encoding, not encryption — so anyone with Docker or shell access on that device can trivially recover the plaintext credential. Only add it for apps that genuinely need to call back into the Nebula Manager themselves (e.g. a comms/reporting container), and prefer a credential scoped for that purpose over your own personal login. The create-app form's auto-filled defaults deliberately leave this out for exactly this reason.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">APP_ID</p>
 <p>The <code>APP_ID</code> env var is automatically set to the application name if not provided. All Nebula apps must have <code>APP_ID</code> in their env_vars to register with the cache.</p>
