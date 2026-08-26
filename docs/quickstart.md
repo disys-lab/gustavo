@@ -7,6 +7,25 @@ Running Gustavo as a Docker container is the recommended approach. You get a sel
 
 ---
 
+## Try it now
+
+Two commands, no setup, no existing Nebula platform required — this brings up just the Gustavo container itself, with login disabled, so you can look around the dashboard immediately:
+
+```bash
+curl -o docker-compose.yml https://raw.githubusercontent.com/disys-lab/gustavo/main/sample_config_files/docker-compose.quickstart.yml
+docker compose up -d
+```
+
+Open [http://localhost:3000](http://localhost:3000). The first load may take a few seconds while FastAPI completes its health check.
+
+At this point Gustavo is running against its own built-in defaults — nothing is actually connected to a real Registry, Redis, MongoDB, or Nebula Manager yet. To point it at (or bring up) a real platform, continue with the full setup below; the same container keeps running the whole time, so nothing from this step needs to be redone.
+
+---
+
+## Full setup
+
+The rest of this page walks through the complete picture: persisting configuration across restarts, connecting to (or launching) real platform services, and enabling authentication. If you followed "Try it now" above, this replaces that trial compose file with a more complete one — stop the trial container first (`docker compose down`).
+
 ## Prerequisites
 
 - Docker Engine 20.10 or later
@@ -136,7 +155,7 @@ If you want to build from source rather than pulling from the registry:
 
 ```bash
 # Clone the repo
-git clone https://github.com/paritoshpr/gustavo.git
+git clone https://github.com/disys-lab/gustavo.git
 cd gustavo
 
 # Build
