@@ -33,11 +33,11 @@ of an industrial site.
 ## The walkthrough
 
 The commands below are what was actually run live during the demo. A ready-to-run
-version lives at [`demoapps/orchestration_test.sh`](https://github.com/disys-lab/gustavo/blob/main/demoapps/orchestration_test.sh)
+version lives at [`examples/nasa_home_demoapps/orchestration_test.sh`](https://github.com/disys-lab/gustavo/blob/main/examples/nasa_home_demoapps/orchestration_test.sh)
 in the repo, alongside the config files it references
-([`algorithms.yml`](https://github.com/disys-lab/gustavo/blob/main/demoapps/config_files/algorithms.yml),
-[`comms_manager_config.yaml`](https://github.com/disys-lab/gustavo/blob/main/demoapps/config_files/comms_manager_config.yaml),
-[`mappings_list.yml`](https://github.com/disys-lab/gustavo/blob/main/demoapps/config_files/mappings_list.yml)).
+([`algorithms.yml`](https://github.com/disys-lab/gustavo/blob/main/examples/nasa_home_demoapps/config_files/algorithms.yml),
+[`comms_manager_config.yaml`](https://github.com/disys-lab/gustavo/blob/main/examples/nasa_home_demoapps/config_files/comms_manager_config.yaml),
+[`mappings_list.yml`](https://github.com/disys-lab/gustavo/blob/main/examples/nasa_home_demoapps/config_files/mappings_list.yml)).
 
 Prerequisite: the Manager and all four workers (`eclss`, `robotics`, `environment`,
 `eps`) are already up — see [Manager Node Setup](../cli/manager-setup.md) and
@@ -65,16 +65,16 @@ Run on the ECLSS and Robotics devices to show a clean slate before deployment.
 ### Step 2 — Deploy an algorithm to each subsystem
 
 One app per algorithm, each created against
-[`algorithms.yml`](https://github.com/disys-lab/gustavo/blob/main/demoapps/config_files/algorithms.yml)
+[`algorithms.yml`](https://github.com/disys-lab/gustavo/blob/main/examples/nasa_home_demoapps/config_files/algorithms.yml)
 and pinned to its subsystem's device group. ECLSS runs three algorithms at once
 via [`createm`](../cli/apps.md#createm) (create-multiple); the rest use a single
 [`create`](../cli/apps.md#create):
 
 ```bash
-gustavo apps createm -n eclss_algorithm1,eclss_algorithm2,eclss_algorithm3 -f algorithms.yml -d eclss
-gustavo apps create -n robotics_algorithm1 -f algorithms.yml -d robotics
-gustavo apps create -n environment_algorithm1 -f algorithms.yml -d environment
-gustavo apps create -n eps_algorithm1 -f algorithms.yml -d eps
+gustavo apps createm -n eclss_algorithm1,eclss_algorithm2,eclss_algorithm3 -f config_files/algorithms.yml -d eclss
+gustavo apps create -n robotics_algorithm1 -f config_files/algorithms.yml -d robotics
+gustavo apps create -n environment_algorithm1 -f config_files/algorithms.yml -d environment
+gustavo apps create -n eps_algorithm1 -f config_files/algorithms.yml -d eps
 ```
 
 ### Step 3 — Confirm the algorithms are running at the edge
@@ -89,10 +89,10 @@ docker ps
 ### Step 4 — Bring up inter-subsystem comms
 
 A comms relay container ties the subsystems together, using
-[`comms_manager_config.yaml`](https://github.com/disys-lab/gustavo/blob/main/demoapps/config_files/comms_manager_config.yaml):
+[`comms_manager_config.yaml`](https://github.com/disys-lab/gustavo/blob/main/examples/nasa_home_demoapps/config_files/comms_manager_config.yaml):
 
 ```bash
-docker-compose -f comms_manager_config.yaml up -d
+docker-compose -f config_files/comms_manager_config.yaml up -d
 ```
 
 ### Adding a worker for a new device group
