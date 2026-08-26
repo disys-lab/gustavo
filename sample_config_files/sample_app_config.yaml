@@ -1,15 +1,18 @@
-test_scarlets:
-    docker_image: "10.0.0.70:5000/library/alpine"
+# Sample app config for `gustavo apps create -f sample_app_config.yaml -n my-app -d <device-group>`.
+# One top-level key per app; the key is the app's name.
+
+my-app:
+    docker_image: "192.168.1.100:5001/my-app"
     env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
+        LOG_LEVEL: "info"
+        SOME_SETTING: "some-value"
     networks:
         - "nebula"
     volumes:
       - "/tmp/:/tmp/"
       - "/var/tmp/:/var/tmp/:rw"
 #    starting_ports:
-#      - 81: 80
+#      - 8080: 80
 
     running: True
     rolling_restart: True
@@ -18,59 +21,13 @@ test_scarlets:
     privileged: False
     devices: []
 
-test_scarlets2:
-    docker_image: "10.0.0.70:5000/fedora"
-    env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
+# Minimal example - only the required fields
+my-other-app:
+    docker_image: "192.168.1.100:5001/my-other-app"
+    env_vars: {}
     networks:
         - "nebula"
-    volumes:
-      - "/tmp/:/tmp/"
-      - "/var/tmp/:/var/tmp/:rw"
-#    starting_ports:
-#      - 1000: 1000
-
-    running: True
-    rolling_restart: True
-    containers_per:
-        server: 1
-    privileged: False
-    devices: []
-
-test_scarlets3:
-    docker_image: "10.0.0.70:5000/nginx"
-    env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
-    networks:
-        - "nebula"
-    volumes:
-      - "/tmp/:/tmp/"
-      - "/var/tmp/:/var/tmp/:rw"
-#    starting_ports:
-#      - 1000: 1000
-
-    running: True
-    rolling_restart: True
-    containers_per:
-        server: 1
-    privileged: False
-    devices: []
-
-test_scarlets4:
-    docker_image: "10.0.0.70:5000/test_scarlets"
-    env_vars:
-        test: "blabla"
-        test3t2t32: "tesg4ehgee"
-    networks:
-        - "nebula"
-    volumes:
-      - "/tmp/:/tmp/"
-      - "/var/tmp/:/var/tmp/:rw"
-#    starting_ports:
-#      - 1000: 1000
-
+    volumes: []
     running: True
     rolling_restart: True
     containers_per:

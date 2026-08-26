@@ -40,10 +40,10 @@ tasks:
     #    registry server (only for 'skopeo', see note below); defaults to false
     source:
       registry: registry.hub.docker.com
-      auth: teentakle1212
+      auth: <base64-encoded-credentials>   # generate via: gustavo utils syncer-auth-token
 
     target:
-      registry: localhost
+      registry: 192.168.1.100:5001
       skip-tls-verify: true
 
     # 'mappings' is a list of 'from':'to' pairs that define mappings of image
@@ -51,4 +51,4 @@ tasks:
     # required, while 'to' can be dropped if the path should remain the same as
     # 'from'. Additionally, the tags being synced for a mapping can be limited
     # by providing a 'tags' list. When omitted, all image tags are synced.
-    mappings_file: /mappings_list.yaml
+    mappings_file: ./sample_config_files/mappings_list.yml

@@ -1,9 +1,9 @@
 mappings:
-      #generic images need to have library/ appended to their from tag
+      # Generic Docker Hub images need "library/" prepended to the source path
       - from: library/nginx
         to: nginx
         tags: ['latest']
 
-      - from: homert2admin/test_linreg
-        to: test_scarlets
-        tags: ['latest']
+      - from: myorg/my-app
+        to: my-app
+        tags: ['latest', '1.2.3']
