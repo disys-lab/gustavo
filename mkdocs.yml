@@ -31,6 +31,7 @@ nav:
     - Quickstart (Docker): quickstart.md
     - Native Installation: installation.md
     - End-to-End Tutorial: tutorial.md
+    - Deploying LLMs (vLLM): llm-deployments.md
     - Configuration Reference: configuration.md
     - Deployment: deployment.md
   - CLI Reference:
