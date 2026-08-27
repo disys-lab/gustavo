@@ -22,6 +22,26 @@ At this point Gustavo is running against its own built-in defaults — nothing i
 
 ---
 
+## Bring up a worker
+
+Once Gustavo itself is running and a device group exists, bring up a worker for it the same way — one `curl` to fetch a ready-made compose file, scoped to your own Nebula identity, then `docker compose up -d`:
+
+```bash
+curl -s -u your-username:your-nebula-secret http://<gustavo-host>:<port>/api/device-groups/<device-group>/worker-compose -o docker-compose.yml
+docker compose up -d
+```
+
+To grant this worker GPU access, add `?gpu=true` to the URL — only do this on hardware that actually has a GPU `nvidia-container-toolkit` can expose:
+
+```bash
+curl -s -u your-username:your-nebula-secret "http://<gustavo-host>:<port>/api/device-groups/<device-group>/worker-compose?gpu=true" -o docker-compose.yml
+docker compose up -d
+```
+
+See [gustavo worker](cli/worker.md) for the full CLI reference, and [Device Groups UI](ui/device-groups.md#get-worker-config) for the other download formats (native `.env`, launcher scripts for macOS/Linux/Windows).
+
+---
+
 ## Full setup
 
 The rest of this page walks through the complete picture: persisting configuration across restarts, connecting to (or launching) real platform services, and enabling authentication. If you followed "Try it now" above, this replaces that trial compose file with a more complete one — stop the trial container first (`docker compose down`).

@@ -83,7 +83,7 @@ async def download_config(_session=Depends(require_admin)):
 
 
 @router.get("/worker-download", response_class=PlainTextResponse)
-async def download_worker_config(session: Session = Depends(verify_session_or_basic)):
+async def download_worker_config(gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
     """
     Return a worker.env scoped to the CALLER's own Nebula identity — never
     a different user's, and never generated from someone else's secret. That
@@ -106,6 +106,10 @@ async def download_worker_config(session: Session = Depends(verify_session_or_ba
     registry-proxy (see docs/deployment.md's Registry Authentication Proxy
     section) using this same worker.env, with nothing registry-specific to
     provision separately.
+
+    gpu=true adds GPU_ENABLED - only set this for a machine that actually
+    has a GPU nvidia-container-toolkit can grant access to; the worker
+    applies it to every container it launches on that machine.
     """
     cfg = config_store.get()
     username = session.username
@@ -126,6 +130,8 @@ async def download_worker_config(session: Session = Depends(verify_session_or_ba
         f"NEBULA_PASSWORD={password}",
         f"NEBULA_AUTH_TOKEN={auth_token}",
     ]
+    if gpu:
+        lines.append("GPU_ENABLED=true")
     return "\n".join(lines) + "\n"
 
 
