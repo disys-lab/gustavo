@@ -2349,6 +2349,10 @@ leaked copy could use to escalate beyond what they can already do.</p>
 </ul>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/config/worker-download<span class="w"> </span>-o<span class="w"> </span>worker.env
 </code></pre></div>
+<p>Add <code>?gpu=true</code> to include <code>GPU_ENABLED=true</code> in the downloaded file —
+only for hardware that actually has a GPU <code>nvidia-container-toolkit</code> can
+expose. Applies to every container that worker launches, not to any
+individual app.</p>
 <p><strong>Response:</strong> <code>text/plain</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>MANAGER_HOST=cypress-man.example.edu
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>MANAGER_PORT=8080

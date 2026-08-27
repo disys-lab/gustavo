@@ -2692,7 +2692,7 @@ boundary); the actual delete, for non-admins, runs as their own token.</p>
 
 
 <h4 id="gustavo.api.routers.device_groups.download_worker_env" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">download_worker_env</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">download_worker_env</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2706,6 +2706,9 @@ boundary); the actual delete, for non-admins, runs as their own token.</p>
         <p>Native <code>gustavo worker up</code> env file for this device group, scoped to the
 caller's own Nebula identity — same shape as /api/config/worker-download,
 plus DEVICE_GROUP so the CLI invocation needs one less flag.</p>
+<p>gpu=true adds GPU_ENABLED - only set this for a device group whose
+hardware actually has a GPU nvidia-container-toolkit can grant access
+to; the worker applies it to every container it launches on that device.</p>
 
 
             <details class="mkdocstrings-source">
@@ -2736,33 +2739,45 @@ plus DEVICE_GROUP so the CLI invocation needs one less flag.</p>
 <span class="normal"><a href="#__codelineno-0-290">290</a></span>
 <span class="normal"><a href="#__codelineno-0-291">291</a></span>
 <span class="normal"><a href="#__codelineno-0-292">292</a></span>
-<span class="normal"><a href="#__codelineno-0-293">293</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-env"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_env</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
+<span class="normal"><a href="#__codelineno-0-293">293</a></span>
+<span class="normal"><a href="#__codelineno-0-294">294</a></span>
+<span class="normal"><a href="#__codelineno-0-295">295</a></span>
+<span class="normal"><a href="#__codelineno-0-296">296</a></span>
+<span class="normal"><a href="#__codelineno-0-297">297</a></span>
+<span class="normal"><a href="#__codelineno-0-298">298</a></span>
+<span class="normal"><a href="#__codelineno-0-299">299</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-env"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_env</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
 <a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="w">    </span><span class="sd">"""Native `gustavo worker up` env file for this device group, scoped to the</span>
 <a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">    caller's own Nebula identity — same shape as /api/config/worker-download,</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">    plus DEVICE_GROUP so the CLI invocation needs one less flag."""</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a>    <span class="n">username</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a>    <span class="n">password</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a>    <span class="n">auth_token</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a>        <span class="sa">f</span><span class="s2">"DEVICE_GROUP=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a>        <span class="sa">f</span><span class="s2">"MANAGER_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'MANAGER_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a>        <span class="sa">f</span><span class="s2">"MANAGER_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'MANAGER_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a>        <span class="sa">f</span><span class="s2">"REDIS_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a>        <span class="sa">f</span><span class="s2">"REDIS_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a>        <span class="sa">f</span><span class="s2">"REDIS_AUTH_TOKEN=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_AUTH_TOKEN'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-285" name="__codelineno-0-285"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-286" name="__codelineno-0-286"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_USER=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-287" name="__codelineno-0-287"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-288" name="__codelineno-0-288"></a>        <span class="sa">f</span><span class="s2">"WORKER_NMODE=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'WORKER_NMODE'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-289" name="__codelineno-0-289"></a>        <span class="sa">f</span><span class="s2">"NEBULA_USERNAME=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-290" name="__codelineno-0-290"></a>        <span class="sa">f</span><span class="s2">"NEBULA_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-291" name="__codelineno-0-291"></a>        <span class="sa">f</span><span class="s2">"NEBULA_AUTH_TOKEN=</span><span class="si">{</span><span class="n">auth_token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-292" name="__codelineno-0-292"></a>    <span class="p">]</span>
-<a id="__codelineno-0-293" name="__codelineno-0-293"></a>    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">    plus DEVICE_GROUP so the CLI invocation needs one less flag.</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">    gpu=true adds GPU_ENABLED - only set this for a device group whose</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">    hardware actually has a GPU nvidia-container-toolkit can grant access</span>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">    to; the worker applies it to every container it launches on that device."""</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-278" name="__codelineno-0-278"></a>    <span class="n">username</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span>
+<a id="__codelineno-0-279" name="__codelineno-0-279"></a>    <span class="n">password</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span>
+<a id="__codelineno-0-280" name="__codelineno-0-280"></a>    <span class="n">auth_token</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+<a id="__codelineno-0-281" name="__codelineno-0-281"></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-282" name="__codelineno-0-282"></a>        <span class="sa">f</span><span class="s2">"DEVICE_GROUP=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-283" name="__codelineno-0-283"></a>        <span class="sa">f</span><span class="s2">"MANAGER_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'MANAGER_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="sa">f</span><span class="s2">"MANAGER_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'MANAGER_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-285" name="__codelineno-0-285"></a>        <span class="sa">f</span><span class="s2">"REDIS_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-286" name="__codelineno-0-286"></a>        <span class="sa">f</span><span class="s2">"REDIS_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-287" name="__codelineno-0-287"></a>        <span class="sa">f</span><span class="s2">"REDIS_AUTH_TOKEN=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_AUTH_TOKEN'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-288" name="__codelineno-0-288"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-289" name="__codelineno-0-289"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-290" name="__codelineno-0-290"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_USER=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-291" name="__codelineno-0-291"></a>        <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-292" name="__codelineno-0-292"></a>        <span class="sa">f</span><span class="s2">"WORKER_NMODE=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'WORKER_NMODE'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-293" name="__codelineno-0-293"></a>        <span class="sa">f</span><span class="s2">"NEBULA_USERNAME=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-294" name="__codelineno-0-294"></a>        <span class="sa">f</span><span class="s2">"NEBULA_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-295" name="__codelineno-0-295"></a>        <span class="sa">f</span><span class="s2">"NEBULA_AUTH_TOKEN=</span><span class="si">{</span><span class="n">auth_token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-296" name="__codelineno-0-296"></a>    <span class="p">]</span>
+<a id="__codelineno-0-297" name="__codelineno-0-297"></a>    <span class="k">if</span> <span class="n">gpu</span><span class="p">:</span>
+<a id="__codelineno-0-298" name="__codelineno-0-298"></a>        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"GPU_ENABLED=true"</span><span class="p">)</span>
+<a id="__codelineno-0-299" name="__codelineno-0-299"></a>    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2773,7 +2788,7 @@ plus DEVICE_GROUP so the CLI invocation needs one less flag.</p>
 
 
 <h4 id="gustavo.api.routers.device_groups.download_worker_compose" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">download_worker_compose</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">download_worker_compose</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2787,17 +2802,13 @@ plus DEVICE_GROUP so the CLI invocation needs one less flag.</p>
         <p>Self-contained docker-compose.yml for this device group's worker — every
 value baked in directly, no companion .env file. Independent of worker-env:
 changing/regenerating one has no effect on the other.</p>
+<p>gpu=true adds GPU_ENABLED - only for a device group whose hardware
+actually has a GPU.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-296">296</a></span>
-<span class="normal"><a href="#__codelineno-0-297">297</a></span>
-<span class="normal"><a href="#__codelineno-0-298">298</a></span>
-<span class="normal"><a href="#__codelineno-0-299">299</a></span>
-<span class="normal"><a href="#__codelineno-0-300">300</a></span>
-<span class="normal"><a href="#__codelineno-0-301">301</a></span>
-<span class="normal"><a href="#__codelineno-0-302">302</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-302">302</a></span>
 <span class="normal"><a href="#__codelineno-0-303">303</a></span>
 <span class="normal"><a href="#__codelineno-0-304">304</a></span>
 <span class="normal"><a href="#__codelineno-0-305">305</a></span>
@@ -2812,28 +2823,40 @@ changing/regenerating one has no effect on the other.</p>
 <span class="normal"><a href="#__codelineno-0-314">314</a></span>
 <span class="normal"><a href="#__codelineno-0-315">315</a></span>
 <span class="normal"><a href="#__codelineno-0-316">316</a></span>
-<span class="normal"><a href="#__codelineno-0-317">317</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-296" name="__codelineno-0-296"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-compose"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-297" name="__codelineno-0-297"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_compose</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
-<a id="__codelineno-0-298" name="__codelineno-0-298"></a><span class="w">    </span><span class="sd">"""Self-contained docker-compose.yml for this device group's worker — every</span>
-<a id="__codelineno-0-299" name="__codelineno-0-299"></a><span class="sd">    value baked in directly, no companion .env file. Independent of worker-env:</span>
-<a id="__codelineno-0-300" name="__codelineno-0-300"></a><span class="sd">    changing/regenerating one has no effect on the other."""</span>
-<a id="__codelineno-0-301" name="__codelineno-0-301"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-302" name="__codelineno-0-302"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-303" name="__codelineno-0-303"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-304" name="__codelineno-0-304"></a>    <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-0-305" name="__codelineno-0-305"></a>        <span class="s2">"image"</span><span class="p">:</span> <span class="n">_WORKER_IMAGE</span><span class="p">,</span>
-<a id="__codelineno-0-306" name="__codelineno-0-306"></a>        <span class="s2">"container_name"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-307" name="__codelineno-0-307"></a>        <span class="s2">"restart"</span><span class="p">:</span> <span class="s2">"unless-stopped"</span><span class="p">,</span>
-<a id="__codelineno-0-308" name="__codelineno-0-308"></a>    <span class="p">}</span>
-<a id="__codelineno-0-309" name="__codelineno-0-309"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
-<a id="__codelineno-0-310" name="__codelineno-0-310"></a>        <span class="n">service</span><span class="p">[</span><span class="s2">"network_mode"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"host"</span>
-<a id="__codelineno-0-311" name="__codelineno-0-311"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
-<a id="__codelineno-0-312" name="__codelineno-0-312"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"volumes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/var/run/docker.sock:/var/run/docker.sock"</span><span class="p">]</span>
-<a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="n">compose</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"services"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"gustavo-worker"</span><span class="p">:</span> <span class="n">service</span><span class="p">}}</span>
-<a id="__codelineno-0-314" name="__codelineno-0-314"></a>    <span class="c1"># default_flow_style=False for block style; yaml.safe_dump handles quoting/</span>
-<a id="__codelineno-0-315" name="__codelineno-0-315"></a>    <span class="c1"># escaping of any value (quotes, $, backticks, ...) correctly on its own -</span>
-<a id="__codelineno-0-316" name="__codelineno-0-316"></a>    <span class="c1"># values here include admin-set secrets, which can contain anything.</span>
-<a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">compose</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-317">317</a></span>
+<span class="normal"><a href="#__codelineno-0-318">318</a></span>
+<span class="normal"><a href="#__codelineno-0-319">319</a></span>
+<span class="normal"><a href="#__codelineno-0-320">320</a></span>
+<span class="normal"><a href="#__codelineno-0-321">321</a></span>
+<span class="normal"><a href="#__codelineno-0-322">322</a></span>
+<span class="normal"><a href="#__codelineno-0-323">323</a></span>
+<span class="normal"><a href="#__codelineno-0-324">324</a></span>
+<span class="normal"><a href="#__codelineno-0-325">325</a></span>
+<span class="normal"><a href="#__codelineno-0-326">326</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-302" name="__codelineno-0-302"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-compose"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-303" name="__codelineno-0-303"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_compose</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
+<a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="w">    </span><span class="sd">"""Self-contained docker-compose.yml for this device group's worker — every</span>
+<a id="__codelineno-0-305" name="__codelineno-0-305"></a><span class="sd">    value baked in directly, no companion .env file. Independent of worker-env:</span>
+<a id="__codelineno-0-306" name="__codelineno-0-306"></a><span class="sd">    changing/regenerating one has no effect on the other.</span>
+<a id="__codelineno-0-307" name="__codelineno-0-307"></a>
+<a id="__codelineno-0-308" name="__codelineno-0-308"></a><span class="sd">    gpu=true adds GPU_ENABLED - only for a device group whose hardware</span>
+<a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">    actually has a GPU."""</span>
+<a id="__codelineno-0-310" name="__codelineno-0-310"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-311" name="__codelineno-0-311"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-312" name="__codelineno-0-312"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">)</span>
+<a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-314" name="__codelineno-0-314"></a>        <span class="s2">"image"</span><span class="p">:</span> <span class="n">_WORKER_IMAGE</span><span class="p">,</span>
+<a id="__codelineno-0-315" name="__codelineno-0-315"></a>        <span class="s2">"container_name"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-316" name="__codelineno-0-316"></a>        <span class="s2">"restart"</span><span class="p">:</span> <span class="s2">"unless-stopped"</span><span class="p">,</span>
+<a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span class="p">}</span>
+<a id="__codelineno-0-318" name="__codelineno-0-318"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
+<a id="__codelineno-0-319" name="__codelineno-0-319"></a>        <span class="n">service</span><span class="p">[</span><span class="s2">"network_mode"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"host"</span>
+<a id="__codelineno-0-320" name="__codelineno-0-320"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
+<a id="__codelineno-0-321" name="__codelineno-0-321"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"volumes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/var/run/docker.sock:/var/run/docker.sock"</span><span class="p">]</span>
+<a id="__codelineno-0-322" name="__codelineno-0-322"></a>    <span class="n">compose</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"services"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"gustavo-worker"</span><span class="p">:</span> <span class="n">service</span><span class="p">}}</span>
+<a id="__codelineno-0-323" name="__codelineno-0-323"></a>    <span class="c1"># default_flow_style=False for block style; yaml.safe_dump handles quoting/</span>
+<a id="__codelineno-0-324" name="__codelineno-0-324"></a>    <span class="c1"># escaping of any value (quotes, $, backticks, ...) correctly on its own -</span>
+<a id="__codelineno-0-325" name="__codelineno-0-325"></a>    <span class="c1"># values here include admin-set secrets, which can contain anything.</span>
+<a id="__codelineno-0-326" name="__codelineno-0-326"></a>    <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">compose</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2844,7 +2867,7 @@ changing/regenerating one has no effect on the other.</p>
 
 
 <h4 id="gustavo.api.routers.device_groups.download_worker_script" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">download_worker_script</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">download_worker_script</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2858,20 +2881,13 @@ changing/regenerating one has no effect on the other.</p>
         <p>Self-contained launcher script for this device group's worker — a single
 <code>docker run</code> invocation with every value baked in directly. Independent of
 both worker-env and worker-compose; downloading this needs nothing else.</p>
+<p>gpu=true adds GPU_ENABLED - only for a device group whose hardware
+actually has a GPU.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-320">320</a></span>
-<span class="normal"><a href="#__codelineno-0-321">321</a></span>
-<span class="normal"><a href="#__codelineno-0-322">322</a></span>
-<span class="normal"><a href="#__codelineno-0-323">323</a></span>
-<span class="normal"><a href="#__codelineno-0-324">324</a></span>
-<span class="normal"><a href="#__codelineno-0-325">325</a></span>
-<span class="normal"><a href="#__codelineno-0-326">326</a></span>
-<span class="normal"><a href="#__codelineno-0-327">327</a></span>
-<span class="normal"><a href="#__codelineno-0-328">328</a></span>
-<span class="normal"><a href="#__codelineno-0-329">329</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-329">329</a></span>
 <span class="normal"><a href="#__codelineno-0-330">330</a></span>
 <span class="normal"><a href="#__codelineno-0-331">331</a></span>
 <span class="normal"><a href="#__codelineno-0-332">332</a></span>
@@ -2885,30 +2901,45 @@ both worker-env and worker-compose; downloading this needs nothing else.</p>
 <span class="normal"><a href="#__codelineno-0-340">340</a></span>
 <span class="normal"><a href="#__codelineno-0-341">341</a></span>
 <span class="normal"><a href="#__codelineno-0-342">342</a></span>
-<span class="normal"><a href="#__codelineno-0-343">343</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-320" name="__codelineno-0-320"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-321" name="__codelineno-0-321"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
-<a id="__codelineno-0-322" name="__codelineno-0-322"></a><span class="w">    </span><span class="sd">"""Self-contained launcher script for this device group's worker — a single</span>
-<a id="__codelineno-0-323" name="__codelineno-0-323"></a><span class="sd">    `docker run` invocation with every value baked in directly. Independent of</span>
-<a id="__codelineno-0-324" name="__codelineno-0-324"></a><span class="sd">    both worker-env and worker-compose; downloading this needs nothing else."""</span>
-<a id="__codelineno-0-325" name="__codelineno-0-325"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-326" name="__codelineno-0-326"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-327" name="__codelineno-0-327"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-328" name="__codelineno-0-328"></a>    <span class="c1"># shlex.quote, not naive f-string interpolation: these values include</span>
-<a id="__codelineno-0-329" name="__codelineno-0-329"></a>    <span class="c1"># admin-set secrets that can contain anything (quotes, $, backticks) -</span>
-<a id="__codelineno-0-330" name="__codelineno-0-330"></a>    <span class="c1"># unescaped, that's a shell-injection risk in a script meant to be</span>
-<a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span class="c1"># double-clicked and run, not just a formatting bug.</span>
-<a id="__codelineno-0-332" name="__codelineno-0-332"></a>    <span class="n">env_flags</span> <span class="o">=</span> <span class="s2">" </span><span class="se">\\\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<a id="__codelineno-0-333" name="__codelineno-0-333"></a>    <span class="n">network_flag</span> <span class="o">=</span> <span class="s2">"--network host </span><span class="se">\\\n</span><span class="s2">  "</span> <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span> <span class="k">else</span> <span class="s2">""</span>
-<a id="__codelineno-0-334" name="__codelineno-0-334"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-335" name="__codelineno-0-335"></a>        <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-336" name="__codelineno-0-336"></a>        <span class="s2">"set -e</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-337" name="__codelineno-0-337"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> 2&gt;/dev/null || true</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-338" name="__codelineno-0-338"></a>        <span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> --restart unless-stopped </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-339" name="__codelineno-0-339"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">network_flag</span><span class="si">}{</span><span class="n">env_flags</span><span class="si">}</span><span class="s2"> </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-340" name="__codelineno-0-340"></a>        <span class="s2">"  -v /var/run/docker.sock:/var/run/docker.sock </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-341" name="__codelineno-0-341"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">_WORKER_IMAGE</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-342" name="__codelineno-0-342"></a>    <span class="p">)</span>
-<a id="__codelineno-0-343" name="__codelineno-0-343"></a>    <span class="k">return</span> <span class="n">script</span>
+<span class="normal"><a href="#__codelineno-0-343">343</a></span>
+<span class="normal"><a href="#__codelineno-0-344">344</a></span>
+<span class="normal"><a href="#__codelineno-0-345">345</a></span>
+<span class="normal"><a href="#__codelineno-0-346">346</a></span>
+<span class="normal"><a href="#__codelineno-0-347">347</a></span>
+<span class="normal"><a href="#__codelineno-0-348">348</a></span>
+<span class="normal"><a href="#__codelineno-0-349">349</a></span>
+<span class="normal"><a href="#__codelineno-0-350">350</a></span>
+<span class="normal"><a href="#__codelineno-0-351">351</a></span>
+<span class="normal"><a href="#__codelineno-0-352">352</a></span>
+<span class="normal"><a href="#__codelineno-0-353">353</a></span>
+<span class="normal"><a href="#__codelineno-0-354">354</a></span>
+<span class="normal"><a href="#__codelineno-0-355">355</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-329" name="__codelineno-0-329"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-330" name="__codelineno-0-330"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
+<a id="__codelineno-0-331" name="__codelineno-0-331"></a><span class="w">    </span><span class="sd">"""Self-contained launcher script for this device group's worker — a single</span>
+<a id="__codelineno-0-332" name="__codelineno-0-332"></a><span class="sd">    `docker run` invocation with every value baked in directly. Independent of</span>
+<a id="__codelineno-0-333" name="__codelineno-0-333"></a><span class="sd">    both worker-env and worker-compose; downloading this needs nothing else.</span>
+<a id="__codelineno-0-334" name="__codelineno-0-334"></a>
+<a id="__codelineno-0-335" name="__codelineno-0-335"></a><span class="sd">    gpu=true adds GPU_ENABLED - only for a device group whose hardware</span>
+<a id="__codelineno-0-336" name="__codelineno-0-336"></a><span class="sd">    actually has a GPU."""</span>
+<a id="__codelineno-0-337" name="__codelineno-0-337"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-338" name="__codelineno-0-338"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-339" name="__codelineno-0-339"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">)</span>
+<a id="__codelineno-0-340" name="__codelineno-0-340"></a>    <span class="c1"># shlex.quote, not naive f-string interpolation: these values include</span>
+<a id="__codelineno-0-341" name="__codelineno-0-341"></a>    <span class="c1"># admin-set secrets that can contain anything (quotes, $, backticks) -</span>
+<a id="__codelineno-0-342" name="__codelineno-0-342"></a>    <span class="c1"># unescaped, that's a shell-injection risk in a script meant to be</span>
+<a id="__codelineno-0-343" name="__codelineno-0-343"></a>    <span class="c1"># double-clicked and run, not just a formatting bug.</span>
+<a id="__codelineno-0-344" name="__codelineno-0-344"></a>    <span class="n">env_flags</span> <span class="o">=</span> <span class="s2">" </span><span class="se">\\\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<a id="__codelineno-0-345" name="__codelineno-0-345"></a>    <span class="n">network_flag</span> <span class="o">=</span> <span class="s2">"--network host </span><span class="se">\\\n</span><span class="s2">  "</span> <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span> <span class="k">else</span> <span class="s2">""</span>
+<a id="__codelineno-0-346" name="__codelineno-0-346"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-347" name="__codelineno-0-347"></a>        <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-348" name="__codelineno-0-348"></a>        <span class="s2">"set -e</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-349" name="__codelineno-0-349"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> 2&gt;/dev/null || true</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-350" name="__codelineno-0-350"></a>        <span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> --restart unless-stopped </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-351" name="__codelineno-0-351"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">network_flag</span><span class="si">}{</span><span class="n">env_flags</span><span class="si">}</span><span class="s2"> </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-352" name="__codelineno-0-352"></a>        <span class="s2">"  -v /var/run/docker.sock:/var/run/docker.sock </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-353" name="__codelineno-0-353"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">_WORKER_IMAGE</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-354" name="__codelineno-0-354"></a>    <span class="p">)</span>
+<a id="__codelineno-0-355" name="__codelineno-0-355"></a>    <span class="k">return</span> <span class="n">script</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2919,7 +2950,7 @@ both worker-env and worker-compose; downloading this needs nothing else.</p>
 
 
 <h4 id="gustavo.api.routers.device_groups.download_worker_script_windows" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">download_worker_script_windows</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
+            <code class="highlight language-python"><span class="n">download_worker_script_windows</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2934,23 +2965,13 @@ both worker-env and worker-compose; downloading this needs nothing else.</p>
 a bash script — cmd.exe's syntax and quoting are different enough (no
 set -e, ^ instead of \ for line continuation, its own escaping rules)
 that it needs its own generator rather than reusing the bash one.</p>
+<p>gpu=true adds GPU_ENABLED - only for a device group whose hardware
+actually has a GPU.</p>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-346">346</a></span>
-<span class="normal"><a href="#__codelineno-0-347">347</a></span>
-<span class="normal"><a href="#__codelineno-0-348">348</a></span>
-<span class="normal"><a href="#__codelineno-0-349">349</a></span>
-<span class="normal"><a href="#__codelineno-0-350">350</a></span>
-<span class="normal"><a href="#__codelineno-0-351">351</a></span>
-<span class="normal"><a href="#__codelineno-0-352">352</a></span>
-<span class="normal"><a href="#__codelineno-0-353">353</a></span>
-<span class="normal"><a href="#__codelineno-0-354">354</a></span>
-<span class="normal"><a href="#__codelineno-0-355">355</a></span>
-<span class="normal"><a href="#__codelineno-0-356">356</a></span>
-<span class="normal"><a href="#__codelineno-0-357">357</a></span>
-<span class="normal"><a href="#__codelineno-0-358">358</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-358">358</a></span>
 <span class="normal"><a href="#__codelineno-0-359">359</a></span>
 <span class="normal"><a href="#__codelineno-0-360">360</a></span>
 <span class="normal"><a href="#__codelineno-0-361">361</a></span>
@@ -2960,29 +2981,47 @@ that it needs its own generator rather than reusing the bash one.</p>
 <span class="normal"><a href="#__codelineno-0-365">365</a></span>
 <span class="normal"><a href="#__codelineno-0-366">366</a></span>
 <span class="normal"><a href="#__codelineno-0-367">367</a></span>
-<span class="normal"><a href="#__codelineno-0-368">368</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script-windows"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script_windows</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
-<a id="__codelineno-0-348" name="__codelineno-0-348"></a><span class="w">    </span><span class="sd">"""Same as worker-script, as a double-click-able Windows .bat instead of</span>
-<a id="__codelineno-0-349" name="__codelineno-0-349"></a><span class="sd">    a bash script — cmd.exe's syntax and quoting are different enough (no</span>
-<a id="__codelineno-0-350" name="__codelineno-0-350"></a><span class="sd">    set -e, ^ instead of \\ for line continuation, its own escaping rules)</span>
-<a id="__codelineno-0-351" name="__codelineno-0-351"></a><span class="sd">    that it needs its own generator rather than reusing the bash one."""</span>
-<a id="__codelineno-0-352" name="__codelineno-0-352"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-353" name="__codelineno-0-353"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-354" name="__codelineno-0-354"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-355" name="__codelineno-0-355"></a>    <span class="n">container_name</span> <span class="o">=</span> <span class="n">_batch_quote</span><span class="p">(</span><span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-356" name="__codelineno-0-356"></a>    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> --restart unless-stopped"</span><span class="p">]</span>
-<a id="__codelineno-0-357" name="__codelineno-0-357"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
-<a id="__codelineno-0-358" name="__codelineno-0-358"></a>        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--network host"</span><span class="p">)</span>
-<a id="__codelineno-0-359" name="__codelineno-0-359"></a>    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_batch_quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
-<a id="__codelineno-0-360" name="__codelineno-0-360"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /var/run/docker.sock:/var/run/docker.sock"</span><span class="p">)</span>
-<a id="__codelineno-0-361" name="__codelineno-0-361"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_WORKER_IMAGE</span><span class="p">)</span>
-<a id="__codelineno-0-362" name="__codelineno-0-362"></a>    <span class="n">run_command</span> <span class="o">=</span> <span class="s2">" ^</span><span class="se">\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<a id="__codelineno-0-363" name="__codelineno-0-363"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-364" name="__codelineno-0-364"></a>        <span class="s2">"@echo off</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-365" name="__codelineno-0-365"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-366" name="__codelineno-0-366"></a>        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">run_command</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-367" name="__codelineno-0-367"></a>    <span class="p">)</span>
-<a id="__codelineno-0-368" name="__codelineno-0-368"></a>    <span class="k">return</span> <span class="n">script</span>
+<span class="normal"><a href="#__codelineno-0-368">368</a></span>
+<span class="normal"><a href="#__codelineno-0-369">369</a></span>
+<span class="normal"><a href="#__codelineno-0-370">370</a></span>
+<span class="normal"><a href="#__codelineno-0-371">371</a></span>
+<span class="normal"><a href="#__codelineno-0-372">372</a></span>
+<span class="normal"><a href="#__codelineno-0-373">373</a></span>
+<span class="normal"><a href="#__codelineno-0-374">374</a></span>
+<span class="normal"><a href="#__codelineno-0-375">375</a></span>
+<span class="normal"><a href="#__codelineno-0-376">376</a></span>
+<span class="normal"><a href="#__codelineno-0-377">377</a></span>
+<span class="normal"><a href="#__codelineno-0-378">378</a></span>
+<span class="normal"><a href="#__codelineno-0-379">379</a></span>
+<span class="normal"><a href="#__codelineno-0-380">380</a></span>
+<span class="normal"><a href="#__codelineno-0-381">381</a></span>
+<span class="normal"><a href="#__codelineno-0-382">382</a></span>
+<span class="normal"><a href="#__codelineno-0-383">383</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-358" name="__codelineno-0-358"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script-windows"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-359" name="__codelineno-0-359"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script_windows</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
+<a id="__codelineno-0-360" name="__codelineno-0-360"></a><span class="w">    </span><span class="sd">"""Same as worker-script, as a double-click-able Windows .bat instead of</span>
+<a id="__codelineno-0-361" name="__codelineno-0-361"></a><span class="sd">    a bash script — cmd.exe's syntax and quoting are different enough (no</span>
+<a id="__codelineno-0-362" name="__codelineno-0-362"></a><span class="sd">    set -e, ^ instead of \\ for line continuation, its own escaping rules)</span>
+<a id="__codelineno-0-363" name="__codelineno-0-363"></a><span class="sd">    that it needs its own generator rather than reusing the bash one.</span>
+<a id="__codelineno-0-364" name="__codelineno-0-364"></a>
+<a id="__codelineno-0-365" name="__codelineno-0-365"></a><span class="sd">    gpu=true adds GPU_ENABLED - only for a device group whose hardware</span>
+<a id="__codelineno-0-366" name="__codelineno-0-366"></a><span class="sd">    actually has a GPU."""</span>
+<a id="__codelineno-0-367" name="__codelineno-0-367"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-368" name="__codelineno-0-368"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-369" name="__codelineno-0-369"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">)</span>
+<a id="__codelineno-0-370" name="__codelineno-0-370"></a>    <span class="n">container_name</span> <span class="o">=</span> <span class="n">_batch_quote</span><span class="p">(</span><span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-371" name="__codelineno-0-371"></a>    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> --restart unless-stopped"</span><span class="p">]</span>
+<a id="__codelineno-0-372" name="__codelineno-0-372"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
+<a id="__codelineno-0-373" name="__codelineno-0-373"></a>        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--network host"</span><span class="p">)</span>
+<a id="__codelineno-0-374" name="__codelineno-0-374"></a>    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_batch_quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<a id="__codelineno-0-375" name="__codelineno-0-375"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /var/run/docker.sock:/var/run/docker.sock"</span><span class="p">)</span>
+<a id="__codelineno-0-376" name="__codelineno-0-376"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_WORKER_IMAGE</span><span class="p">)</span>
+<a id="__codelineno-0-377" name="__codelineno-0-377"></a>    <span class="n">run_command</span> <span class="o">=</span> <span class="s2">" ^</span><span class="se">\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<a id="__codelineno-0-378" name="__codelineno-0-378"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-379" name="__codelineno-0-379"></a>        <span class="s2">"@echo off</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-380" name="__codelineno-0-380"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-381" name="__codelineno-0-381"></a>        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">run_command</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-382" name="__codelineno-0-382"></a>    <span class="p">)</span>
+<a id="__codelineno-0-383" name="__codelineno-0-383"></a>    <span class="k">return</span> <span class="n">script</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3063,6 +3102,11 @@ fresh, scoped to the caller's own Nebula identity and this device group.</p>
 <code>username:secret</code> (for one-shot use from a remote script). All four also
 require the caller to actually have access to this device group — admin,
 or a member of a group it's granted to — otherwise <code>403</code>.</p>
+<p>All four also accept an optional <code>?gpu=true</code> query param, which adds
+<code>GPU_ENABLED=true</code> to the generated worker config — only use this for a
+device group whose hardware actually has a GPU <code>nvidia-container-toolkit</code>
+can expose. It applies to every container that worker launches, not to
+any individual app.</p>
 <hr />
 <h3 id="get-apidevice-groupsnameworker-env"><code>GET /api/device-groups/{name}/worker-env</code></h3>
 <p>Same shape as <code>GET /api/config/worker-download</code>, scoped to this device
