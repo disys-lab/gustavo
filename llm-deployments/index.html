@@ -13,28 +13,28 @@
       
       
       
-        <link rel="prev" href="../settings/">
+        <link rel="prev" href="../tutorial/">
       
       
-        <link rel="next" href="../components/">
+        <link rel="next" href="../configuration/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Users - Gustavo</title>
+        <title>Deploying LLMs (vLLM) - Gustavo</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,11 +53,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../assets/extra.css">
+      <link rel="stylesheet" href="../assets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#users" class="md-skip">
+        <a href="#deploying-llms-vllm" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Gustavo" class="md-header__button md-logo" aria-label="Gustavo" data-md-component="logo">
+    <a href=".." title="Gustavo" class="md-header__button md-logo" aria-label="Gustavo" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Users
+              Deploying LLMs (vLLM)
             
           </span>
         </div>
@@ -241,7 +241,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Gustavo" class="md-nav__button md-logo" aria-label="Gustavo" data-md-component="logo">
+    <a href=".." title="Gustavo" class="md-nav__button md-logo" aria-label="Gustavo" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -271,7 +271,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -295,8 +295,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -307,13 +309,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -334,7 +334,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -352,7 +352,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../quickstart/" class="md-nav__link">
+      <a href="../quickstart/" class="md-nav__link">
         
   
   
@@ -380,7 +380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -408,7 +408,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/" class="md-nav__link">
+      <a href="../tutorial/" class="md-nav__link">
         
   
   
@@ -433,10 +433,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../llm-deployments/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying LLMs (vLLM)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -452,6 +479,153 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-one-thing-this-tutorial-cant-skip-model-weights-are-your-responsibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The one thing this tutorial can't skip: model weights are your responsibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-customize-the-example-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Customize the example config
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-upload-and-create-the-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Upload and create the app
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-verify-its-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Verify it's running
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes-specific-to-llm-deployments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes specific to LLM deployments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notes specific to LLM deployments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shm_size-vs-ipchost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        shm_size vs --ipc=host
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gpu-is-worker-wide-not-per-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU is worker-wide, not per-app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restart-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restart behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-a-docker-run-command-to-an-app-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Converting a docker run command to an app config
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -464,7 +638,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -492,7 +666,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/" class="md-nav__link">
+      <a href="../deployment/" class="md-nav__link">
         
   
   
@@ -581,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/" class="md-nav__link">
+      <a href="../cli/" class="md-nav__link">
         
   
   
@@ -609,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/manager-setup/" class="md-nav__link">
+      <a href="../cli/manager-setup/" class="md-nav__link">
         
   
   
@@ -637,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/manager/" class="md-nav__link">
+      <a href="../cli/manager/" class="md-nav__link">
         
   
   
@@ -665,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/worker/" class="md-nav__link">
+      <a href="../cli/worker/" class="md-nav__link">
         
   
   
@@ -693,7 +867,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/apps/" class="md-nav__link">
+      <a href="../cli/apps/" class="md-nav__link">
         
   
   
@@ -721,7 +895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/device-groups/" class="md-nav__link">
+      <a href="../cli/device-groups/" class="md-nav__link">
         
   
   
@@ -749,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/registry/" class="md-nav__link">
+      <a href="../cli/registry/" class="md-nav__link">
         
   
   
@@ -777,7 +951,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/cache/" class="md-nav__link">
+      <a href="../cli/cache/" class="md-nav__link">
         
   
   
@@ -805,7 +979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/utils/" class="md-nav__link">
+      <a href="../cli/utils/" class="md-nav__link">
         
   
   
@@ -894,7 +1068,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/" class="md-nav__link">
+      <a href="../api/" class="md-nav__link">
         
   
   
@@ -922,7 +1096,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/auth/" class="md-nav__link">
+      <a href="../api/auth/" class="md-nav__link">
         
   
   
@@ -950,7 +1124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/config/" class="md-nav__link">
+      <a href="../api/config/" class="md-nav__link">
         
   
   
@@ -978,7 +1152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/services/" class="md-nav__link">
+      <a href="../api/services/" class="md-nav__link">
         
   
   
@@ -1006,7 +1180,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/apps/" class="md-nav__link">
+      <a href="../api/apps/" class="md-nav__link">
         
   
   
@@ -1034,7 +1208,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/device-groups/" class="md-nav__link">
+      <a href="../api/device-groups/" class="md-nav__link">
         
   
   
@@ -1062,7 +1236,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/monitoring/" class="md-nav__link">
+      <a href="../api/monitoring/" class="md-nav__link">
         
   
   
@@ -1090,7 +1264,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/backups/" class="md-nav__link">
+      <a href="../api/backups/" class="md-nav__link">
         
   
   
@@ -1118,7 +1292,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/users/" class="md-nav__link">
+      <a href="../api/users/" class="md-nav__link">
         
   
   
@@ -1146,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/registry/" class="md-nav__link">
+      <a href="../api/registry/" class="md-nav__link">
         
   
   
@@ -1178,8 +1352,6 @@
       
   
   
-    
-  
   
   
     
@@ -1192,11 +1364,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -1217,7 +1391,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1235,7 +1409,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../ui/" class="md-nav__link">
         
   
   
@@ -1263,7 +1437,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dashboard/" class="md-nav__link">
+      <a href="../ui/dashboard/" class="md-nav__link">
         
   
   
@@ -1291,7 +1465,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../apps/" class="md-nav__link">
+      <a href="../ui/apps/" class="md-nav__link">
         
   
   
@@ -1319,7 +1493,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../device-groups/" class="md-nav__link">
+      <a href="../ui/device-groups/" class="md-nav__link">
         
   
   
@@ -1347,7 +1521,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../monitoring/" class="md-nav__link">
+      <a href="../ui/monitoring/" class="md-nav__link">
         
   
   
@@ -1375,7 +1549,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../backups/" class="md-nav__link">
+      <a href="../ui/backups/" class="md-nav__link">
         
   
   
@@ -1403,7 +1577,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../settings/" class="md-nav__link">
+      <a href="../ui/settings/" class="md-nav__link">
         
   
   
@@ -1428,37 +1602,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Users
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../ui/users/" class="md-nav__link">
         
   
   
@@ -1474,59 +1621,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#users-page-users" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Users page (/users)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#groups-page-usersgroups" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Groups page (/users/groups)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#self-service-credential-rotation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Self-service credential rotation
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1539,7 +1633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../components/" class="md-nav__link">
+      <a href="../ui/components/" class="md-nav__link">
         
   
   
@@ -1628,7 +1722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../src/nebulabase/" class="md-nav__link">
+      <a href="../src/nebulabase/" class="md-nav__link">
         
   
   
@@ -1656,7 +1750,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../src/manager/" class="md-nav__link">
+      <a href="../src/manager/" class="md-nav__link">
         
   
   
@@ -1684,7 +1778,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../src/composer/" class="md-nav__link">
+      <a href="../src/composer/" class="md-nav__link">
         
   
   
@@ -1712,7 +1806,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../src/cache/" class="md-nav__link">
+      <a href="../src/cache/" class="md-nav__link">
         
   
   
@@ -1801,7 +1895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../demos/nasa-home/" class="md-nav__link">
+      <a href="../demos/nasa-home/" class="md-nav__link">
         
   
   
@@ -1836,7 +1930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/" class="md-nav__link">
+      <a href="../contributing/" class="md-nav__link">
         
   
   
@@ -1863,7 +1957,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -1903,52 +1997,167 @@
   
 
 
-<h1 id="users">Users</h1>
-<p>The <strong>Users</strong> section (sidebar, admin-only) is where the platform admin
-manages accounts and roles. It's backed entirely by Nebula's own
-<code>users</code>/<code>user_groups</code> API — see <a href="../../api/users/">Users API</a> and
-<a href="../../api/auth/">Authentication</a> for the underlying model.</p>
-<h2 id="users-page-users">Users page (<code>/users</code>)</h2>
-<p>A table of every Nebula user: username, which group(s) they belong to, and
-whether they're an admin (derived from group membership, not a separate
-flag on the user).</p>
+<h1 id="deploying-llms-vllm">Deploying LLMs (vLLM)</h1>
+<p>This tutorial walks through deploying a GPU-backed LLM inference server — <a href="https://docs.vllm.ai/">vLLM</a>'s OpenAI-compatible API — as a Gustavo app. It builds on the <a href="../tutorial/">End-to-End Tutorial</a>; read that first if you haven't set up a device group and worker yet.</p>
+<p>Two ready-to-use example configs ship in <a href="https://github.com/disys-lab/gustavo/tree/main/examples/llm_deployments/vllm"><code>examples/llm_deployments/vllm/</code></a>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>qwen3-coder-next.yaml</code></td>
+<td>Qwen3 Coder (tool-calling, code-focused)</td>
+</tr>
+<tr>
+<td><code>qwen3.6-35b-a3b-fp8.yaml</code></td>
+<td>Qwen3.6 35B (reasoning/thinking model)</td>
+</tr>
+</tbody>
+</table>
+<p>Both were converted from a plain <code>docker run --gpus all --ipc=host ...</code> command into a Gustavo app config — see <a href="#converting-a-docker-run-command-to-an-app-config">Converting a <code>docker run</code> command</a> below if you're adapting a different model.</p>
+<hr />
+<h2 id="the-one-thing-this-tutorial-cant-skip-model-weights-are-your-responsibility">The one thing this tutorial can't skip: model weights are your responsibility</h2>
+<p><strong>Gustavo does not fetch, download, or manage model weights.</strong> The <code>volumes</code> entry in the app config is a bind mount — it tells the container "make this host directory available inside the container at <code>/model</code>." Nothing in Gustavo, the Manager, or the worker downloads a model into that directory for you.</p>
+<p>Before you deploy, you must:</p>
+<ol>
+<li><strong>Download the model weights yourself</strong> (e.g. <code>huggingface-cli download</code>, <code>git lfs</code>, or however you normally fetch them) directly onto the target spark — not onto your laptop, not onto the manager node. The worker mounts a path on <strong>its own local disk</strong>.</li>
+<li><strong>Put them at the exact absolute path</strong> that appears on the host side of <code>volumes:</code> in the YAML. If the YAML says:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/home/ubuntu/cypress-ai/models/qwen3-coder-next-fp8:/model</span>
+</code></pre></div>
+   then <code>/home/ubuntu/cypress-ai/models/qwen3-coder-next-fp8</code> must exist on that spark, with the model files directly inside it, <em>before</em> you start the app. If the path is wrong or empty, the container will still start (Docker creates an empty directory rather than failing), but vLLM will fail immediately trying to load a model from an empty <code>/model</code>.</li>
+<li><strong>Match the path per-spark.</strong> If you deploy the same app config to a device group with multiple workers, every worker in that group needs the weights at that identical path — Gustavo doesn't stage or sync files between workers, it just tells each worker's Docker daemon to mount whatever's at that path locally.</li>
+</ol>
+<p>This is the single most common way a first LLM deployment fails — the container comes up, looks healthy in <code>docker ps</code>, and then immediately crash-loops because <code>/model</code> is empty or has the wrong path underneath it. Always check the target spark's filesystem yourself before assigning the app to a device group:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>ssh<span class="w"> </span>&lt;spark-host&gt;
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>ls<span class="w"> </span>-la<span class="w"> </span>/home/ubuntu/cypress-ai/models/qwen3-coder-next-fp8
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># should show config.json, *.safetensors, tokenizer files, etc. — not an empty directory</span>
+</code></pre></div>
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Beyond the weights being staged correctly, confirm:</p>
 <ul>
-<li><strong>Create user</strong> — pick a username and, optionally, a group to add them
-  to. Submitting shows the new <code>username:secret</code> login credential exactly
-  once, in a copy-and-confirm dialog — it can't be retrieved again, only
-  regenerated. A user with no group can log in but can't do anything yet:
-  they need to belong to at least one group before they can create apps.</li>
-<li><strong>Regenerate token</strong> (key icon) — issues a brand-new credential for that
-  user, invalidating the old one immediately. There's no password-reset
-  flow to build here; this <em>is</em> the reset flow.</li>
-<li><strong>Delete</strong> — removes the user from Nebula and from any groups they
-  belonged to.</li>
+<li><strong>GPU access on the target worker.</strong> GPU access is a <em>per-worker</em> setting in Gustavo, not a per-app one — there is no per-app "use GPU" toggle. The worker that will run this app must already be started with <code>GPU_ENABLED=true</code> in its config; every container that worker runs gets GPU device access, not just this one. If you're not sure, check the worker's config/env on that spark, or ask whoever set it up. Deploying a GPU app to a worker without <code>GPU_ENABLED=true</code> will start the container, but vLLM will fail to find a GPU.</li>
+<li><strong>A vLLM API key.</strong> Both example configs pass <code>--api-key</code> as a command argument to vLLM itself — replace the placeholder with a real key before deploying, or requests to the server will be rejected (or worse, left open if you drop the flag instead of replacing it).</li>
+<li><strong>Free host port.</strong> Both example configs bind host port <code>8000</code>. If you're deploying more than one LLM to the <em>same</em> spark, give each a distinct host port in <code>starting_ports</code> — two apps both trying to bind <code>8000</code> on one worker will conflict.</li>
+<li><strong>Enough <code>/dev/shm</code>.</strong> See <a href="#shm_size-vs-ipchost">shm_size vs <code>--ipc=host</code></a> below.</li>
 </ul>
-<h2 id="groups-page-usersgroups">Groups page (<code>/users/groups</code>)</h2>
-<p>Groups are roles. Each one has:</p>
+<hr />
+<h2 id="step-1-customize-the-example-config">Step 1 — Customize the example config</h2>
+<p>Open the example closest to your model (or your own converted config — see below) and edit:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">docker_image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm/vllm-openai:latest</span><span class="w">   </span><span class="c1"># or a pinned tag instead of :latest</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/ABSOLUTE/PATH/ON/THE/SPARK:/model</span><span class="w">   </span><span class="c1"># must match where you staged the weights</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nt">command</span><span class="p">:</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--model"</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"/model"</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--served-model-name"</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"your-model-name"</span><span class="w">                    </span><span class="c1"># what clients will request via the OpenAI API</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="c1"># ...other vLLM flags...</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--api-key"</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"your-real-api-key"</span><span class="w">                  </span><span class="c1"># replace the placeholder</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="nt">shm_size</span><span class="p">:</span><span class="w"> </span><span class="s">"16g"</span><span class="w">                          </span><span class="c1"># see the note below on sizing this</span>
+</code></pre></div>
+<p>Everything else (<code>running</code>, <code>privileged</code>, <code>network_mode</code>, <code>starting_ports</code>, <code>env_vars</code>) can usually be left as-is unless you have a specific reason to change it.</p>
+<hr />
+<h2 id="step-2-upload-and-create-the-app">Step 2 — Upload and create the app</h2>
+<ol>
+<li>Go to <strong>Apps → New App</strong>.</li>
+<li>Click <strong>Upload YAML</strong> and select your edited config file.</li>
+<li>This prefills the entire form — Docker image, port mapping, volume, and the <strong>Command &amp; Shared Memory</strong> section (the <code>command</code> arguments and <code>shm_size</code>).</li>
+<li>Review every field, especially the volume path and API key you just edited — the form doesn't re-validate that the path actually exists on any worker, that's on you (see <a href="#the-one-thing-this-tutorial-cant-skip-model-weights-are-your-responsibility">above</a>).</li>
+<li>Under <strong>Device Groups</strong>, select the group whose worker(s) already have the weights staged and <code>GPU_ENABLED=true</code>.</li>
+<li>Click <strong>Create App</strong>.</li>
+</ol>
+<p>If you'd rather not use YAML upload, every field can be filled in by hand the same way — the <strong>Command &amp; Shared Memory</strong> card has an "Add Argument" button for building up the <code>command</code> list one flag at a time, and a plain text field for <code>shm_size</code>.</p>
+<hr />
+<h2 id="step-3-verify-its-running">Step 3 — Verify it's running</h2>
+<p>On the target spark:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>ps<span class="w"> </span>--filter<span class="w"> </span><span class="nv">name</span><span class="o">=</span>your-app-name
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>logs<span class="w"> </span>your-app-name-1
+</code></pre></div>
+<p>vLLM takes a while to load a large model into GPU memory — watch the logs until you see it report the server is up, then hit the OpenAI-compatible endpoint directly from the spark (or from anywhere with network access to it):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>curl<span class="w"> </span>http://localhost:8000/v1/models<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer your-real-api-key"</span>
+</code></pre></div>
+<p>A working deployment returns your <code>served-model-name</code> in the response. If the container is repeatedly restarting instead, check <code>docker logs</code> first — an empty or wrong <code>/model</code> mount (see above) and a missing GPU are the two most common causes.</p>
+<hr />
+<h2 id="notes-specific-to-llm-deployments">Notes specific to LLM deployments</h2>
+<h3 id="shm_size-vs-ipchost"><code>shm_size</code> vs <code>--ipc=host</code></h3>
+<p>If you were previously running vLLM manually with <code>--ipc=host</code>, note that Gustavo has no equivalent setting yet — there's no <code>ipc_mode</code> field. This isn't a gap specific to LLMs: <code>--ipc=host</code> and a generous <code>shm_size</code> are <a href="https://docs.vllm.ai/">documented alternatives</a> for vLLM specifically, not two different features — <code>--ipc=host</code> just gives the container the host's real (effectively unbounded) <code>/dev/shm</code>, sidestepping the need to guess a size. Setting <code>shm_size</code> to something generous (both examples use <code>16g</code>; scale it to what your spark can spare and your model's parallelism needs) achieves the same practical effect for vLLM.</p>
+<p>Leaving <code>shm_size</code> unset defaults to Docker's normal 64m, which is usually too small for vLLM's inter-process communication — an unset or too-small <code>shm_size</code> tends to show up as vLLM crashing or hanging during startup rather than a clear error message, so if a deployment misbehaves and the logs look GPU/model-loading-related, check this next.</p>
+<h3 id="gpu-is-worker-wide-not-per-app">GPU is worker-wide, not per-app</h3>
+<p>Worth repeating: there is no per-app GPU flag in Gustavo. <code>GPU_ENABLED</code> is set once, on the worker itself, and applies to every container that worker starts — GPU or not. You can't have one GPU app and one non-GPU app pinned differently on the same worker; the setting is host-wide.</p>
+<h3 id="restart-behavior">Restart behavior</h3>
+<p>Every app Gustavo starts (LLM or otherwise) already runs with Docker's <code>unless-stopped</code> restart policy — this is hardcoded worker behavior, not something you configure per app. You don't need (and currently can't set) an equivalent to <code>--restart unless-stopped</code> in the YAML; it's already the default.</p>
+<hr />
+<h2 id="converting-a-docker-run-command-to-an-app-config">Converting a <code>docker run</code> command to an app config</h2>
+<p>If you're adapting a different model, the mapping from a manual <code>docker run</code> invocation to a Gustavo app config is direct:</p>
+<table>
+<thead>
+<tr>
+<th><code>docker run</code> flag</th>
+<th>App config field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the image reference</td>
+<td><code>docker_image</code></td>
+</tr>
+<tr>
+<td><code>-p HOST:CONTAINER</code></td>
+<td><code>starting_ports: [{HOST: CONTAINER}]</code></td>
+</tr>
+<tr>
+<td><code>-v HOST:CONTAINER</code></td>
+<td><code>volumes: ["HOST:CONTAINER"]</code></td>
+</tr>
+<tr>
+<td><code>-e KEY=VALUE</code></td>
+<td><code>env_vars: {KEY: VALUE}</code></td>
+</tr>
+<tr>
+<td><code>--privileged</code></td>
+<td><code>privileged: true</code></td>
+</tr>
+<tr>
+<td>everything after the image name</td>
+<td><code>command: [...]</code>, one array element per token</td>
+</tr>
+<tr>
+<td><code>--shm-size</code> / <code>--ipc=host</code></td>
+<td><code>shm_size</code> (see <a href="#shm_size-vs-ipchost">above</a>)</td>
+</tr>
+<tr>
+<td><code>--gpus all</code></td>
+<td>not part of the app config — see <a href="#gpu-is-worker-wide-not-per-app">GPU is worker-wide</a></td>
+</tr>
+<tr>
+<td><code>--restart</code></td>
+<td>not configurable — see <a href="#restart-behavior">Restart behavior</a></td>
+</tr>
+<tr>
+<td><code>--name</code></td>
+<td>the app's <code>name</code> (set at creation, not part of <code>config</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The two example files in <code>examples/llm_deployments/vllm/</code> show this conversion end-to-end, including the comments explaining each field — they're a good starting template even for a non-vLLM GPU workload.</p>
+<hr />
+<h2 id="next-steps">Next steps</h2>
 <ul>
-<li><strong>Members</strong> — usernames in this group (comma-separated in the form).</li>
-<li><strong>Admin</strong> — if checked, every member bypasses all per-app/device-group
-  permission checks (same as the break-glass admin, just as a regular
-  Nebula account instead of the fixed <code>nebula</code>/<code>nebula</code> credential).</li>
-<li><strong>Pruning allowed</strong> — lets members prune unused images.</li>
-<li><strong>App / device-group grants</strong> — listed on each group's row, and directly
-  manageable via that row's <strong>Grants</strong> button. These are usually set
-  automatically the first time: when a non-admin user creates an app or
-  device group, Gustavo grants their own group <code>rw</code> on it immediately after
-  creation (see <a href="../../api/apps/">Apps API</a>). The <strong>Grants</strong> dialog covers
-  everything after that — pick an app or device group; if it's not yet
-  granted to this group, choose a permission and <strong>Grant</strong> it; if it's
-  already granted, the dialog shows the current permission and lets you
-  either change it (<strong>Update</strong>) or <strong>Revoke</strong> it entirely. Adding, changing,
-  or removing one grant never disturbs the group's other grants. Admins can
-  also see which group(s) hold access to a given app from that app's detail
-  page (read-only there — manage it from the Groups page).</li>
+<li><a href="../tutorial/">End-to-End Tutorial</a> — device groups, worker setup, and the rest of the app lifecycle</li>
+<li><a href="../ui/apps/">Apps (Web UI)</a> — full reference for every AppForm field</li>
+<li><a href="../ui/monitoring/">Monitoring</a> — watch GPU host resource usage once the app is live</li>
 </ul>
-<h2 id="self-service-credential-rotation">Self-service credential rotation</h2>
-<p>Every logged-in user (not just admins) can rotate their own credential from
-the <strong>My credential</strong> action in the sidebar, without needing an admin —
-useful after accidentally sharing a credential, or just as routine hygiene.</p>
 
 
 
@@ -1986,7 +2195,7 @@ useful after accidentally sharing a credential, or just as routine hygiene.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../settings/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Settings">
+          <a href="../tutorial/" class="md-footer__link md-footer__link--prev" aria-label="Previous: End-to-End Tutorial">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1996,20 +2205,20 @@ useful after accidentally sharing a credential, or just as routine hygiene.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Settings
+                End-to-End Tutorial
               </div>
             </div>
           </a>
         
         
           
-          <a href="../components/" class="md-footer__link md-footer__link--next" aria-label="Next: Component Reference">
+          <a href="../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration Reference">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Component Reference
+                Configuration Reference
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2046,10 +2255,10 @@ useful after accidentally sharing a credential, or just as routine hygiene.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

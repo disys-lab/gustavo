@@ -436,6 +436,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../llm-deployments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploying LLMs (vLLM)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../configuration/" class="md-nav__link">
         
   
@@ -2006,8 +2034,28 @@
 <p>Dynamic list of <code>HOST PATH</code> / <code>CONTAINER PATH</code> string pairs.</p>
 <p><strong>Device Groups</strong></p>
 <p>Multi-select of available device groups. The app is added to all selected groups on save.</p>
+<p><strong>Command &amp; Shared Memory</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Container Command</td>
+<td>Dynamic list of command arguments overriding the image's default entrypoint/command. One argument per row, in order (e.g. <code>python3</code>, <code>-m</code>, <code>vllm.entrypoints.openai.api_server</code>). Leave empty to use the image's default command.</td>
+</tr>
+<tr>
+<td>Shared Memory Size</td>
+<td>Text field for <code>shm_size</code> (e.g. <code>2g</code>). Leave empty for Docker's default (64m).</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../../llm-deployments/">Deploying LLMs</a> for a worked example — these two fields are what make GPU inference servers like vLLM deployable through Gustavo.</p>
 <h3 id="yaml-import">YAML import</h3>
-<p>Click <strong>Import YAML</strong> to upload a <code>.yaml</code> file. The parsed config populates all form fields, which you can review before saving.</p>
+<p>Click <strong>Upload YAML</strong> to upload a <code>.yaml</code> file. The parsed config populates all form fields — including Command &amp; Shared Memory — which you can review before saving.</p>
 <hr />
 <h2 id="edit-app-appsname">Edit app (<code>/apps/[name]</code>)</h2>
 <p>Same form as Create, with the app name field disabled. All other fields are editable.</p>
