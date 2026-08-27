@@ -13,12 +13,12 @@ Both were converted from a plain `docker run --gpus all --ipc=host ...` command 
 
 A larger set of ready-made configs for real production models lives in
 [`examples/llm_deployments/vllm/dgx-spark/`](https://github.com/disys-lab/gustavo/tree/main/examples/llm_deployments/vllm/dgx-spark)
-— analogs of the single-node recipes from
-[eugr/spark-vllm-docker](https://github.com/eugr/spark-vllm-docker), converted for Gustavo. Its
+— analogs of the recipes from [eugr/spark-vllm-docker](https://github.com/eugr/spark-vllm-docker),
+converted for Gustavo. Only recipes that are fully deployable through Gustavo today, as plain
+YAML with nothing extra to fetch beyond the model weights, are included — its
 [README](https://github.com/disys-lab/gustavo/blob/main/examples/llm_deployments/vllm/dgx-spark/README.md)
-explains a few that ship with `running: false` (they need something Gustavo can't yet automate
-— a runtime patch to vLLM itself, or a custom image build) and which upstream recipes were left
-out entirely because they require a multi-node Spark cluster, which Gustavo doesn't support.
+lists which upstream recipes were left out and why (multi-node clusters Gustavo can't
+orchestrate, source patches Gustavo can't apply, or an extra support file beyond weights).
 
 ---
 
