@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/context/AuthContext";
 const envVarSchema = z.object({ key: z.string(), value: z.string() });
 const portSchema = z.object({ host: z.number().int().min(0), container: z.number().int().min(0) });
 const volumeSchema = z.object({ host: z.string(), container: z.string() });
+const commandArgSchema = z.object({ value: z.string() });
 
 const appFormSchema = z.object({
   name: z.string().min(1, "Name is required").regex(/^[a-z0-9_-]+$/, "Lowercase, numbers, dashes, underscores only"),
@@ -29,6 +30,8 @@ const appFormSchema = z.object({
   privileged: z.boolean(),
   device_groups: z.array(z.string()),
   owner_group: z.string().optional(),
+  command: z.array(commandArgSchema),
+  shm_size: z.string().optional(),
 });
 
 export type AppFormValues = z.infer<typeof appFormSchema>;
@@ -113,6 +116,8 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
       privileged: false,
       device_groups: [],
       owner_group: "",
+      command: [],
+      shm_size: "",
       ...defaultValues,
     },
   });
@@ -120,6 +125,7 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
   const envFields = useFieldArray({ control, name: "env_vars" });
   const portFields = useFieldArray({ control, name: "ports" });
   const volumeFields = useFieldArray({ control, name: "volumes" });
+  const commandFields = useFieldArray({ control, name: "command" });
 
   // Fetch server-side defaults (with real unmasked secrets) for create mode only
   const { data: defaultsData } = useQuery({
@@ -349,6 +355,41 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
             </div>
           ))}
           {volumeFields.fields.length === 0 && <p className="text-sm text-gray-400">No volumes</p>}
+        </CardContent>
+      </Card>
+
+      {/* Command & shared memory */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Command &amp; Shared Memory</CardTitle>
+            <Button type="button" size="sm" variant="outline" onClick={() => commandFields.append({ value: "" })}>
+              + Add Argument
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Container Command</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Overrides the image&apos;s default entrypoint/command. One argument per row, in order
+              (e.g. <code>python3</code>, <code>-m</code>, <code>vllm.entrypoints.openai.api_server</code>).
+              Leave empty to use the image&apos;s default command.
+            </p>
+            <div className="space-y-2">
+              {commandFields.fields.map((field, idx) => (
+                <div key={field.id} className="flex gap-2 items-center">
+                  <Input placeholder="argument" {...register(`command.${idx}.value`)} className="flex-1" />
+                  <Button type="button" size="sm" variant="ghost" onClick={() => commandFields.remove(idx)}>✕</Button>
+                </div>
+              ))}
+              {commandFields.fields.length === 0 && <p className="text-sm text-gray-400">Using image default command</p>}
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="shm_size">Shared Memory Size</Label>
+            <Input id="shm_size" {...register("shm_size")} className="mt-1" placeholder="e.g. 2g (leave empty for Docker's default)" />
+          </div>
         </CardContent>
       </Card>
 

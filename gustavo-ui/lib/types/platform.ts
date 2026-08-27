@@ -55,5 +55,7 @@ export interface AppConfig {
   devices?: string[];
   privileged?: boolean;
   running?: boolean;
+  command?: string[];
+  shm_size?: string;
   [key: string]: unknown;
 }

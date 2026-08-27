@@ -73,6 +73,8 @@ export default function EditAppPage() {
         network_mode: (appConfig.network_mode as string) ?? "bridge",
         running: (appConfig.running as boolean) ?? true,
         privileged: (appConfig.privileged as boolean) ?? false,
+        command: ((appConfig.command as string[]) ?? []).map((value) => ({ value })),
+        shm_size: (appConfig.shm_size as string) ?? "",
       }
     : {};
 
@@ -86,6 +88,8 @@ export default function EditAppPage() {
         network_mode: values.network_mode,
         running: values.running,
         privileged: values.privileged,
+        command: values.command.map((c) => c.value).filter((v) => v !== ""),
+        shm_size: values.shm_size || "",
       };
       const res = await updateApp(name, config as Parameters<typeof updateApp>[1]);
       if (!res.error) {

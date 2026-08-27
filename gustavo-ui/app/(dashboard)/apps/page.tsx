@@ -31,6 +31,7 @@ export default function AppsPage() {
     try {
       const envVars = Object.fromEntries(values.env_vars.map((e) => [e.key, e.value]));
       envVars["APP_ID"] = values.name;
+      const command = values.command.map((c) => c.value).filter((v) => v !== "");
       const config = {
         docker_image: values.docker_image,
         env_vars: envVars,
@@ -39,6 +40,8 @@ export default function AppsPage() {
         network_mode: values.network_mode || "bridge",
         running: values.running,
         privileged: values.privileged,
+        command,
+        shm_size: values.shm_size || "",
       };
       const res = await createApp(
         values.name,
