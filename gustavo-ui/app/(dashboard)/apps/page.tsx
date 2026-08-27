@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listApps, createApp } from "@/lib/api/apps";
 import { AppForm, AppFormValues } from "@/components/apps/AppForm";
+import { parseAppConfig } from "@/lib/appConfig";
 import { AppExpander } from "@/components/apps/AppExpander";
 import { YamlUpload } from "@/components/apps/YamlUpload";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export default function AppsPage() {
     try {
       const envVars = Object.fromEntries(values.env_vars.map((e) => [e.key, e.value]));
       envVars["APP_ID"] = values.name;
+      const command = values.command.map((c) => c.value).filter((v) => v !== "");
       const config = {
         docker_image: values.docker_image,
         env_vars: envVars,
@@ -39,6 +41,8 @@ export default function AppsPage() {
         network_mode: values.network_mode || "bridge",
         running: values.running,
         privileged: values.privileged,
+        command,
+        shm_size: values.shm_size || "",
       };
       const res = await createApp(
         values.name,
@@ -64,7 +68,7 @@ export default function AppsPage() {
         <h1 className="text-2xl font-bold">Apps</h1>
         <div className="flex gap-2">
           <YamlUpload onParsed={(cfg) => {
-            setYamlDefaults({ docker_image: cfg.docker_image as string });
+            setYamlDefaults(parseAppConfig(cfg));
             setShowForm(true);
           }} />
           <Button onClick={() => { setYamlDefaults(undefined); setShowForm(!showForm); }}>

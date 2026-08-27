@@ -6,6 +6,7 @@ import { getApp, updateApp } from "@/lib/api/apps";
 import { listDeviceGroups } from "@/lib/api/deviceGroups";
 import { listGroups } from "@/lib/api/users";
 import { AppForm, AppFormValues } from "@/components/apps/AppForm";
+import { parseAppConfig } from "@/lib/appConfig";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,22 +59,7 @@ export default function EditAppPage() {
   const appConfig = data?.response as Record<string, unknown> | undefined;
 
   const defaultValues: Partial<AppFormValues> = appConfig
-    ? {
-        name,
-        docker_image: (appConfig.docker_image as string) ?? "",
-        env_vars: Object.entries((appConfig.env_vars as Record<string, string>) ?? {}).map(([k, v]) => ({ key: k, value: v })),
-        ports: ((appConfig.starting_ports as Record<string, number>[]) ?? []).map((p) => {
-          const [host, container] = Object.entries(p)[0] ?? [0, 0];
-          return { host: Number(host), container: Number(container) };
-        }),
-        volumes: ((appConfig.volumes as string[]) ?? []).map((v) => {
-          const [host, container] = v.split(":") as [string, string?];
-          return { host, container: container ?? "" };
-        }),
-        network_mode: (appConfig.network_mode as string) ?? "bridge",
-        running: (appConfig.running as boolean) ?? true,
-        privileged: (appConfig.privileged as boolean) ?? false,
-      }
+    ? { name, ...parseAppConfig(appConfig) }
     : {};
 
   const handleUpdate = async (values: AppFormValues) => {
@@ -86,6 +72,8 @@ export default function EditAppPage() {
         network_mode: values.network_mode,
         running: values.running,
         privileged: values.privileged,
+        command: values.command.map((c) => c.value).filter((v) => v !== ""),
+        shm_size: values.shm_size || "",
       };
       const res = await updateApp(name, config as Parameters<typeof updateApp>[1]);
       if (!res.error) {
