@@ -1,0 +1,79 @@
+# Gustavo app config for Nemotron-3-Nano-NVFP4, an analog of the "nemotron-3-nano-nvfp4.yaml" recipe from
+# https://github.com/eugr/spark-vllm-docker/blob/main/recipes/nemotron-3-nano-nvfp4.yaml
+#
+# vLLM serving Nemotron-3-Nano-NVFP4 on a SINGLE NODE ONLY!
+#
+# Before uploading:
+#  1. Fetch the model weights yourself onto the target spark - Gustavo does not download them.
+#     Model: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4
+#     Stage them at: /home/ubuntu/cypress-ai/models/nvidia-nvidia-nemotron-3-nano-30b-a3b-nvfp4
+#     e.g. huggingface-cli download nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4 --local-dir
+#     /home/ubuntu/cypress-ai/models/nvidia-nvidia-nemotron-3-nano-30b-a3b-nvfp4
+#  2. GPU access (GPU_ENABLED=true) must already be set on the target spark's worker - this is
+#     per-worker, not part of this file. See docs/llm-deployments.md.
+#  3. Requires an extra file from the upstream recipe's mod (mods/nemotron-nano): copy
+#     `nano_v3_reasoning_parser.py` (shipped alongside this file, in `../support-files/`) onto
+#     the spark at:
+#     /home/ubuntu/cypress-ai/models/nvidia-nvidia-nemotron-3-nano-30b-a3b-nvfp4/nano_v3_reasoning_parser.py
+#     It's bind-mounted into the container at /workspace/vllm/nano_v3_reasoning_parser.py, which
+#     the command below already references.
+#  4. This container has no default entrypoint - the full `vllm serve ...` invocation is the
+#     `command` list below, matching how https://github.com/eugr/spark-vllm-docker runs it
+#     (their containers don't bake in a `vllm serve` default either).
+#  5. `docker_image` below (eugr/spark-vllm:latest) is a real, public, arm64-only image built
+#     for the DGX Spark's GB10 chip by the recipe repo's author - NOT vllm/vllm-openai. It's a
+#     rolling tag (rebuilt nightly); pin a `nightly-YYYYMMDD` tag from
+#     https://hub.docker.com/r/eugr/spark-vllm/tags if you need reproducibility.
+#  6. tensor_parallel=1 in this recipe's own defaults - this assumes the target spark's worker
+#     actually has that many GPUs visible to Docker. Verify against your own hardware before
+#     deploying; lower it to 1 if unsure.
+#  7. The upstream tool runs these containers privileged by default (for RDMA/InfiniBand and
+#     direct hardware access) - privileged: true below matches that. Try privileged: false if
+#     your spark doesn't need it.
+
+docker_image: eugr/spark-vllm:latest
+
+running: true
+privileged: true
+network_mode: bridge
+
+starting_ports:
+  - 8000: 8000
+
+volumes:
+  - /home/ubuntu/cypress-ai/models/nvidia-nvidia-nemotron-3-nano-30b-a3b-nvfp4:/model
+  - /home/ubuntu/cypress-ai/models/nvidia-nvidia-nemotron-3-nano-30b-a3b-nvfp4/nano_v3_reasoning_parser.py:/workspace/vllm/nano_v3_reasoning_parser.py
+
+env_vars: {}
+
+command:
+  - "vllm"
+  - "serve"
+  - "/model"
+  - "--served-model-name"
+  - "nemotron-3-nano-nvfp4"
+  - "--moe-backend"
+  - "cutlass"
+  - "--max-model-len"
+  - "262144"
+  - "--port"
+  - "8000"
+  - "--host"
+  - "0.0.0.0"
+  - "--trust-remote-code"
+  - "--enable-auto-tool-choice"
+  - "--tool-call-parser"
+  - "qwen3_coder"
+  - "--reasoning-parser-plugin"
+  - "nano_v3_reasoning_parser.py"
+  - "--reasoning-parser"
+  - "nano_v3"
+  - "--kv-cache-dtype"
+  - "fp8"
+  - "--enable-prefix-caching"
+  - "--load-format"
+  - "fastsafetensors"
+  - "--gpu-memory-utilization"
+  - "0.7"
+
+shm_size: "16g"

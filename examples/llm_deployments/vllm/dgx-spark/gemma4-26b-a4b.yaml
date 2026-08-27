@@ -1,0 +1,75 @@
+# Gustavo app config for Gemma4-26B-A4B, an analog of the "gemma4-26b-a4b.yaml" recipe from
+# https://github.com/eugr/spark-vllm-docker/blob/main/recipes/gemma4-26b-a4b.yaml
+#
+# vLLM serving Gemma4-26B-A4B
+#
+# Before uploading:
+#  1. Fetch the model weights yourself onto the target spark - Gustavo does not download them.
+#     Model: google/gemma-4-26B-A4B-it
+#     Stage them at: /home/ubuntu/cypress-ai/models/google-gemma-4-26b-a4b-it
+#     e.g. huggingface-cli download google/gemma-4-26B-A4B-it --local-dir
+#     /home/ubuntu/cypress-ai/models/google-gemma-4-26b-a4b-it
+#  2. GPU access (GPU_ENABLED=true) must already be set on the target spark's worker - this is
+#     per-worker, not part of this file. See docs/llm-deployments.md.
+#  3. This container has no default entrypoint - the full `vllm serve ...` invocation is the
+#     `command` list below, matching how https://github.com/eugr/spark-vllm-docker runs it
+#     (their containers don't bake in a `vllm serve` default either).
+#  4. `docker_image` below (eugr/spark-vllm:latest) is a real, public, arm64-only image built
+#     for the DGX Spark's GB10 chip by the recipe repo's author - NOT vllm/vllm-openai. It's a
+#     rolling tag (rebuilt nightly); pin a `nightly-YYYYMMDD` tag from
+#     https://hub.docker.com/r/eugr/spark-vllm/tags if you need reproducibility.
+#  5. tensor_parallel=2 in this recipe's own defaults - this assumes the target spark's worker
+#     actually has that many GPUs visible to Docker. Verify against your own hardware before
+#     deploying; lower it to 1 if unsure.
+#  6. The upstream tool runs these containers privileged by default (for RDMA/InfiniBand and
+#     direct hardware access) - privileged: true below matches that. Try privileged: false if
+#     your spark doesn't need it.
+
+docker_image: eugr/spark-vllm:latest
+
+running: true
+privileged: true
+network_mode: bridge
+
+starting_ports:
+  - 8000: 8000
+
+volumes:
+  - /home/ubuntu/cypress-ai/models/google-gemma-4-26b-a4b-it:/model
+
+env_vars: {}
+
+command:
+  - "vllm"
+  - "serve"
+  - "/model"
+  - "--served-model-name"
+  - "gemma4-26b-a4b"
+  - "--max-model-len"
+  - "262144"
+  - "--gpu-memory-utilization"
+  - "0.8"
+  - "--port"
+  - "8000"
+  - "--host"
+  - "0.0.0.0"
+  - "--load-format"
+  - "safetensors"
+  - "--enable-prefix-caching"
+  - "--enable-auto-tool-choice"
+  - "--tool-call-parser"
+  - "gemma4"
+  - "--reasoning-parser"
+  - "gemma4"
+  - "--quantization"
+  - "fp8"
+  - "--kv-cache-dtype"
+  - "fp8"
+  - "--max-num-batched-tokens"
+  - "8192"
+  - "-tp"
+  - "2"
+  - "--distributed-executor-backend"
+  - "ray"
+
+shm_size: "16g"

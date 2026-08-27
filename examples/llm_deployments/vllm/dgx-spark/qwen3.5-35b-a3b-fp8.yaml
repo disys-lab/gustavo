@@ -1,0 +1,91 @@
+# Gustavo app config for Qwen35-35B-A3B, an analog of the "qwen3.5-35b-a3b-fp8.yaml" recipe from
+# https://github.com/eugr/spark-vllm-docker/blob/main/recipes/qwen3.5-35b-a3b-fp8.yaml
+#
+# vLLM serving Qwen3.5-35B-A3B-FP8
+#
+# WARNING: the upstream recipe applies one or more mods (runtime source patches) that
+# Gustavo has no mechanism to replicate - it can only pass a container command, not run a
+# pre-step that patches files inside the container before vLLM starts. Missing mod(s):
+#   - mods/fix-qwen3-coder-next: patches installed vLLM files to fix a startup crash and a slowness regression, plus a Triton allocator fix - without it the model may crash on start or run slower.
+# `running: false` below on purpose - flip it once you've applied the mod(s) yourself
+# (see mods/fix-qwen3-coder-next in https://github.com/eugr/spark-vllm-docker) or confirmed
+# they're no longer needed against a current vLLM.
+#
+# Before uploading:
+#  1. Fetch the model weights yourself onto the target spark - Gustavo does not download them.
+#     Model: Qwen/Qwen3.5-35B-A3B-FP8
+#     Stage them at: /home/ubuntu/cypress-ai/models/qwen-qwen3-5-35b-a3b-fp8
+#     e.g. huggingface-cli download Qwen/Qwen3.5-35B-A3B-FP8 --local-dir
+#     /home/ubuntu/cypress-ai/models/qwen-qwen3-5-35b-a3b-fp8
+#  2. GPU access (GPU_ENABLED=true) must already be set on the target spark's worker - this is
+#     per-worker, not part of this file. See docs/llm-deployments.md.
+#  3. Requires an extra file from the upstream recipe's mod (mods/fix-qwen3.5-chat-template):
+#     copy `qwen3.5-unsloth.jinja` (shipped alongside this file, in `../support-files/`) onto
+#     the spark at:
+#     /home/ubuntu/cypress-ai/models/qwen-qwen3-5-35b-a3b-fp8/qwen3.5-unsloth.jinja
+#     It's bind-mounted into the container at /workspace/vllm/unsloth.jinja, which the command
+#     below already references.
+#  4. This container has no default entrypoint - the full `vllm serve ...` invocation is the
+#     `command` list below, matching how https://github.com/eugr/spark-vllm-docker runs it
+#     (their containers don't bake in a `vllm serve` default either).
+#  5. `docker_image` below (eugr/spark-vllm:latest) is a real, public, arm64-only image built
+#     for the DGX Spark's GB10 chip by the recipe repo's author - NOT vllm/vllm-openai. It's a
+#     rolling tag (rebuilt nightly); pin a `nightly-YYYYMMDD` tag from
+#     https://hub.docker.com/r/eugr/spark-vllm/tags if you need reproducibility.
+#  6. tensor_parallel=2 in this recipe's own defaults - this assumes the target spark's worker
+#     actually has that many GPUs visible to Docker. Verify against your own hardware before
+#     deploying; lower it to 1 if unsure.
+#  7. The upstream tool runs these containers privileged by default (for RDMA/InfiniBand and
+#     direct hardware access) - privileged: true below matches that. Try privileged: false if
+#     your spark doesn't need it.
+
+docker_image: eugr/spark-vllm:latest
+
+running: false
+privileged: true
+network_mode: bridge
+
+starting_ports:
+  - 8000: 8000
+
+volumes:
+  - /home/ubuntu/cypress-ai/models/qwen-qwen3-5-35b-a3b-fp8:/model
+  - /home/ubuntu/cypress-ai/models/qwen-qwen3-5-35b-a3b-fp8/qwen3.5-unsloth.jinja:/workspace/vllm/unsloth.jinja
+
+env_vars:
+  VLLM_MARLIN_USE_ATOMIC_ADD: "1"
+
+command:
+  - "vllm"
+  - "serve"
+  - "/model"
+  - "--served-model-name"
+  - "qwen35-35b-a3b"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+  - "--max-model-len"
+  - "262144"
+  - "--max-num-batched-tokens"
+  - "16384"
+  - "--gpu-memory-utilization"
+  - "0.8"
+  - "--enable-auto-tool-choice"
+  - "--tool-call-parser"
+  - "qwen3_coder"
+  - "--kv-cache-dtype"
+  - "fp8"
+  - "--load-format"
+  - "fastsafetensors"
+  - "--attention-backend"
+  - "flashinfer"
+  - "--enable-prefix-caching"
+  - "--chat-template"
+  - "unsloth.jinja"
+  - "-tp"
+  - "2"
+  - "--distributed-executor-backend"
+  - "ray"
+
+shm_size: "16g"
