@@ -87,11 +87,18 @@ gustavo worker up --gpu
 
 This grants every container the worker launches — every app, every cron
 job — GPU access. It's a property of this machine, not of any individual
-app, so there's nothing to set in an app's own config. Only enable it on a
-device that genuinely has a GPU: requesting one that isn't there fails the
-container creation outright, and since every failure path in the worker
-exits the whole process (not just that one container), a mismatched `--gpu`
-takes the entire worker down.
+app, so there's nothing to set in an app's own config.
+
+Only enable it on a device that genuinely has a GPU. The worker checks
+this itself at startup — with `GPU_ENABLED` set, it attempts a real GPU
+device request against a disposable test container before doing anything
+else, and logs a clear warning immediately if the host can't actually
+satisfy it, rather than only discovering the mismatch whenever the first
+GPU-requiring app happens to get assigned. That check doesn't block
+startup: a mismatched `--gpu` no longer takes the worker down, since it
+might still be assigned apps that don't need a GPU at all — only apps that
+actually request one will fail (cleanly, logged, with the never-started
+container cleaned up automatically) until the mismatch is fixed.
 
 ---
 
