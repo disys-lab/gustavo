@@ -1,0 +1,62 @@
+# Gustavo app config for the vLLM coder model, converted from:
+#
+#   docker run -d --name vllm-coder --gpus all --ipc=host --restart unless-stopped \
+#     -v ~/cypress-ai/models/qwen3-coder-next-fp8:/model -p 8000:8000 \
+#     vllm/vllm-openai:latest \
+#     --model /model --served-model-name qwen3-coder-next \
+#     --enable-auto-tool-choice --tool-call-parser qwen3_coder \
+#     --max-model-len 131072 --gpu-memory-utilization 0.80 --api-key <key>
+#
+# Before uploading:
+#   1. Fix the volume host path below - it must be the ABSOLUTE path to the
+#      model directory on whichever spark you assign this to (the worker
+#      runs directly against that host's Docker daemon, "~" doesn't expand).
+#   2. Replace VLLM_API_KEY_PLACEHOLDER with your real vLLM --api-key value.
+#   3. GPU access is a per-worker setting, not part of this file: the spark
+#      you assign this app to must already have its worker started with
+#      GPU_ENABLED=true (this is what --gpus all is doing in the manual
+#      command - Gustavo has no per-app GPU flag, the whole worker either
+#      grants GPU device access to every container it runs, or it doesn't).
+#   4. There's no --ipc=host equivalent in Gustavo yet. shm_size below
+#      (16g) is vLLM's own documented substitute for --ipc=host - it's not
+#      a hack, vLLM's docs recommend "increase shm-size or use --ipc=host"
+#      as equivalent options. Raise/lower it to whatever your spark can spare.
+#   5. Uploading this YAML only prefills docker_image today - the fix to
+#      prefill everything else (env_vars/ports/volumes/command/shm_size)
+#      is committed but not yet deployed live. Until it's deployed, fill in
+#      command args, shm_size, and the volume manually in the form after
+#      uploading (or just paste each field in by hand instead of uploading).
+
+docker_image: vllm/vllm-openai:latest
+
+running: true
+privileged: false
+network_mode: bridge
+
+starting_ports:
+  - 8000: 8000
+
+volumes:
+  - /home/ubuntu/cypress-ai/models/qwen3-coder-next-fp8:/model
+
+env_vars: {}
+
+# vLLM's own CLI args - one element per row if you re-enter these by hand
+# in the "Command & Shared Memory" section of the app form.
+command:
+  - "--model"
+  - "/model"
+  - "--served-model-name"
+  - "qwen3-coder-next"
+  - "--enable-auto-tool-choice"
+  - "--tool-call-parser"
+  - "qwen3_coder"
+  - "--max-model-len"
+  - "131072"
+  - "--gpu-memory-utilization"
+  - "0.80"
+  - "--api-key"
+  - "VLLM_API_KEY_PLACEHOLDER"
+
+# vLLM's documented alternative to --ipc=host - see note 4 above.
+shm_size: "16g"

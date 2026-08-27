@@ -1,0 +1,65 @@
+# Gustavo app config for the vLLM reasoning model, converted from:
+#
+#   docker run -d --name vllm-reasoning --gpus all --ipc=host --restart unless-stopped \
+#     -v ~/cypress-ai/models/qwen3.6-35b-a3b-fp8:/model -p 8000:8000 \
+#     vllm/vllm-openai:latest \
+#     --model /model --served-model-name qwen3.6-35b \
+#     --tensor-parallel-size 1 --reasoning-parser qwen3 \
+#     --enable-auto-tool-choice --tool-call-parser qwen3_xml \
+#     --max-model-len 131072 --gpu-memory-utilization 0.85 --api-key <key>
+#
+# Before uploading:
+#   1. Fix the volume host path below - it must be the ABSOLUTE path to the
+#      model directory on whichever spark you assign this to (the worker
+#      runs directly against that host's Docker daemon, "~" doesn't expand).
+#   2. Replace VLLM_API_KEY_PLACEHOLDER with your real vLLM --api-key value.
+#   3. GPU access is a per-worker setting, not part of this file: the spark
+#      you assign this app to must already have its worker started with
+#      GPU_ENABLED=true.
+#   4. shm_size (16g) is vLLM's own documented substitute for --ipc=host -
+#      raise/lower to whatever your spark can spare.
+#   5. Host port 8000 is the same as the vllm-coder app's port - if this
+#      lands on the SAME spark as vllm-coder, change one of the two host
+#      ports (the left side of starting_ports below) or you'll get a port
+#      bind conflict when both try to start on that worker.
+#   6. Uploading this YAML now prefills the whole form (command/shm_size/
+#      ports/volumes/env_vars included) - the fix for that is deployed on
+#      cypress-ai as of the last vllm-coder file.
+
+docker_image: vllm/vllm-openai:latest
+
+running: true
+privileged: false
+network_mode: bridge
+
+starting_ports:
+  - 8000: 8000
+
+volumes:
+  - /home/ubuntu/cypress-ai/models/qwen3.6-35b-a3b-fp8:/model
+
+env_vars: {}
+
+# vLLM's own CLI args - one element per row if you re-enter these by hand
+# in the "Command & Shared Memory" section of the app form.
+command:
+  - "--model"
+  - "/model"
+  - "--served-model-name"
+  - "qwen3.6-35b"
+  - "--tensor-parallel-size"
+  - "1"
+  - "--reasoning-parser"
+  - "qwen3"
+  - "--enable-auto-tool-choice"
+  - "--tool-call-parser"
+  - "qwen3_xml"
+  - "--max-model-len"
+  - "131072"
+  - "--gpu-memory-utilization"
+  - "0.85"
+  - "--api-key"
+  - "VLLM_API_KEY_PLACEHOLDER"
+
+# vLLM's documented alternative to --ipc=host.
+shm_size: "256g"

@@ -60,9 +60,18 @@ Dynamic list of `HOST PATH` / `CONTAINER PATH` string pairs.
 
 Multi-select of available device groups. The app is added to all selected groups on save.
 
+**Command & Shared Memory**
+
+| Field | Description |
+|-------|-------------|
+| Container Command | Dynamic list of command arguments overriding the image's default entrypoint/command. One argument per row, in order (e.g. `python3`, `-m`, `vllm.entrypoints.openai.api_server`). Leave empty to use the image's default command. |
+| Shared Memory Size | Text field for `shm_size` (e.g. `2g`). Leave empty for Docker's default (64m). |
+
+See [Deploying LLMs](../llm-deployments.md) for a worked example — these two fields are what make GPU inference servers like vLLM deployable through Gustavo.
+
 ### YAML import
 
-Click **Import YAML** to upload a `.yaml` file. The parsed config populates all form fields, which you can review before saving.
+Click **Upload YAML** to upload a `.yaml` file. The parsed config populates all form fields — including Command & Shared Memory — which you can review before saving.
 
 ---
 
