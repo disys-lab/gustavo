@@ -11,6 +11,15 @@ Two ready-to-use example configs ship in [`examples/llm_deployments/vllm/`](http
 
 Both were converted from a plain `docker run --gpus all --ipc=host ...` command into a Gustavo app config — see [Converting a `docker run` command](#converting-a-docker-run-command-to-an-app-config) below if you're adapting a different model.
 
+A larger set of ready-made configs for real production models lives in
+[`examples/llm_deployments/vllm/dgx-spark/`](https://github.com/disys-lab/gustavo/tree/main/examples/llm_deployments/vllm/dgx-spark)
+— analogs of the recipes from [eugr/spark-vllm-docker](https://github.com/eugr/spark-vllm-docker),
+converted for Gustavo. Only recipes that are fully deployable through Gustavo today, as plain
+YAML with nothing extra to fetch beyond the model weights, are included — its
+[README](https://github.com/disys-lab/gustavo/blob/main/examples/llm_deployments/vllm/dgx-spark/README.md)
+lists which upstream recipes were left out and why (multi-node clusters Gustavo can't
+orchestrate, source patches Gustavo can't apply, or an extra support file beyond weights).
+
 ---
 
 ## The one thing this tutorial can't skip: model weights are your responsibility
