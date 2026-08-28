@@ -2019,6 +2019,14 @@
 </tbody>
 </table>
 <p>Both were converted from a plain <code>docker run --gpus all --ipc=host ...</code> command into a Gustavo app config — see <a href="#converting-a-docker-run-command-to-an-app-config">Converting a <code>docker run</code> command</a> below if you're adapting a different model.</p>
+<p>A larger set of ready-made configs for real production models lives in
+<a href="https://github.com/disys-lab/gustavo/tree/main/examples/llm_deployments/vllm/dgx-spark"><code>examples/llm_deployments/vllm/dgx-spark/</code></a>
+— analogs of the recipes from <a href="https://github.com/eugr/spark-vllm-docker">eugr/spark-vllm-docker</a>,
+converted for Gustavo. Only recipes that are fully deployable through Gustavo today, as plain
+YAML with nothing extra to fetch beyond the model weights, are included — its
+<a href="https://github.com/disys-lab/gustavo/blob/main/examples/llm_deployments/vllm/dgx-spark/README.md">README</a>
+lists which upstream recipes were left out and why (multi-node clusters Gustavo can't
+orchestrate, source patches Gustavo can't apply, or an extra support file beyond weights).</p>
 <hr />
 <h2 id="the-one-thing-this-tutorial-cant-skip-model-weights-are-your-responsibility">The one thing this tutorial can't skip: model weights are your responsibility</h2>
 <p><strong>Gustavo does not fetch, download, or manage model weights.</strong> The <code>volumes</code> entry in the app config is a bind mount — it tells the container "make this host directory available inside the container at <code>/model</code>." Nothing in Gustavo, the Manager, or the worker downloads a model into that directory for you.</p>
