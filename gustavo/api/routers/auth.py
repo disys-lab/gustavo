@@ -53,12 +53,19 @@ def _admin_session() -> Session:
 
 
 def _session_response(session: Session) -> dict:
+    # Only real Nebula ("db") users have group memberships to look up -
+    # the break-glass admin ("local") isn't a real Nebula identity at all,
+    # and doesn't need one: is_admin already bypasses every grant check
+    # this is used for (see e.g. device_groups.py's _require_dg_access),
+    # so an empty list here is correct, not a gap.
+    groups = nebula_auth.user_groups(config_store.get(), session.username) if session.user_type == "db" else []
     return {
         "error": False,
         "response": {
             "token": create_session_token(session),
             "username": session.username,
             "is_admin": session.is_admin,
+            "groups": groups,
         },
     }
 
