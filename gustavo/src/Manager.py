@@ -16,10 +16,20 @@ from NebulaPythonSDK import Nebula
 import datetime
 import shutil
 
+"""
+Manages the Docker Compose-adjacent lifecycle of the platform's own
+services (registry, Redis, Mongo, Nebula manager, syncer) - starting,
+stopping, and health-checking the containers `gustavo` itself depends
+on, as distinct from `Composer`, which manages user-deployed apps.
+"""
+
 class Manager(NebulaBase):
     """
-    Manager class inherits from NebulaBase and is responsible for handling all aspects of the manager, including
-    the setup, configuration and tear down of the variety of manager services such as:
+    Brings up, tears down, and checks the health of the platform's own services.
+
+    Inherits connection parameters from `NebulaBase`. The services
+    managed here are:
+
     * `registry`
     * `redis`
     * `mongo`
@@ -28,52 +38,72 @@ class Manager(NebulaBase):
 
     Attributes
     ----------
-    DREGSY_CONFIG_FILE_PATH : string
-        Config file for DREGSY which is the Syncer service being run on the manager
+    DREGSY_CONFIG_FILE_PATH : str
+        Path to the Dregsy config file (the syncer service).
+    DREGSY_MAPPING_FILE_PATH : str
+        Path to the Dregsy image-mapping file.
+    MONGO_IP : str
+        Hostname or IP address of Mongo.
+    MONGO_PORT : str
+        Port number of Mongo.
+    MONGO_USERNAME : str
+        Username for Mongo.
+    MONGO_PASSWORD : str
+        Password for Mongo.
+    REGISTRY_IMAGE : str
+        Docker image to run for the registry service.
+    REGISTRY_BKP_DIR : str
+        Host directory bind-mounted as the registry's data volume.
+        Defaults to `"/tmp/"` if unset or invalid.
+    REGISTRY_BIND_LOCALHOST : bool
+        If `True`, bind the registry port to `127.0.0.1` only.
+    REGISTRY_CONTAINER_PORT : str
+        Container-side port for the registry; falls back to
+        `REGISTRY_PORT` if unset.
+    SYNCER_IMAGE : str
+        Docker image to run for the syncer (Dregsy) service.
+    SYNCER_NMODE : str
+        Docker network mode for the syncer container. Defaults to
+        `"bridge"`.
+    REDIS_IMAGE : str
+        Docker image to run for Redis.
+    REDIS_BKP_DIR : str
+        Host directory bind-mounted as Redis's data volume. Defaults
+        to `"/tmp/"` if unset or invalid.
+    MONGO_IMAGE : str
+        Docker image to run for Mongo.
+    MANAGER_IMAGE : str
+        Docker image to run for the Nebula manager.
+    MANAGER_NMODE : str
+        Docker network mode for the manager container. Defaults to
+        `"bridge"`.
+    service_list : str
+        Comma-separated list of the service names this class manages.
 
-    DREGSY_MAPPING_FILE_PATH : string
-        Mapping file that maps remote container images to the registry
-
-    MONGO_IP : string
-        Hostname or IP address of Mongo
-
-    MONGO_PORT : string
-        Port number of Mongo DB
-
-    MONGO_USERNAME : string
-        Username for accessing Mongo DB
-
-    MONGO_PASSWORD : string
-        Password for Mongo DB
-
-    REGISTRY_IMAGE : string
-        Docker image name to spin up
-
-    SYNCER_IMAGE : string
-        Docker image name to spin up
-
-    REDIS_IMAGE : string
-        Docker image name to spin up
-
-    MONGO_IMAGE : string
-        Docker image name to spin up
-
-    MANAGER_IMAGE : string
-        Docker image name to spin up
-
-    MANAGER_NMODE: string
-        Docker image network to spin up
-
-    SYNCER_NMODE: string
-        Docker image network to spin up
-
-    TODO: Make setManagerParams() REST API-friendly, which means that instead of a sys.exit(), it needs to either
-          throw an appropriate exception or return a status value or both.
-          Good way to do it would be to throw an exception here and then catch it on gustavo.py
-
+    Notes
+    -----
+    `setManagerParams` predates the FastAPI backend and still returns
+    an ``{"error": True, "response": ...}`` dict on failure instead of
+    raising - a REST-friendlier version would throw a real exception
+    here and let the caller (`gustavo.py`) catch it, rather than
+    requiring every caller to check a return value.
     """
 
     def __init__(self,mode="CLI",params = None):
+        """
+        Populate connection attributes via `NebulaBase.__init__`, then load Manager-specific service params.
+
+        Parameters
+        ----------
+        mode : str, optional
+            `"CLI"` (default) also calls `setManagerParams` to load
+            service image/config settings from the environment. Any
+            other value skips that call, leaving those attributes
+            `None` (matches `NebulaBase`'s FastAPI-backend usage,
+            which doesn't need them).
+        params : dict or None, optional
+            Passed through to `NebulaBase.__init__` as `session_state`.
+        """
 
         NebulaBase.__init__(self,mode=mode,session_state=params)
 
@@ -105,7 +135,20 @@ class Manager(NebulaBase):
 
     def setManagerParams(self):
         """
-        sets the class attributes from environment vars
+        Populate Manager-specific attributes from environment variables.
+
+        Called only when `mode="CLI"` (see `__init__`); the dotenv
+        file has already been loaded into `os.environ` by
+        `NebulaBase.setNebulaParams` by the time this runs.
+
+        Returns
+        -------
+        dict
+            ``{"error": True, "response": <reason>}`` if a required
+            variable is missing or invalid - returns immediately on
+            the first such variable, so later attributes may be left
+            unset. ``{"error": False, "response": "Manager Params set
+            successfully"}`` on success.
         """
         if "DREGSY_CONFIG_FILE_PATH" in os.environ.keys():
             if os.path.isfile(os.environ["DREGSY_CONFIG_FILE_PATH"]):
@@ -270,28 +313,23 @@ class Manager(NebulaBase):
 
     def runRegistry(self, client):
         """
-        Brings up the registry service
+        Bring up the registry container via `client`.
+
+        Also creates `REGISTRY_BKP_DIR` if it doesn't exist.
 
         Parameters
         ----------
-        client : docker object
-            The docker client object
-
-        Raises
-        ------
-        docker.errors.ImageNotFound
-            If the registry image is not found
-
-        docker.errors.APIError
-            If the docker API is unreachable
+        client : docker.DockerClient
+            The Docker client to run the container with.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the registry did not run
-        If the key "error" is False it means that the registry ran successfully
-            Based on success of the run registry command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `REGISTRY_IMAGE` isn't configured, the backup
+            directory couldn't be created, the image can't be pulled,
+            or the Docker API errors; `False` on success. `response`
+            describes which.
         """
 
         if self.REGISTRY_IMAGE:
@@ -348,28 +386,23 @@ class Manager(NebulaBase):
 
     def runSyncer(self, client):
         """
-        Brings up the syncer service
+        Bring up the syncer (Dregsy) container via `client`.
+
+        Uses `network_mode="host"` when `SYNCER_NMODE == "host"`, else
+        the Docker default.
 
         Parameters
         ----------
-        client : docker object
-            The docker client object
-
-        Raises
-        ------
-        docker.errors.ImageNotFound
-            If the registry image is not found
-
-        docker.errors.APIError
-            If the docker API is unreachable
+        client : docker.DockerClient
+            The Docker client to run the container with.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the syncer did not run
-        If the key "error" is False it means that the syncer ran successfully
-            Based on success of the run syncer command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `SYNCER_IMAGE` isn't configured, the image can't
+            be pulled, or the Docker API errors; `False` on success.
+            `response` describes which.
         """
 
         if self.SYNCER_IMAGE:
@@ -423,28 +456,25 @@ class Manager(NebulaBase):
 
     def runRedis(self, client):
         """
-        Brings up the Redis service
+        Bring up the Redis container via `client`.
+
+        Also creates `REDIS_BKP_DIR` if it doesn't exist. Passes
+        `REDIS_AUTH_TOKEN` in as `--requirepass` via the `REDIS_ARGS`
+        environment variable.
 
         Parameters
         ----------
-        client : docker object
-            The docker client object
-
-        Raises
-        ------
-        docker.errors.ImageNotFound
-            If the registry image is not found
-
-        docker.errors.APIError
-            If the docker API is unreachable
+        client : docker.DockerClient
+            The Docker client to run the container with.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the redis did not run
-        If the key "error" is False it means that the redis ran successfully
-            Based on success of the run redis command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `REDIS_IMAGE` isn't configured, the backup
+            directory couldn't be created, the image can't be pulled,
+            or the Docker API errors; `False` on success. `response`
+            describes which.
         """
 
         if self.REDIS_IMAGE:
@@ -491,28 +521,20 @@ class Manager(NebulaBase):
 
     def runMongo(self, client):
         """
-        Brings up the Mongo service
+        Bring up the Mongo container via `client`, seeded with `MONGO_USERNAME`/`MONGO_PASSWORD` as the root user.
 
         Parameters
         ----------
-        client : docker object
-            The docker client object
-
-        Raises
-        ------
-        docker.errors.ImageNotFound
-            If the registry image is not found
-
-        docker.errors.APIError
-            If the docker API is unreachable
+        client : docker.DockerClient
+            The Docker client to run the container with.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the mongo did not run
-        If the key "error" is False it means that the mongo ran successfully
-            Based on success of the run mongo command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `MONGO_IMAGE` isn't configured, the image can't
+            be pulled, or the Docker API errors; `False` on success.
+            `response` describes which.
         """
 
         if self.MONGO_IMAGE:
@@ -557,28 +579,23 @@ class Manager(NebulaBase):
 
     def runManager(self, client):
         """
-        Brings up the Nebula Manager service
+        Bring up the Nebula manager container via `client`, wired to Mongo/Redis and Nebula auth.
+
+        Uses `network_mode="host"` when `MANAGER_NMODE == "host"`
+        (no port binding needed), else publishes `MANAGER_PORT`.
 
         Parameters
         ----------
-        client : docker object
-            The docker client object
-
-        Raises
-        ------
-        docker.errors.ImageNotFound
-            If the registry image is not found
-
-        docker.errors.APIError
-            If the docker API is unreachable
+        client : docker.DockerClient
+            The Docker client to run the container with.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the manager did not run
-        If the key "error" is False it means that the manager ran successfully
-            Based on success of the run manager command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `MANAGER_IMAGE` isn't configured, the image
+            can't be pulled, or the Docker API errors; `False` on
+            success. `response` describes which.
         """
 
         if self.MANAGER_IMAGE:
@@ -672,15 +689,17 @@ class Manager(NebulaBase):
 
     def checkManager(self):
         """
-        Checks whether manager API is available
+        Check whether the Nebula manager's `/api/v2/status` endpoint responds with HTTP 200.
+
+        Defaults `NEBULA_PROTOCOL` to `"http"` if unset.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the check manager did not run
-        If the key "error" is False it means that the check manager ran successfully
-            Based on success of the check manager command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `False` only if the status endpoint returns HTTP 200;
+            `True` on any other status code, or if the request itself
+            raises (connection refused, timeout, etc.).
         """
 
         # nebulaObj = Nebula(username=self.NEBULA_USERNAME, host=self.MANAGER_IP, port=self.MANAGER_PORT,
@@ -718,15 +737,14 @@ class Manager(NebulaBase):
 
     def waitManager(self):
         """
-        Keeps waiting until Nebula Manager API responds
+        Block, polling `checkManager` every 3 seconds, until the Nebula manager responds.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the wait manager did not run
-        If the key "error" is False it means that the wait manager ran successfully
-            Based on success of the wait manager command
+        dict
+            ``{"error": False, "response": "Manager alive"}``. Always
+            this value - the loop never exits any other way (no
+            timeout or retry limit).
         """
         managerUp = False
         response = None
@@ -742,20 +760,23 @@ class Manager(NebulaBase):
 
     def run(self, service_name):
         """
-        Wrapper function to invoke the corresponding run function based on a given service name. Options are :
-        * `registry`
-        * `redis`
-        * `mongo`
-        * `manager`
-        * `syncer`
-        * `all`
+        Dispatch to the `run<Service>` method matching `service_name`.
 
         Parameters
         ----------
-        service_name : string
-            Name of service to run
+        service_name : str
+            One of `"registry"`, `"redis"`, `"mongo"`, `"manager"`,
+            `"syncer"`, or `"all"` (brings up all five in that order,
+            stopping at the first failure; if `"manager"` succeeds,
+            also calls `waitManager`).
 
-        TODO: return success status
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `service_name` is unrecognized or the
+            corresponding `run<Service>` call failed; `False` on
+            success.
         """
 
         fg = "green"
@@ -885,6 +906,22 @@ class Manager(NebulaBase):
             }
 
     def serviceStatus(self, service_name):
+        """
+        Check whether a container named `service_name` exists (running or not).
+
+        Parameters
+        ----------
+        service_name : str
+            Docker container name to look up.
+
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `False` if the container exists (regardless of its
+            running state); `True` if it doesn't exist or the Docker
+            API errors.
+        """
         client = docker.from_env()
         try:
             client.containers.get(service_name)
@@ -898,36 +935,22 @@ class Manager(NebulaBase):
 
     def handleService(self, service_name, action):
         """
-        Performs a given action on a given service name. The option for actions are:
-        * `stop` : stop given service
-        * `start` : start given service
-        * `kill` : kill given service
-        * `remove` : remove given service
-        * `restart` : restart given service
+        Look up a container by name and perform a lifecycle action on it.
 
         Parameters
         ----------
-        service_name : string
-            Name of service to run
-
-        action : string
-            Action to be taken
-
-        Raises
-        ------
-        docker.errors.NotFound
-            No container with the given service name has been found
-
-        docker.errors.APIError
-            If the docker API is unreachable
+        service_name : str
+            Docker container name to act on.
+        action : str
+            One of `"stop"`, `"start"`, `"kill"`, `"remove"` (force),
+            or `"restart"`.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the handle service did not run
-        If the key "error" is False it means that the handle service ran successfully
-            Based on success of the handle service command
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if the container doesn't exist, `action` isn't
+            recognized, or the Docker API errors; `False` on success.
         """
 
         if not isinstance(service_name, str):

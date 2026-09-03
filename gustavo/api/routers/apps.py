@@ -34,9 +34,32 @@ router = APIRouter()
 
 
 def _handleAsset_with_image_fallback(comp, asset_type: str, name: str, mode: str, config: dict) -> dict:
-    """Call comp.handleAsset, but if checkImageExists raises IndexError (image is not from
-    the local registry), fall back to calling the SDK method directly so the operation
-    still completes."""
+    """
+    Call `comp.handleAsset`, falling back to a direct SDK call if the image isn't in the local registry.
+
+    `Composer.handleAsset` calls `checkImageExists`, which raises
+    `IndexError` if `config["docker_image"]` doesn't have the local
+    registry's `host:port/` prefix (e.g. an image pulled from a
+    remote registry via the syncer). Rather than fail the whole
+    operation, this catches that and calls `comp.nebulaObj` directly.
+
+    Parameters
+    ----------
+    comp : Composer
+    asset_type : str
+        Always `"app"` for this router's callers.
+    name : str
+        App name.
+    mode : str
+        `"create"` or `"update"` - `"delete"` has no fallback path.
+    config : dict
+        The app config to create/update.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
     try:
         return comp.handleAsset(asset_type, name, mode, config)
     except IndexError:
@@ -74,21 +97,32 @@ class AppUpdateRequest(BaseModel):
 # Note: /registry/images, /yaml/parse and /defaults are fixed paths — declare them BEFORE /{name}
 @router.get("/defaults")
 async def get_app_defaults(_token=Depends(verify_firebase_token)):
-    """Return default env vars for new app creation with real (unmasked) values.
-    Values are read directly from config_store so secrets are never exposed to
-    the browser.
+    """
+    Return default env vars for new app creation, with real (unmasked) values from `config_store`.
 
-    Deliberately does NOT include NEBULA_AUTH_TOKEN/MANAGER_AUTH: env_vars get
-    baked into a real container environment variable wherever the app is
-    deployed (see docs/cli/apps.md's env_vars format), and base64 is encoding,
-    not encryption - anyone with docker/shell access on that device group's
-    machine can trivially recover it. Auto-filling either a shared platform
-    secret or (worse) the creating user's own personal Nebula credential means
-    that credential lands in plaintext on whatever remote hardware the app
-    happens to be assigned to, which may not be a machine the creator
-    controls or trusts. An app that genuinely needs to call back into the
-    Manager should have its creator deliberately supply a credential scoped
-    for that purpose, not have one silently defaulted in."""
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"env_vars": {...}}}`` -
+        `REDIS_DB_HOST`/`PORT`/`PWD`, `MANAGER_HOST`/`PORT`,
+        `SLEEP_SECS`, `KEYGEN_PUBLIC_KEY`.
+
+    Notes
+    -----
+    Deliberately does NOT include `NEBULA_AUTH_TOKEN`/`MANAGER_AUTH`:
+    env_vars get baked into a real container environment variable
+    wherever the app is deployed (see `docs/cli/apps.md`'s env_vars
+    format), and base64 is encoding, not encryption - anyone with
+    docker/shell access on that device group's machine can trivially
+    recover it. Auto-filling either a shared platform secret or
+    (worse) the creating user's own personal Nebula credential means
+    that credential lands in plaintext on whatever remote hardware the
+    app happens to be assigned to, which may not be a machine the
+    creator controls or trusts. An app that genuinely needs to call
+    back into the Manager should have its creator deliberately supply
+    a credential scoped for that purpose, not have one silently
+    defaulted in.
+    """
     cfg = config_store.get()
     keygen_public_key = "06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc"
     return {
@@ -109,10 +143,21 @@ async def get_app_defaults(_token=Depends(verify_firebase_token)):
 
 @router.get("/registry/images")
 async def list_registry_images(_token=Depends(verify_firebase_token)):
-    """Return all images in the local registry, each with its list of tags.
+    """
+    Return all images in the local registry, each with its list of tags.
 
     Makes direct HTTP requests to the Docker registry v2 API so we can
-    return verbose diagnostic info independent of the Composer abstraction.
+    return verbose diagnostic info independent of the Composer
+    abstraction.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is ``{"images": [{"name": ..., "tags": [...]}, ...],
+        "registry_url": ..., "catalog_url": ..., "raw_catalog": ...}``.
+        On failure (non-200 catalog response, or a request exception),
+        `response` is a dict with a `"message"` describing why.
     """
     import requests as _requests
 
@@ -166,7 +211,21 @@ async def parse_yaml(
     file: UploadFile = File(...),
     _token=Depends(verify_firebase_token),
 ):
-    """Upload a YAML app config file and return the parsed dict."""
+    """
+    Upload a YAML app config file and return the parsed dict.
+
+    Parameters
+    ----------
+    file : UploadFile
+        A `.yaml`/`.yml` file in the request's multipart form data.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": <parsed dict>}`` on success, or
+        ``{"error": True, "response": <str(exception)>}`` if the file
+        isn't valid YAML.
+    """
     try:
         content = await file.read()
         parsed = yaml.safe_load(content)
@@ -178,7 +237,21 @@ async def parse_yaml(
 
 @router.get("")
 async def list_apps(session: Session = Depends(verify_firebase_token)):
-    """List all apps from Nebula, filtered to the caller's grants if not an admin."""
+    """
+    List all apps from Nebula, filtered to the caller's grants if not an admin.
+
+    Parameters
+    ----------
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is Nebula's `list_apps` reply, with `"apps"` filtered down to
+        `nebula_auth.compute_permissions(...)["apps"]` for non-admins.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     try:
@@ -197,7 +270,28 @@ async def list_apps(session: Session = Depends(verify_firebase_token)):
 
 @router.get("/{name}/yaml", response_class=PlainTextResponse)
 async def export_app_yaml(name: str, session: Session = Depends(verify_firebase_token)):
-    """Export a single app's config as YAML text (reuses list_app_info, no extra SDK call)."""
+    """
+    Export a single app's config as YAML text.
+
+    Parameters
+    ----------
+    name : str
+        App name.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    str
+        The app's config, YAML-dumped (`text/plain` response).
+
+    Raises
+    ------
+    HTTPException
+        403 if the caller isn't admin and isn't granted this app; 404
+        if Nebula doesn't have an app by this name; 500 on any other
+        failure.
+    """
     cfg = config_store.get()
     if not session.is_admin and name not in nebula_auth.compute_permissions(cfg, session.username)["apps"]:
         raise HTTPException(status_code=403, detail=f"Not permitted for app '{name}'")
@@ -216,7 +310,27 @@ async def export_app_yaml(name: str, session: Session = Depends(verify_firebase_
 
 @router.get("/{name}")
 async def get_app(name: str, session: Session = Depends(verify_firebase_token)):
-    """Get a single app config."""
+    """
+    Get a single app config.
+
+    Parameters
+    ----------
+    name : str
+        App name.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is Nebula's app config reply.
+
+    Raises
+    ------
+    HTTPException
+        403 if the caller isn't admin and isn't granted this app.
+    """
     cfg = config_store.get()
     if not session.is_admin and name not in nebula_auth.compute_permissions(cfg, session.username)["apps"]:
         raise HTTPException(status_code=403, detail=f"Not permitted for app '{name}'")
@@ -233,12 +347,31 @@ async def get_app(name: str, session: Session = Depends(verify_firebase_token)):
 
 @router.post("")
 async def create_app(req: AppCreateRequest, session: Session = Depends(verify_firebase_token)):
-    """Create a new Nebula app and optionally assign it to device groups.
+    """
+    Create a new Nebula app and optionally assign it to device groups.
 
-    Nebula's own create_app check is rw-gated against the app name, which
-    can't exist in anyone's group yet — so this always creates via the
-    admin composer. For non-admins, we then immediately grant their own
-    group rw on the new app name so Nebula's own checks govern it from here on.
+    Parameters
+    ----------
+    req : AppCreateRequest
+        `name`, `config`, `device_groups` to assign, and (for
+        non-admins with more than one group) `owner_group`.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. On success but
+        with per-device-group or grant warnings, `response` still has
+        `error=False` with the warnings appended as text.
+
+    Notes
+    -----
+    Nebula's own `create_app` check is rw-gated against the app name,
+    which can't exist in anyone's group yet - so this always creates
+    via the admin composer. For non-admins, this then immediately
+    grants their own group rw on the new app name so Nebula's own
+    checks govern it from here on.
     """
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -285,11 +418,31 @@ async def create_app(req: AppCreateRequest, session: Session = Depends(verify_fi
 
 @router.put("/{name}")
 async def update_app(name: str, req: AppUpdateRequest, session: Session = Depends(verify_firebase_token)):
-    """Update an existing app's config (mirrors Streamlit updateApp exactly).
+    """
+    Update an existing app's config.
 
-    Non-admins go through a Composer authenticated as their own Nebula
-    token — Nebula's own rw check is the real gate here, not anything
-    Gustavo decides locally.
+    Parameters
+    ----------
+    name : str
+        App name.
+    req : AppUpdateRequest
+        `config` (with `env_vars.APP_ID` auto-injected from `name`).
+        `req.device_groups` is accepted by the request model but not
+        read by this handler - device group membership is managed via
+        the Device Groups router, not here.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+
+    Notes
+    -----
+    Non-admins go through a Composer authenticated as their own
+    Nebula token - Nebula's own rw check is the real gate here, not
+    anything Gustavo decides locally.
     """
     cfg = config_store.get()
     comp = _build_composer(cfg) if session.is_admin else _build_composer_for(cfg, token=session.nebula_secret)
@@ -311,12 +464,28 @@ async def update_app(name: str, req: AppUpdateRequest, session: Session = Depend
 
 @router.delete("/{name}")
 async def delete_app(name: str, session: Session = Depends(verify_firebase_token)):
-    """Delete an app. Removes it from all device groups first (mirrors Streamlit deleteApp).
+    """
+    Delete an app. Removes it from all device groups first.
 
-    The device-group cleanup is best-effort and always runs as the admin
-    composer (it's just removing an association, not a security boundary).
-    The actual delete, for non-admins, runs as their own Nebula token so
-    Nebula's own rw check is the real gate.
+    Parameters
+    ----------
+    name : str
+        App name.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+
+    Notes
+    -----
+    The device-group cleanup is best-effort (failures are silently
+    ignored) and always runs as the admin composer, since it's just
+    removing an association, not a security boundary. The actual
+    delete, for non-admins, runs as their own Nebula token so Nebula's
+    own rw check is the real gate.
     """
     cfg = config_store.get()
     admin_comp = _build_composer(cfg)

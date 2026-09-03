@@ -79,15 +79,29 @@ class GroupRevokeRequest(BaseModel):
 
 
 def _new_secret() -> str:
+    """Generate a fresh random secret for a new/rotated user credential."""
     return _secrets.token_urlsafe(32)
 
 
 def _credential(username: str, secret: str) -> str:
+    """Format a login credential as `"username:secret"` (see `routers/auth.py`'s `/login`)."""
     return f"{username}:{secret}"
 
 
 def _all_groups(comp) -> dict[str, dict]:
-    """name -> group doc, for every user_group. Skips any that fail to fetch."""
+    """
+    Fetch every Nebula user_group, keyed by name.
+
+    Parameters
+    ----------
+    comp : Composer
+
+    Returns
+    -------
+    dict
+        `{name: group_doc}` for every user_group. Skips any that fail
+        to fetch (rather than failing the whole call).
+    """
     result = comp.nebulaObj.list_user_groups()
     if result.get("status_code") != 200:
         return {}
@@ -101,6 +115,16 @@ def _all_groups(comp) -> dict[str, dict]:
 
 @router.get("")
 async def list_users(_session=Depends(require_admin)):
+    """
+    List all Nebula users with their resolved group membership and admin badge. Admin-only.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": {"users": [{"username": str,
+        "groups": [str, ...], "is_admin": bool}, ...]}}``. `is_admin`
+        is `True` if the user belongs to any group with `admin: true`.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     try:
@@ -123,6 +147,32 @@ async def list_users(_session=Depends(require_admin)):
 
 @router.post("")
 async def create_user(req: UserCreateRequest, _session=Depends(require_admin)):
+    """
+    Create a Nebula user with a fresh random credential, and return it once. Admin-only.
+
+    Parameters
+    ----------
+    req : UserCreateRequest
+        `username` (letters/digits/hyphens/underscores only) and
+        optionally `group` to add the new user to.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"username": str, "credential":
+        "<username>:<secret>"}}``. The credential is only ever
+        returned here - Nebula never returns a usable plaintext secret
+        from `create_user` again after this call. If `group` was
+        given but doesn't exist, still succeeds with a `"warning"` key
+        added to `response` instead of failing the user creation.
+
+    Notes
+    -----
+    Both `token` and `password` on the Nebula user are set to the same
+    generated secret: `token` is used for ongoing per-user Bearer
+    calls (`apps.py`/`device_groups.py`), `password` is what makes
+    login's Basic-auth check identity-bound (see `nebula_auth.py`).
+    """
     if not _USERNAME_RE.match(req.username):
         return {"error": True, "response": "Usernames may only contain letters, digits, hyphens, and underscores"}
 
@@ -161,6 +211,18 @@ async def create_user(req: UserCreateRequest, _session=Depends(require_admin)):
 
 @router.delete("/{username}")
 async def delete_user(username: str, _session=Depends(require_admin)):
+    """
+    Delete a Nebula user, first dropping them from every group they belong to. Admin-only.
+
+    Parameters
+    ----------
+    username : str
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     try:
@@ -181,12 +243,31 @@ async def delete_user(username: str, _session=Depends(require_admin)):
 
 @router.post("/me/regenerate-token")
 async def regenerate_my_token(session: Session = Depends(verify_firebase_token)):
-    """Self-service credential rotation — no admin required, no old-secret confirmation
-    needed since the caller is already authenticated via their current session.
+    """
+    Self-service credential rotation for the caller's own account.
 
-    Declared BEFORE /{username}/regenerate-token: FastAPI matches path routes
-    in declaration order, and a dynamic /{username}/... segment would
-    otherwise swallow the literal "me" path first.
+    Parameters
+    ----------
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"username": str, "credential":
+        "<username>:<new secret>"}}`` on success, or
+        ``{"error": True, "response": <reason>}`` if the caller's
+        account isn't a real Nebula ("db") user (e.g. the break-glass
+        admin), or the Nebula update fails.
+
+    Notes
+    -----
+    No admin required, no old-secret confirmation needed, since the
+    caller is already authenticated via their current session.
+
+    Declared BEFORE `/{username}/regenerate-token`: FastAPI matches
+    path routes in declaration order, and a dynamic `/{username}/...`
+    segment would otherwise swallow the literal `"me"` path first.
     """
     if session.user_type != "db":
         return {"error": True, "response": "This account type doesn't have a Nebula token to regenerate"}
@@ -205,6 +286,20 @@ async def regenerate_my_token(session: Session = Depends(verify_firebase_token))
 
 @router.post("/{username}/regenerate-token")
 async def regenerate_token(username: str, _session=Depends(require_admin)):
+    """
+    Admin-driven credential rotation for another user's account.
+
+    Parameters
+    ----------
+    username : str
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"username": str, "credential":
+        "<username>:<new secret>"}}`` on success, or
+        ``{"error": True, "response": <reason>}`` on failure.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     secret = _new_secret()
@@ -220,8 +315,26 @@ async def regenerate_token(username: str, _session=Depends(require_admin)):
 
 @router.get("/me/groups")
 async def my_groups(session: Session = Depends(verify_firebase_token)):
-    """Which groups the caller belongs to — used by the Apps page to decide
-    whether a non-admin needs to pick an owner_group when creating an app."""
+    """
+    Which groups the caller belongs to.
+
+    Parameters
+    ----------
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"groups": [str, ...]}}``.
+        Always `[]` for an admin caller (an admin doesn't need group
+        membership - see `_session_response` in `auth.py`).
+
+    Notes
+    -----
+    Used by the Apps page to decide whether a non-admin needs to pick
+    an `owner_group` when creating an app.
+    """
     if session.is_admin:
         return {"error": False, "response": {"groups": []}}
     cfg = config_store.get()
@@ -230,6 +343,15 @@ async def my_groups(session: Session = Depends(verify_firebase_token)):
 
 @router.get("/groups")
 async def list_groups(_session=Depends(require_admin)):
+    """
+    List all user_groups (roles) with full detail. Admin-only.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": {"groups": [{"name": str, ...
+        (full group doc)}, ...]}}``.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     try:
@@ -242,6 +364,21 @@ async def list_groups(_session=Depends(require_admin)):
 
 @router.post("/groups")
 async def create_group(req: GroupCreateRequest, _session=Depends(require_admin)):
+    """
+    Create a new user_group (role). Admin-only.
+
+    Parameters
+    ----------
+    req : GroupCreateRequest
+        `name`, `group_members`, `apps`/`device_groups` grant maps
+        (`{resource_name: "ro"|"rw"}`), `admin`, `pruning_allowed`,
+        `cron_jobs`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     try:
@@ -266,6 +403,29 @@ async def create_group(req: GroupCreateRequest, _session=Depends(require_admin))
 
 @router.put("/groups/{name}")
 async def update_group(name: str, req: GroupUpdateRequest, _session=Depends(require_admin)):
+    """
+    Update a user_group's fields. Admin-only.
+
+    Parameters
+    ----------
+    name : str
+        Group name.
+    req : GroupUpdateRequest
+        Any subset of `group_members`, `apps`, `device_groups`,
+        `admin`, `pruning_allowed`, `cron_jobs` - fields left `None`
+        are not sent to Nebula, so they're left unchanged (this is a
+        partial update, not a full replace of unset fields).
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+
+    Raises
+    ------
+    HTTPException
+        400 if every field in `req` is `None` (nothing to update).
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     partial = {k: v for k, v in req.model_dump().items() if v is not None}
@@ -283,13 +443,31 @@ async def update_group(name: str, req: GroupUpdateRequest, _session=Depends(requ
 
 @router.post("/groups/{name}/grants")
 async def add_group_grant(name: str, req: GroupGrantRequest, _session=Depends(require_admin)):
-    """Grant a group access to one existing app or device group.
+    """
+    Grant a group access to one existing app or device group. Admin-only.
 
-    Merges a single {resource_name: perm} entry into the group's apps/
-    device_groups map without disturbing its other entries — same
-    fetch-then-merge pattern create_app uses for its own owner_group grant,
-    just exposed directly so an admin can grant existing resources to any
-    group after the fact.
+    Parameters
+    ----------
+    name : str
+        Group name.
+    req : GroupGrantRequest
+        `resource_type` (`"app"` or `"device_group"`), `resource_name`,
+        `perm` (`"ro"` or `"rw"`).
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `name` isn't a known group, or the Nebula update
+        fails.
+
+    Notes
+    -----
+    Merges a single `{resource_name: perm}` entry into the group's
+    `apps`/`device_groups` map without disturbing its other entries -
+    same fetch-then-merge pattern `create_app` uses for its own
+    `owner_group` grant, just exposed directly so an admin can grant
+    existing resources to any group after the fact.
     """
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -310,10 +488,28 @@ async def add_group_grant(name: str, req: GroupGrantRequest, _session=Depends(re
 
 @router.post("/groups/{name}/grants/revoke")
 async def remove_group_grant(name: str, req: GroupRevokeRequest, _session=Depends(require_admin)):
-    """Revoke a group's access to one app or device group (the inverse of add_group_grant).
+    """
+    Revoke a group's access to one app or device group. The inverse of `add_group_grant`. Admin-only.
 
-    POST rather than DELETE-with-body to match the existing apps/add,
-    apps/remove convention in device_groups.py.
+    Parameters
+    ----------
+    name : str
+        Group name.
+    req : GroupRevokeRequest
+        `resource_type` (`"app"` or `"device_group"`), `resource_name`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `name` isn't a known group, or the Nebula update
+        fails. Revoking a grant that doesn't exist still succeeds
+        (`dict.pop`'s default is a no-op).
+
+    Notes
+    -----
+    POST rather than DELETE-with-body, to match the existing
+    `apps/add`/`apps/remove` convention in `device_groups.py`.
     """
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -335,6 +531,19 @@ async def remove_group_grant(name: str, req: GroupRevokeRequest, _session=Depend
 
 @router.delete("/groups/{name}")
 async def delete_group(name: str, _session=Depends(require_admin)):
+    """
+    Delete a user_group. Admin-only.
+
+    Parameters
+    ----------
+    name : str
+        Group name.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     try:

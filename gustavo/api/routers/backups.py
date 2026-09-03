@@ -41,32 +41,41 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 def _redis_bkp_dir() -> str:
+    """Host directory holding Redis `.rdb` backups, from `config_store` (default `"/tmp/"`)."""
     return config_store.get().get("REDIS_BKP_DIR", "/tmp/")
 
 
 def _registry_bkp_dir() -> str:
+    """Host directory holding registry backup dirs, from `config_store` (default `"/tmp/"`)."""
     return config_store.get().get("REGISTRY_BKP_DIR", "/tmp/")
 
 
 def _registry_live_path() -> str:
-    """Return the host path to the live Docker registry data directory.
+    """
+    Return the host path to the live Docker registry data directory.
 
-    Prefer the explicit REGISTRY_DATA_PATH setting. Fall back to
-    {REGISTRY_BKP_DIR}/docker for backwards compatibility.
+    Returns
+    -------
+    str
+        The explicit `REGISTRY_DATA_PATH` setting if set; otherwise
+        `{REGISTRY_BKP_DIR}/docker`, for backwards compatibility.
     """
     explicit = config_store.get().get("REGISTRY_DATA_PATH", "").strip()
     return explicit if explicit else os.path.join(_registry_bkp_dir(), "docker")
 
 
 def _redis_auth_token() -> str:
+    """Redis's `REDIS_AUTH_TOKEN`, from `config_store` (default `""`)."""
     return config_store.get().get("REDIS_AUTH_TOKEN", "")
 
 
 def _mongo_bkp_dir() -> str:
+    """Host directory holding Mongo `.archive.gz` backups, from `config_store` (default `"/tmp/"`)."""
     return config_store.get().get("MONGO_BKP_DIR", "/tmp/")
 
 
 def _mongo_auth() -> tuple[str, str]:
+    """Mongo's `(MONGO_USERNAME, MONGO_PASSWORD)`, from `config_store` (default `("", "")`)."""
     cfg = config_store.get()
     return cfg.get("MONGO_USERNAME", ""), cfg.get("MONGO_PASSWORD", "")
 
@@ -76,6 +85,15 @@ def _mongo_auth() -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 
 def _list_redis_backups_handler() -> dict:
+    """
+    List `redis_backup_*.rdb` files in the Redis backup directory.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is a list of ``{"filename": ..., "timestamp": ...}`` dicts.
+    """
     bkp_dir = _redis_bkp_dir()
     try:
         os.makedirs(bkp_dir, exist_ok=True)
@@ -92,6 +110,22 @@ def _list_redis_backups_handler() -> dict:
 
 
 def _create_redis_backup_handler() -> dict:
+    """
+    Run `BGSAVE` on the `redis` container, then rename the resulting `dump.rdb` to a timestamped backup file.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `REDIS_AUTH_TOKEN` isn't set, the `redis` container
+        doesn't exist, `BGSAVE` fails, or `dump.rdb` isn't found
+        afterward.
+
+    Notes
+    -----
+    Run as a background job via `background.run_in_background` (see
+    `create_redis_backup`), not called directly by a route.
+    """
     bkp_dir = _redis_bkp_dir()
     auth_token = _redis_auth_token()
     client = docker.from_env()
@@ -121,6 +155,26 @@ def _create_redis_backup_handler() -> dict:
 
 
 def _restore_redis_backup_handler(filename: str) -> dict:
+    """
+    Stop `redis`, replace its `dump.rdb` with `filename`, and restart it.
+
+    Parameters
+    ----------
+    filename : str
+        A backup filename from `_list_redis_backups_handler`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `filename` doesn't exist in the backup directory,
+        or the Docker API errors stopping/starting the container.
+
+    Notes
+    -----
+    Run as a background job via `background.run_in_background` (see
+    `restore_redis_backup`), not called directly by a route.
+    """
     bkp_dir = _redis_bkp_dir()
     client = docker.from_env()
     backup_file_path = os.path.join(bkp_dir, filename)
@@ -151,6 +205,20 @@ def _restore_redis_backup_handler(filename: str) -> dict:
 
 
 def _delete_redis_backup_handler(filename: str) -> dict:
+    """
+    Delete a Redis backup file.
+
+    Parameters
+    ----------
+    filename : str
+        A backup filename from `_list_redis_backups_handler`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `filename` doesn't exist.
+    """
     bkp_dir = _redis_bkp_dir()
     backup_path = os.path.join(bkp_dir, filename)
     try:
@@ -176,6 +244,26 @@ def _delete_redis_backup_handler(filename: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def _create_mongo_backup_handler() -> dict:
+    """
+    Run `mongodump` inside the `mongo` container, then pull the resulting archive out to a timestamped host file.
+
+    Runs `mongodump --gzip` against a container-local path, then uses
+    `get_archive` (docker-py's `docker cp` equivalent) to copy the
+    single compressed archive out and unwraps it from the tar
+    container-copy wraps it in.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if the `mongo` container doesn't exist or `mongodump`
+        fails.
+
+    Notes
+    -----
+    Run as a background job via `background.run_in_background` (see
+    `create_mongo_backup`), not called directly by a route.
+    """
     bkp_dir = _mongo_bkp_dir()
     username, password = _mongo_auth()
     client = docker.from_env()
@@ -215,6 +303,30 @@ def _create_mongo_backup_handler() -> dict:
 
 
 def _restore_mongo_backup_handler(filename: str) -> dict:
+    """
+    Push a Mongo backup archive into the `mongo` container and `mongorestore --drop` it.
+
+    Wraps `filename` in a tar (`put_archive`'s expected format,
+    docker-py's `docker cp` equivalent) and copies it into the
+    container, then runs `mongorestore --drop` against it.
+
+    Parameters
+    ----------
+    filename : str
+        A backup filename from `_list_mongo_backups_handler`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `filename` doesn't exist, the `mongo` container
+        doesn't exist, or `mongorestore` fails.
+
+    Notes
+    -----
+    Run as a background job via `background.run_in_background` (see
+    `restore_mongo_backup`), not called directly by a route.
+    """
     bkp_dir = _mongo_bkp_dir()
     backup_file_path = os.path.join(bkp_dir, filename)
     if not os.path.exists(backup_file_path):
@@ -252,6 +364,15 @@ def _restore_mongo_backup_handler(filename: str) -> dict:
 
 
 def _list_mongo_backups_handler() -> dict:
+    """
+    List `mongo_backup_*.archive.gz` files in the Mongo backup directory.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is a list of ``{"filename": ..., "timestamp": ...}`` dicts.
+    """
     bkp_dir = _mongo_bkp_dir()
     try:
         os.makedirs(bkp_dir, exist_ok=True)
@@ -268,6 +389,20 @@ def _list_mongo_backups_handler() -> dict:
 
 
 def _delete_mongo_backup_handler(filename: str) -> dict:
+    """
+    Delete a Mongo backup archive.
+
+    Parameters
+    ----------
+    filename : str
+        A backup filename from `_list_mongo_backups_handler`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `filename` doesn't exist.
+    """
     bkp_dir = _mongo_bkp_dir()
     backup_path = os.path.join(bkp_dir, filename)
     try:
@@ -284,6 +419,16 @@ def _delete_mongo_backup_handler(filename: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def _list_registry_backups_handler() -> dict:
+    """
+    List `registry_backup_*` directories in the registry backup directory.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is a list of ``{"filename": <dir name>, "timestamp": ...}``
+        dicts.
+    """
     bkp_dir = _registry_bkp_dir()
     try:
         os.makedirs(bkp_dir, exist_ok=True)
@@ -303,6 +448,26 @@ def _list_registry_backups_handler() -> dict:
 
 
 def _create_registry_backup_handler() -> dict:
+    """
+    Copy the live registry data directory (`_registry_live_path`) into a new timestamped backup directory.
+
+    Uses `cp -r` via `subprocess`, not a Python-level copy - the
+    registry data directory can be large, and shelling out to `cp`
+    avoids reading the whole tree into the API process.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if the `registry` container doesn't exist, the live
+        data path doesn't exist, or `cp` fails (in which case an
+        empty backup directory it may have created is cleaned up).
+
+    Notes
+    -----
+    Run as a background job via `background.run_in_background` (see
+    `create_registry_backup`), not called directly by a route.
+    """
     bkp_dir = _registry_bkp_dir()
     live_path = _registry_live_path()
     client = docker.from_env()
@@ -335,6 +500,33 @@ def _create_registry_backup_handler() -> dict:
 
 
 def _restore_registry_backup_handler(dirname: str) -> dict:
+    """
+    Stop `registry`, replace its live data directory with a backup, and restart it.
+
+    Parameters
+    ----------
+    dirname : str
+        A backup directory name from `_list_registry_backups_handler`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `dirname` doesn't exist under the backup directory,
+        or the Docker API errors stopping/starting the container.
+
+    Notes
+    -----
+    Handles two backup-directory shapes: if the backup dir contains a
+    subdirectory matching the live data dir's own basename (i.e. it
+    was created by `_create_registry_backup_handler`'s `cp -r`, which
+    nests the copy under the source's basename), that nested
+    subdirectory is copied back to the live data dir's parent under
+    the same basename; otherwise the whole backup dir is copied
+    directly to the live data path. Run as a background job via
+    `background.run_in_background` (see `restore_registry_backup`),
+    not called directly by a route.
+    """
     bkp_dir = _registry_bkp_dir()
     live_path = _registry_live_path()
     data_name = os.path.basename(live_path.rstrip("/"))
@@ -376,6 +568,20 @@ def _restore_registry_backup_handler(dirname: str) -> dict:
 
 
 def _delete_registry_backup_handler(dirname: str) -> dict:
+    """
+    Delete a registry backup directory.
+
+    Parameters
+    ----------
+    dirname : str
+        A backup directory name from `_list_registry_backups_handler`.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. `error` is
+        `True` if `dirname` doesn't exist.
+    """
     bkp_dir = _registry_bkp_dir()
     backup_path = os.path.join(bkp_dir, dirname)
     try:
@@ -393,11 +599,22 @@ def _delete_registry_backup_handler(dirname: str) -> dict:
 
 @router.get("/redis")
 async def list_redis_backups(_session=Depends(require_admin)):
+    """List Redis backups. See `_list_redis_backups_handler`. Admin-only."""
     return _list_redis_backups_handler()
 
 
 @router.post("/redis/create")
 async def create_redis_backup(_session=Depends(require_admin)):
+    """
+    Start a Redis backup as a background job. See `_create_redis_backup_handler`. Admin-only.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``. Poll `/api/services/jobs/{job_id}` for
+        completion.
+    """
     job_id = background.create_job({"type": "redis_backup", "action": "create"})
     background.run_in_background(_create_redis_backup_handler, job_id)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
@@ -405,6 +622,21 @@ async def create_redis_backup(_session=Depends(require_admin)):
 
 @router.post("/redis/restore/{filename}")
 async def restore_redis_backup(filename: str, _session=Depends(require_admin)):
+    """
+    Start a Redis restore as a background job. See `_restore_redis_backup_handler`. Admin-only.
+
+    Parameters
+    ----------
+    filename : str
+        Backup file to restore from.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``. Poll `/api/services/jobs/{job_id}` for
+        completion.
+    """
     job_id = background.create_job({"type": "redis_backup", "action": "restore", "filename": filename})
     background.run_in_background(_restore_redis_backup_handler, job_id, filename)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
@@ -412,6 +644,7 @@ async def restore_redis_backup(filename: str, _session=Depends(require_admin)):
 
 @router.delete("/redis/{filename}")
 async def delete_redis_backup(filename: str, _session=Depends(require_admin)):
+    """Delete a Redis backup file. See `_delete_redis_backup_handler`. Admin-only."""
     return _delete_redis_backup_handler(filename)
 
 
@@ -421,11 +654,22 @@ async def delete_redis_backup(filename: str, _session=Depends(require_admin)):
 
 @router.get("/registry")
 async def list_registry_backups(_session=Depends(require_admin)):
+    """List registry backups. See `_list_registry_backups_handler`. Admin-only."""
     return _list_registry_backups_handler()
 
 
 @router.post("/registry/create")
 async def create_registry_backup(_session=Depends(require_admin)):
+    """
+    Start a registry backup as a background job. See `_create_registry_backup_handler`. Admin-only.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``. Poll `/api/services/jobs/{job_id}` for
+        completion.
+    """
     job_id = background.create_job({"type": "registry_backup", "action": "create"})
     background.run_in_background(_create_registry_backup_handler, job_id)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
@@ -433,6 +677,21 @@ async def create_registry_backup(_session=Depends(require_admin)):
 
 @router.post("/registry/restore/{dirname}")
 async def restore_registry_backup(dirname: str, _session=Depends(require_admin)):
+    """
+    Start a registry restore as a background job. See `_restore_registry_backup_handler`. Admin-only.
+
+    Parameters
+    ----------
+    dirname : str
+        Backup directory to restore from.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``. Poll `/api/services/jobs/{job_id}` for
+        completion.
+    """
     job_id = background.create_job({"type": "registry_backup", "action": "restore", "dirname": dirname})
     background.run_in_background(_restore_registry_backup_handler, job_id, dirname)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
@@ -440,6 +699,7 @@ async def restore_registry_backup(dirname: str, _session=Depends(require_admin))
 
 @router.delete("/registry/{dirname}")
 async def delete_registry_backup(dirname: str, _session=Depends(require_admin)):
+    """Delete a registry backup directory. See `_delete_registry_backup_handler`. Admin-only."""
     return _delete_registry_backup_handler(dirname)
 
 
@@ -449,11 +709,22 @@ async def delete_registry_backup(dirname: str, _session=Depends(require_admin)):
 
 @router.get("/mongo")
 async def list_mongo_backups(_session=Depends(require_admin)):
+    """List Mongo backups. See `_list_mongo_backups_handler`. Admin-only."""
     return _list_mongo_backups_handler()
 
 
 @router.post("/mongo/create")
 async def create_mongo_backup(_session=Depends(require_admin)):
+    """
+    Start a Mongo backup as a background job. See `_create_mongo_backup_handler`. Admin-only.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``. Poll `/api/services/jobs/{job_id}` for
+        completion.
+    """
     job_id = background.create_job({"type": "mongo_backup", "action": "create"})
     background.run_in_background(_create_mongo_backup_handler, job_id)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
@@ -461,6 +732,21 @@ async def create_mongo_backup(_session=Depends(require_admin)):
 
 @router.post("/mongo/restore/{filename}")
 async def restore_mongo_backup(filename: str, _session=Depends(require_admin)):
+    """
+    Start a Mongo restore as a background job. See `_restore_mongo_backup_handler`. Admin-only.
+
+    Parameters
+    ----------
+    filename : str
+        Backup file to restore from.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``. Poll `/api/services/jobs/{job_id}` for
+        completion.
+    """
     job_id = background.create_job({"type": "mongo_backup", "action": "restore", "filename": filename})
     background.run_in_background(_restore_mongo_backup_handler, job_id, filename)
     return {"error": False, "response": {"job_id": job_id, "status": "running"}}
@@ -468,4 +754,5 @@ async def restore_mongo_backup(filename: str, _session=Depends(require_admin)):
 
 @router.delete("/mongo/{filename}")
 async def delete_mongo_backup(filename: str, _session=Depends(require_admin)):
+    """Delete a Mongo backup archive. See `_delete_mongo_backup_handler`. Admin-only."""
     return _delete_mongo_backup_handler(filename)

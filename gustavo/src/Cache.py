@@ -3,23 +3,42 @@ from .NebulaBase import NebulaBase
 from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
-    
+
 """
-CAUTION: This module relies on the Redis in memory data store with expiry of cache enabled.
-The code will work for small cases but might break at scale. This needs to be fixed.
-Right now this is a hot fix style code that needs to be re-written elgantly.
+Reads cached worker vitals/container reports back out of Redis.
+
+Reports themselves are written by the worker side (not this module) as
+pickled blobs under keys shaped
+``{CACHE_PREFIX}_{timestamp}_{device_group}@{host}``, with Redis's own
+TTL expiring stale entries. This module only ever reads - it never
+writes a cache entry itself.
+
+CAUTION: relies on `SCAN`-ing the full key space (`scanLatest`,
+`getHosts`) to find the latest report per host - works for small
+deployments but doesn't scale to a large number of hosts/reports. Not
+rewritten here, since fixing that is a real, separate change (e.g. a
+secondary index instead of a full scan), not a docs pass.
 """
 
 
 class ErrorHandling(Exception):
+    """Raised for a Redis connection failure, or when data expected in a cached report is missing/malformed."""
     pass
 
 
 class Cache(NebulaBase):
-
     """
-    This module relies on the Redis in memory data store with expiry of cache enabled.
+    Reads cached worker vitals/container reports back out of Redis.
 
+    Extends `NebulaBase` for its Redis connection attributes
+    (`REDIS_IP`/`REDIS_PORT`/`REDIS_AUTH_TOKEN`/`CACHE_PREFIX`) - always
+    constructed with `mode="CLI"` (see `__init__`), since the FastAPI
+    backend's own monitoring path doesn't go through this class.
+
+    Attributes
+    ----------
+    redisObj : redis.StrictRedis
+        The Redis client used for every cache read.
     """
 
     def __init__(
@@ -27,8 +46,26 @@ class Cache(NebulaBase):
         session_state=None,
     ):
         """
-        Inorder to make Cache rest friendly replaced sys.exit() with raising exceptions which will get excepted
-        in gustavo.py and eventually return a dictionary there {"error": True, "response": reason for error}
+        Connect to Redis using connection details resolved via `NebulaBase.__init__`.
+
+        Parameters
+        ----------
+        session_state : dict or None, optional
+            Forwarded to `NebulaBase.__init__`. Since `Cache` always
+            passes `mode="CLI"`, this is unused in practice - CLI mode
+            reads connection details from `GUSTAVO_CONFIG_FILE` instead.
+
+        Raises
+        ------
+        ErrorHandling
+            If the Redis connection can't be established.
+
+        Notes
+        -----
+        Originally called `sys.exit()` on a connection failure; replaced
+        with raising a real exception so a REST caller (`gustavo.py`)
+        can catch it and return ``{"error": True, "response": <reason>}``
+        instead of killing the process.
         """
         logging.error(f"WARNING: This is an experimental feature and is not optimized for scale. Results might vary.")
         NebulaBase.__init__(self, mode="CLI", session_state=session_state)
@@ -44,19 +81,18 @@ class Cache(NebulaBase):
 
     def keyPartition(self, raw_key):
         """
-        Partitions key based on the delimiter "_"
+        Split a cache key into its three ``_``-delimited components.
 
         Parameters
         ----------
-        raw_key : string
-            Raw key to be partitioned
+        raw_key : str or bytes
+            A raw ``{CACHE_PREFIX}_{timestamp}_{device_group}@{host}``
+            key, as returned by `redis.StrictRedis.scan_iter`.
 
         Returns
         -------
-
-        component_tuple : list
-            A tuple of three key components
-
+        tuple of str
+            ``(prefix, timestamp, device_group@host)``.
         """
         key = str(raw_key).replace("'", "")
         key_components = str(key).split("_")
@@ -67,12 +103,15 @@ class Cache(NebulaBase):
     ):
 
         """
-        Iteratively scan and find the latest matching key and return the most freshest key
+        Find the most recent report timestamp for every host currently cached.
+
+        Scans every key under `CACHE_PREFIX`, keeping only the largest
+        timestamp seen per host.
 
         Returns
         -------
-        host_dict : dict
-            A dictionary containing the latest key value pairs
+        dict
+            ``{device_group@host: latest_timestamp}``.
         """
 
         host_dict = {}
@@ -88,23 +127,17 @@ class Cache(NebulaBase):
 
     def getHostDeviceGroupFromKey(self, host_id):
         """
-        Obtain the device group from the given key
+        Split a ``device_group@host`` id into its two parts.
 
         Parameters
         ----------
-
-        host_id : string
-            The key value to check
+        host_id : str
+            A ``device_group@host`` string, as produced by `keyPartition`.
 
         Returns
         -------
-
-        host : string
-            host part of the key
-
-        device_group : string
-            device group part of the key
-
+        host : str
+        device_group : str
         """
         device_group = host_id.split("@")[0]
         host = host_id.split("@")[1]
@@ -113,26 +146,31 @@ class Cache(NebulaBase):
     def getHosts(self, device_group_queried, host_queried):
 
         """
-        Determines which hosts and device groups currently exist in the cache by querying Redis.
+        Determine which hosts and/or device groups currently exist in the cache.
 
         Parameters
         ----------
-        device_group_queried : string
-            The device group being queried
-
-        host_queried : string
-            The host being queried
+        device_group_queried : str
+            A device group name, or ``"all"``.
+        host_queried : str
+            A host name, or ``"all"``.
 
         Returns
         -------
-        mapping_dict : dict
-            A dict containing {
-                                "host_queried":the query results for the host,
-                                "device_group_queried":the query results for the device group,
-                                "response":a boolean value depending on success of query
-                              }
+        dict
+            ``{"host_queried": ..., "device_group_queried": ..., "response": ...}``.
+            The shape of `response` depends on which of
+            `device_group_queried`/`host_queried` is ``"all"``:
 
-
+            - both `"all"`: `response` is ``{host: [device_group, ...]}``
+              for every cached host.
+            - only `device_group_queried` is `"all"`: `response` is the
+              list of device groups matching `host_queried` (or `[]` if
+              `host_queried` isn't cached).
+            - only `host_queried` is `"all"`: `response` is the list of
+              device groups matching `device_group_queried` (or `[]`).
+            - neither is `"all"`: `response` is a `bool` - whether that
+              exact host/device-group pairing is cached.
         """
 
         host_dict = {}
@@ -188,28 +226,21 @@ class Cache(NebulaBase):
     def unpickleData(self, device_group, host):
 
         """
-        Given a device group and host, unpickles the query result (vitals and containers) from Redis cache.
+        Fetch and unpickle the latest cached report for a device group/host pair.
 
         Parameters
         ----------
-        device_group: string
-            The device group being queried
-
-        host : string
-            The host being queried
+        device_group : str
+        host : str
 
         Returns
         -------
-        mapping_dict : dict
-            A dict containing {
-                                "host_queried":the query results for the host,
-                                "device_group_queried":the query results for the device group,
-                                "response":a boolean value depending on success of query
-                              }
-
-        key : string
-            The key that led to the match
-
+        dict
+            ``{"host_queried": host, "device_group_queried": device_group, "response": ...}``.
+            `response` is the unpickled report dict on success, or `{}`
+            if no cached entry exists for this pair or unpickling failed.
+        key : str
+            The ``device_group@host`` key looked up.
         """
 
         key = str(device_group + "@" + host)
@@ -244,21 +275,32 @@ class Cache(NebulaBase):
 
     def getIndividualVitals(self, device_group, host):
         """
-        Fetches the vitals across device groups and host combinations
+        Format the cached memory/disk/CPU vitals for a device group/host pair as a summary string.
+
         Parameters
         ----------
-        device_group: string
-            The device group being queried
+        device_group : str
+        host : str
 
-        host : string
-            The host being queried
+        Returns
+        -------
+        dict
+            ``{"error": False, "response": <summary str>}`` on success, or
+            ``{"error": True, "response": <reason>}`` if nothing is
+            cached for this pair or a field expected in the report is
+            missing/malformed.
 
-        TODO: REST-fy this function, currently executes sys.exit()
+        Raises
+        ------
+        ErrorHandling
+            If the cached report exists but is missing an expected
+            vitals field.
 
-        Inorder to make Cache rest friendly replaced sys.exit() with raising exceptions which will get excepted
-        in getAssetsForAll(self,asset,device_group_id="all",host_id="all") and eventually return a dictionary there
-        {"error": True, "response": reason for error}
-
+        Notes
+        -----
+        Called by `getAssetsForAll`, which catches `ErrorHandling` and
+        turns it into the same ``{"error": True, ...}`` shape rather
+        than letting it propagate.
         """
         response, key = self.unpickleData(device_group, host)
         data_dict = response["response"]
@@ -298,20 +340,32 @@ class Cache(NebulaBase):
 
     def getIndividualContainers(self, device_group, host):
         """
-        Fetches the containers for device group and host combination
+        Format the cached container list for a device group/host pair as a summary string.
+
         Parameters
         ----------
-        device_group: string
-            The device group being queried
+        device_group : str
+        host : str
 
-        host : string
-            The host being queried
+        Returns
+        -------
+        dict
+            ``{"error": False, "response": <summary str>}`` on success, or
+            ``{"error": True, "response": <reason>}`` if nothing is
+            cached for this pair or `apps_containers` is missing from
+            the report.
 
-        TODO: REST-fy this function, currently executes sys.exit()
+        Raises
+        ------
+        ErrorHandling
+            If the cached report exists but is missing an expected
+            container field.
 
-        Inorder to make Cache rest friendly replaced sys.exit() with raising exceptions which will get excepted
-        in getAssetsForAll(self,asset,device_group_id="all",host_id="all") and eventually return a dictionary there
-        {"error": True, "response": reason for error}
+        Notes
+        -----
+        Called by `getAssetsForAll`, which catches `ErrorHandling` and
+        turns it into the same ``{"error": True, ...}`` shape rather
+        than letting it propagate.
         """
 
         response, key = self.unpickleData(device_group, host)
@@ -341,7 +395,36 @@ class Cache(NebulaBase):
 
     def getAssetsForAll(self, asset, device_group_id="all", host_id="all"):
         """
-        TODO: This function hasnt been implemented completely yet. Need to find an efficient way for querying at scale.
+        Fetch `"vitals"` or `"containers"` for every cached host matching a device group/host filter.
+
+        Parameters
+        ----------
+        asset : str
+            `"vitals"` or `"containers"`.
+        device_group_id : str, optional
+            A device group name, or `"all"` (default) to match any.
+        host_id : str, optional
+            A host name, or `"all"` (default) to match any.
+
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": ...}``. When both filters are
+            `"all"` and nothing is cached, `response` is a "no data
+            matches" string with `error=False` (not treated as a
+            failure). Otherwise `response` is whatever
+            `getIndividualVitals`/`getIndividualContainers` returned
+            for each matching host, or an error string if that call
+            raised.
+
+        Notes
+        -----
+        CAUTION - doesn't scale: when either filter is `"all"`, this
+        calls `scanLatest` and then `getIndividualVitals`/
+        `getIndividualContainers` once per matching host, each of
+        which re-scans and re-fetches from Redis. Not rewritten here,
+        since fixing that is a real, separate change (batch the scan
+        and pipeline the fetches), not a docs pass.
         """
         if device_group_id != "all" and host_id != "all":
             if asset == "vitals":

@@ -50,8 +50,21 @@ class AppListRequest(BaseModel):
 
 @router.get("")
 async def list_device_groups(session: Session = Depends(verify_firebase_token)):
-    """List all device groups with their app membership (mirrors DGHandler.listAllDeviceGroups).
-    Filtered to the caller's grants if not an admin (Nebula's own list endpoint is unfiltered)."""
+    """
+    List all device groups with their app membership.
+
+    Parameters
+    ----------
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": {"device_groups": [{"name": ...,
+        "apps": [...]}, ...]}}``, filtered to the caller's grants if
+        not an admin (Nebula's own list endpoint is unfiltered).
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg)
     perms = None if session.is_admin else nebula_auth.compute_permissions(cfg, session.username)
@@ -79,13 +92,32 @@ async def list_device_groups(session: Session = Depends(verify_firebase_token)):
 
 @router.post("")
 async def create_device_group(req: DeviceGroupCreateRequest, session: Session = Depends(verify_firebase_token)):
-    """Create a new device group (mirrors DGHandler.createDeviceGroup).
+    """
+    Create a new device group.
 
-    Nebula's own create_device_group check is rw-gated against the group
-    name, which can't exist in anyone's grants yet — so this always creates
-    via the admin composer. For non-admins, we then immediately grant their
-    own group rw on the new device group so Nebula's own checks govern it
-    from here on (mirrors create_app in apps.py).
+    Parameters
+    ----------
+    req : DeviceGroupCreateRequest
+        `name`, `apps` to assign, and (for non-admins with more than
+        one group) `owner_group`.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``. On success but
+        with a grant warning, `response` still has `error=False` with
+        the warning appended as text.
+
+    Notes
+    -----
+    Nebula's own `create_device_group` check is rw-gated against the
+    group name, which can't exist in anyone's grants yet - so this
+    always creates via the admin composer. For non-admins, this then
+    immediately grants their own group rw on the new device group so
+    Nebula's own checks govern it from here on (mirrors `create_app`
+    in `apps.py`).
     """
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -119,7 +151,23 @@ async def create_device_group(req: DeviceGroupCreateRequest, session: Session = 
 
 @router.get("/{name}")
 async def get_device_group(name: str, session: Session = Depends(verify_firebase_token)):
-    """Get a device group's config (mirrors list_device_group SDK call)."""
+    """
+    Get a single device group's config.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. `error` is `True` if the
+        caller isn't admin and isn't granted this device group, or
+        Nebula doesn't have a device group by this name.
+    """
     cfg = config_store.get()
     if not session.is_admin and name not in nebula_auth.compute_permissions(cfg, session.username)["device_groups"]:
         return {"error": True, "response": f"Not permitted for device group '{name}'"}
@@ -140,9 +188,29 @@ async def update_device_group(
     req: DeviceGroupUpdateRequest,
     session: Session = Depends(verify_firebase_token),
 ):
-    """Update a device group's app list (mirrors DGHandler.updateDeviceGroup).
-    Non-admins go through a Composer authenticated as their own Nebula
-    token — Nebula's own rw check is the real gate, same as apps.py."""
+    """
+    Update a device group's app list.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    req : DeviceGroupUpdateRequest
+        `apps` - the full replacement app list.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+
+    Notes
+    -----
+    Non-admins go through a Composer authenticated as their own
+    Nebula token - Nebula's own rw check is the real gate, same as
+    `apps.py`.
+    """
     cfg = config_store.get()
     comp = _build_composer(cfg) if session.is_admin else _build_composer_for(cfg, token=session.nebula_secret)
     try:
@@ -157,9 +225,29 @@ async def update_device_group(
 
 @router.delete("/{name}")
 async def delete_device_group(name: str, session: Session = Depends(verify_firebase_token)):
-    """Delete a device group (mirrors DGHandler.deleteDeviceGroup — diagnostic fetch first).
-    The diagnostic fetch always runs as admin (read-only, not a security
-    boundary); the actual delete, for non-admins, runs as their own token."""
+    """
+    Delete a device group.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+
+    Notes
+    -----
+    Fetches the device group's current state (logged, not returned)
+    before deleting it, matching the legacy Streamlit tool's pattern.
+    That diagnostic fetch always runs as admin (read-only, not a
+    security boundary); the actual delete, for non-admins, runs as
+    their own token.
+    """
     cfg = config_store.get()
     admin_comp = _build_composer(cfg)
     comp = admin_comp if session.is_admin else _build_composer_for(cfg, token=session.nebula_secret)
@@ -179,16 +267,43 @@ async def delete_device_group(name: str, session: Session = Depends(verify_fireb
 
 def _merge_device_group_apps(cfg: dict, session: Session, name: str, apps: list[str], mode: str) -> dict:
     """
-    Shared implementation for apps/add and apps/remove. Composer.handleDeviceGroup
-    (gustavo/src/Composer.py) bundles a read-before, write, and read-after into
-    one call — but the read is ro-gated on Nebula's side, and a non-admin's
-    grant on a device group is typically rw only. Since Nebula's permission
-    check is exact-match (rw does NOT imply ro), running the whole bundled
-    call through a per-user token 403s on the internal read even when the
-    actual write would have been allowed. So: read the current app list via
-    the admin composer (never a security boundary — reads are already
-    Python-filtered elsewhere), then perform only the write through the
-    caller's own composer, so Nebula's own rw check is what actually gates it.
+    Add or remove apps from a device group's app list, working around a Nebula rw/ro permission gap.
+
+    Parameters
+    ----------
+    cfg : dict
+        Current platform config.
+    session : Session
+        The authenticated caller.
+    name : str
+        Device group name.
+    apps : list of str
+        App names to add or remove.
+    mode : str
+        `"add"` (skip apps already present) or anything else, treated
+        as remove.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is the resulting app list (`list`). On failure, `response` is
+        a message string.
+
+    Notes
+    -----
+    Shared implementation for `apps/add` and `apps/remove`.
+    `Composer.handleDeviceGroup` (`gustavo/src/Composer.py`) bundles a
+    read-before, write, and read-after into one call - but the read is
+    ro-gated on Nebula's side, and a non-admin's grant on a device
+    group is typically rw only. Since Nebula's permission check is
+    exact-match (rw does NOT imply ro), running the whole bundled call
+    through a per-user token 403s on the internal read even when the
+    actual write would have been allowed. So: read the current app
+    list via the admin composer (never a security boundary - reads
+    are already Python-filtered elsewhere), then perform only the
+    write through the caller's own composer, so Nebula's own rw check
+    is what actually gates it.
     """
     admin_comp = _build_composer(cfg)
     write_comp = admin_comp if session.is_admin else _build_composer_for(cfg, token=session.nebula_secret)
@@ -218,7 +333,23 @@ async def add_apps_to_device_group(
     req: AppListRequest,
     session: Session = Depends(verify_firebase_token),
 ):
-    """Add apps to a device group (mirrors Streamlit: handleDeviceGroup with mode='update')."""
+    """
+    Add apps to a device group.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    req : AppListRequest
+        `apps` to add.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
     cfg = config_store.get()
     try:
         result = _merge_device_group_apps(cfg, session, name, req.apps, "add")
@@ -236,7 +367,23 @@ async def remove_apps_from_device_group(
     req: AppListRequest,
     session: Session = Depends(verify_firebase_token),
 ):
-    """Remove apps from a device group (mirrors Streamlit: handleDeviceGroup with mode='delete')."""
+    """
+    Remove apps from a device group.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    req : AppListRequest
+        `apps` to remove.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
     cfg = config_store.get()
     try:
         result = _merge_device_group_apps(cfg, session, name, req.apps, "remove")
@@ -249,30 +396,85 @@ async def remove_apps_from_device_group(
 
 
 def _require_dg_access(cfg: dict, session: Session, name: str) -> None:
+    """
+    Raise 403 if `session` isn't admin and isn't granted device group `name`.
+
+    Parameters
+    ----------
+    cfg : dict
+        Current platform config.
+    session : Session
+        The authenticated caller.
+    name : str
+        Device group name.
+
+    Raises
+    ------
+    HTTPException
+        403 if not permitted.
+    """
     if not session.is_admin and name not in nebula_auth.compute_permissions(cfg, session.username)["device_groups"]:
         raise HTTPException(status_code=403, detail=f"Not permitted for device group '{name}'")
 
 
 def _batch_quote(value: str) -> str:
-    """Quote a value for safe use as a double-quoted argument in a Windows
-    .bat file — cmd.exe's escaping rules, not shlex/POSIX. % must be doubled
-    to avoid batch variable expansion (applies even inside double quotes);
-    embedded " is escaped as \\" to match the standard Windows argv-parsing
-    convention docker.exe (like most Windows CLI tools) follows. & | < > ^
-    are left alone since cmd.exe's own metacharacter splitting doesn't apply
-    inside a quoted argument."""
+    """
+    Quote `value` for safe use as a double-quoted argument in a Windows `.bat` file.
+
+    Parameters
+    ----------
+    value : str
+        The raw value to quote.
+
+    Returns
+    -------
+    str
+        `value` wrapped in double quotes, safe to embed in a `.bat`
+        file's `docker run` invocation.
+
+    Notes
+    -----
+    Uses cmd.exe's escaping rules, not shlex/POSIX. `%` must be
+    doubled to avoid batch variable expansion (applies even inside
+    double quotes); embedded `"` is escaped as `\\"` to match the
+    standard Windows argv-parsing convention `docker.exe` (like most
+    Windows CLI tools) follows. `& | < > ^` are left alone since
+    cmd.exe's own metacharacter splitting doesn't apply inside a
+    quoted argument.
+    """
     return '"' + value.replace("%", "%%").replace('"', '\\"') + '"'
 
 
 @router.get("/{name}/worker-env", response_class=PlainTextResponse)
 async def download_worker_env(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
-    """Native `gustavo worker up` env file for this device group, scoped to the
-    caller's own Nebula identity — same shape as /api/config/worker-download,
-    plus DEVICE_GROUP so the CLI invocation needs one less flag.
+    """
+    Native `gustavo worker up` env file for this device group, scoped to the caller's own Nebula identity.
 
-    gpu=true adds GPU_ENABLED - only set this for a device group whose
-    hardware actually has a GPU nvidia-container-toolkit can grant access
-    to; the worker applies it to every container it launches on that device."""
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    gpu : bool, optional
+        If `True`, adds `GPU_ENABLED=true` - only set this for a
+        device group whose hardware actually has a GPU
+        `nvidia-container-toolkit` can grant access to; the worker
+        applies it to every container it launches on that device.
+    session : Session
+        The authenticated caller, via `verify_session_or_basic`.
+
+    Returns
+    -------
+    str
+        `key=value` lines, `text/plain`. Same shape as
+        `/api/config/worker-download`, plus `DEVICE_GROUP` so the CLI
+        invocation needs one less flag.
+
+    Raises
+    ------
+    HTTPException
+        403 if the caller isn't admin and isn't granted this device
+        group.
+    """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     username = session.username
@@ -301,12 +503,36 @@ async def download_worker_env(name: str, gpu: bool = False, session: Session = D
 
 @router.get("/{name}/worker-compose", response_class=PlainTextResponse)
 async def download_worker_compose(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
-    """Self-contained docker-compose.yml for this device group's worker — every
-    value baked in directly, no companion .env file. Independent of worker-env:
-    changing/regenerating one has no effect on the other.
+    """
+    Self-contained `docker-compose.yml` for this device group's worker.
 
-    gpu=true adds GPU_ENABLED - only for a device group whose hardware
-    actually has a GPU."""
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    gpu : bool, optional
+        If `True`, adds `GPU_ENABLED=true` - only for a device group
+        whose hardware actually has a GPU.
+    session : Session
+        The authenticated caller, via `verify_session_or_basic`.
+
+    Returns
+    -------
+    str
+        YAML `docker-compose.yml` text, every value baked in directly
+        - no companion `.env` file needed.
+
+    Raises
+    ------
+    HTTPException
+        403 if the caller isn't admin and isn't granted this device
+        group.
+
+    Notes
+    -----
+    Independent of `worker-env`: changing/regenerating one has no
+    effect on the other.
+    """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
@@ -328,12 +554,40 @@ async def download_worker_compose(name: str, gpu: bool = False, session: Session
 
 @router.get("/{name}/worker-script", response_class=PlainTextResponse)
 async def download_worker_script(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
-    """Self-contained launcher script for this device group's worker — a single
-    `docker run` invocation with every value baked in directly. Independent of
-    both worker-env and worker-compose; downloading this needs nothing else.
+    """
+    Self-contained `docker run` launcher script for this device group's worker (macOS/Linux).
 
-    gpu=true adds GPU_ENABLED - only for a device group whose hardware
-    actually has a GPU."""
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    gpu : bool, optional
+        If `True`, adds `GPU_ENABLED=true` - only for a device group
+        whose hardware actually has a GPU.
+    session : Session
+        The authenticated caller, via `verify_session_or_basic`.
+
+    Returns
+    -------
+    str
+        A `#!/bin/bash` script, `text/plain`. Uses `shlex.quote` (not
+        naive f-string interpolation) since env values include
+        admin-set secrets that can contain anything (quotes, `$`,
+        backticks) - unescaped, that's a shell-injection risk in a
+        script meant to be double-clicked and run, not just a
+        formatting bug.
+
+    Raises
+    ------
+    HTTPException
+        403 if the caller isn't admin and isn't granted this device
+        group.
+
+    Notes
+    -----
+    Independent of both `worker-env` and `worker-compose`;
+    downloading this needs nothing else.
+    """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
@@ -357,13 +611,37 @@ async def download_worker_script(name: str, gpu: bool = False, session: Session 
 
 @router.get("/{name}/worker-script-windows", response_class=PlainTextResponse)
 async def download_worker_script_windows(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
-    """Same as worker-script, as a double-click-able Windows .bat instead of
-    a bash script — cmd.exe's syntax and quoting are different enough (no
-    set -e, ^ instead of \\ for line continuation, its own escaping rules)
-    that it needs its own generator rather than reusing the bash one.
+    """
+    Same as `worker-script`, as a double-click-able Windows `.bat` instead of a bash script.
 
-    gpu=true adds GPU_ENABLED - only for a device group whose hardware
-    actually has a GPU."""
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    gpu : bool, optional
+        If `True`, adds `GPU_ENABLED=true` - only for a device group
+        whose hardware actually has a GPU.
+    session : Session
+        The authenticated caller, via `verify_session_or_basic`.
+
+    Returns
+    -------
+    str
+        A `@echo off` `.bat` script, `text/plain`.
+
+    Raises
+    ------
+    HTTPException
+        403 if the caller isn't admin and isn't granted this device
+        group.
+
+    Notes
+    -----
+    cmd.exe's syntax and quoting are different enough from bash (no
+    `set -e`, `^` instead of `\\` for line continuation, its own
+    escaping rules via `_batch_quote`) that it needs its own generator
+    rather than reusing `download_worker_script`.
+    """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
