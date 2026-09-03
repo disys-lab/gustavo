@@ -6,25 +6,15 @@ The Dashboard is the landing page after login. It provides an at-a-glance view o
 
 ## Layout
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Platform Services                                   │
-│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐       │
-│  │ Redis  │ │ Mongo  │ │Registry│ │Manager │       │
-│  │  Up ●  │ │  Up ●  │ │  Up ●  │ │  Up ●  │       │
-│  └────────┘ └────────┘ └────────┘ └────────┘       │
-│  ▶ Manage Platform Services                          │
-├───────────────┬──────────────┬──────────────────────┤
-│ System Vitals │     Apps     │   Device Groups       │
-│ CPU  ████ 23% │              │                       │
-│ Mem  ██   50% │      4       │         3             │
-│ Disk ███  60% │ apps deployed│   groups configured   │
-├───────────────┴──────────────┴──────────────────────┤
-│  Recent Activity                                     │
-│  Redis launched       Launching Redis…    2 min ago  │
-│  Settings saved       Config updated      5 min ago  │
-└─────────────────────────────────────────────────────┘
-```
+![Dashboard](../assets/screenshots/dashboard.png)
+
+Top to bottom: the Platform Services card (status pills + expandable
+management table), a 3-column row (System Vitals, Apps, Device
+Groups), and Recent Activity. In this screenshot only Mongo shows
+`Up` — Redis/Registry/Manager status is a local Docker container-name
+lookup on the machine `gustavo` itself runs on (see the Platform
+Services card section below), so it doesn't reflect those services
+being reachable elsewhere.
 
 ---
 
@@ -35,6 +25,15 @@ Always visible. Shows a status pill for each of the 4 platform services (Redis, 
 - **Green pulsing dot** — service is `Up`
 - **Red dot** — service is `Down`
 - **Gray** — status unknown (loading)
+
+"Up"/"Down" is a local Docker container-name lookup (`docker
+containers.get("redis")`/`"registry"`/`"manager"`/`"mongo"`) against
+whatever Docker daemon the `gustavo` container's mounted
+`/var/run/docker.sock` points at — **not** a network reachability
+check against `REDIS_HOST`/`MANAGER_HOST`/etc. If a service actually
+runs as a container on a different host than `gustavo` itself, its
+pill shows `Down` even though the service is healthy — the pill only
+finds services running on `gustavo`'s own Docker host.
 
 The status strip auto-refreshes every 30 seconds. Clicking **Status** in the expanded table forces an immediate refresh and updates the strip.
 

@@ -1,5 +1,10 @@
 # Gustavo
 
+[![Docs](https://github.com/disys-lab/gustavo/actions/workflows/docs.yml/badge.svg)](https://github.com/disys-lab/gustavo/actions/workflows/docs.yml)
+[![Latest tag](https://img.shields.io/github/v/tag/disys-lab/gustavo?label=latest)](https://github.com/disys-lab/gustavo/tags)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](Dockerfile)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
 Gustavo is a container orchestration framework constructed for Demo A3 under Research Thrust 2 of [NASA HOME STRI Project](https://homestri.ucdavis.edu/research). 
 Gustavo is designed to be a one stop shop for administering applications in an **autonomous, self aware** fashion.
 Gustavo is available as a **web-based GUI** (via Docker containers) or via **Command Line Interface** and can be run on Linux/Mac Environments as well as under Windows with the help of Windows Subsystem for Linux (WSL).
@@ -38,6 +43,10 @@ See the [Developer Guide](https://disys-lab.github.io/gustavo/contributing.md) f
 
 Contributions are welcome! Please see the [Contributing Guide](https://disys-lab.github.io/gustavo/contributing.md) for details.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
