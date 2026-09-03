@@ -4,49 +4,7 @@ This tutorial walks through the complete workflow — from a fresh Gustavo insta
 
 ---
 
-## What you will build
-
-```
-Manager node                    Edge devices
-─────────────────               ─────────────────────
-Registry  ←── syncs images ──   Worker (reports metrics)
-Redis                           Worker (runs app containers)
-MongoDB
-Nebula Manager ──── manages ──▶ Device Group: "production"
-                                  └── App: "my-app"
-```
-
----
-
-## Step 1 — Bring up platform services
-
-From the **Dashboard**, expand **Manage Platform Services** and launch each service in order:
-
-1. **Registry** — local Docker image store
-2. **Redis** — metric cache and worker heartbeat
-3. **MongoDB** — Nebula application state
-4. **Manager** — Nebula orchestration API
-
-Wait for each status pill to turn green before starting the next.
-
-**Or via CLI:**
-
-```bash
-gustavo manager up registry
-gustavo manager up redis
-gustavo manager up mongo
-gustavo manager up manager
-```
-
-Verify:
-
-```bash
-gustavo manager check
-```
-
----
-
-## Step 2 — Configure platform settings
+## Step 1 — Configure platform settings
 
 Go to **Settings** and fill in the connection details for your infrastructure. At minimum:
 
@@ -57,11 +15,11 @@ Go to **Settings** and fill in the connection details for your infrastructure. A
 | Redis | Host, Port, Auth Token |
 | MongoDB | Host, Port, Username, Password |
 
-Click **Save Settings**. Use the **Apply to all** button to copy the Manager host to Redis, MongoDB, and Registry if they all run on the same machine.
+Click **Save Settings**.
 
 ---
 
-## Step 3 — Push an image to the local registry
+## Step 2 — Push an image to the local registry
 
 Your application image must be present in the local registry before you can deploy it. Push it from the manager node:
 
@@ -80,7 +38,7 @@ You should see `my-app` in the output.
 
 ---
 
-## Step 4 — Create the application
+## Step 3 — Create the application
 
 ### Via the web UI
 
@@ -124,9 +82,9 @@ gustavo apps create -n my-app -f my-app.yaml
 
 ---
 
-## Step 5 — Set up worker nodes
+## Step 4 — Set up worker nodes
 
-On **each edge device**, follow the [Worker Node Setup](cli/index.md#worker-node-setup) to install Docker, create `worker.env`, and start the worker:
+On **each edge device**, install Docker, create `worker.env`, and start the worker:
 
 ```bash
 export GUSTAVO_CONFIG_FILE=/path/to/worker.env
@@ -136,7 +94,6 @@ gustavo worker up
 Confirm the worker is registered:
 
 ```bash
-# From the manager node
 gustavo cache hosts
 ```
 
@@ -144,7 +101,7 @@ You should see the worker's device group and host ID in the output.
 
 ---
 
-## Step 6 — Create a device group and assign the app
+## Step 5 — Create a device group and assign the app
 
 ### Via the web UI
 
@@ -165,7 +122,7 @@ Nebula will immediately push `my-app` to all workers in the `production` group.
 
 ---
 
-## Step 7 — Verify the app is running
+## Step 6 — Verify the app is running
 
 On any worker node:
 
@@ -175,38 +132,33 @@ docker ps
 
 You should see a running container for `my-app`.
 
-From the manager node, check container status across all workers:
+From the manager node:
 
 ```bash
 gustavo cache containers
 ```
 
-Or open the **Monitoring** page in the web UI — you should see CPU, memory, and disk metrics flowing within `CACHE_EXPIRE_TIME` seconds.
+Or open the **Monitoring** page in the web UI.
 
 ---
 
-## Step 8 — Update the app
+## Step 7 — Update the app
 
-Edit `my-app.yaml` (e.g. change an env var or switch the image) and apply:
+Edit `my-app.yaml` and apply:
 
 ```bash
 gustavo apps update -n my-app -f my-app.yaml
 ```
 
-With `rolling_restart: true`, Nebula rolls the update across devices without downtime.
+With `rolling_restart: true`, Nebula rolls updates across devices without downtime.
 
 ---
 
-## Step 9 — Clean up
+## Clean up
 
 ```bash
-# Remove the app from all device groups and delete it
 gustavo apps delete -n my-app
-
-# Remove a worker node
-gustavo worker remove   # run on the worker node
-
-# Tear down platform services (run on manager node)
+gustavo worker remove
 gustavo manager remove
 ```
 
@@ -214,6 +166,6 @@ gustavo manager remove
 
 ## Next steps
 
-- [Configuration Reference](configuration.md) — tune Redis expiry, network modes, and image versions
-- [Backups](ui/backups.md) — set up Redis and registry backups before going to production
-- [Authentication](api/auth.md) — enable Firebase login if the dashboard is externally accessible
+- [Configuration Reference](configuration.md)
+- [Backups](ui/backups.md)
+- [Authentication](api/auth.md)

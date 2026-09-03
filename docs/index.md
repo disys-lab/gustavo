@@ -7,27 +7,18 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│            Docker Container             │
-│                                         │
-│  ┌───────────────┐  ┌────────────────┐  │
-│  │  Next.js UI   │  │  FastAPI API   │  │
-│  │   port 3000   │──│  127.0.0.1:8000│  │
-│  └───────────────┘  └────────────────┘  │
-│         │                  │            │
-│         └──── /api/* ──────┘            │
-│                            │            │
-│                   ┌────────────────┐    │
-│                   │  gustavo.src   │    │
-│                   │ Manager, Cache │    │
-│                   │ Composer, etc. │    │
-│                   └────────────────┘    │
-└─────────────────────────────────────────┘
-              │ Docker socket
-         Host Docker daemon
+┌───────────────────────────────┐
+│   Docker Container            │
+│  ┌───────────────┐  ┌────────┐ │
+│  │  Next.js UI   │  │ FastAPI│ │
+│  │   port 3000   │──│:8000   │ │
+│  └───────────────┘  └────────┘ │
+│         │                  │   │
+│         └──── /api/* ──────┘   │
+└────────────────────────────────┘
 ```
 
-The single container exposes **only port 3000** (Next.js). FastAPI listens on `127.0.0.1:8000` (loopback only) and is proxied by Next.js rewrites. The CLI tool (`gustavo`) provides direct access to the same underlying Python library.
+The single container exposes **only port 3000** (Next.js). FastAPI listens on `127.0.0.1:8000` (loopback only) and is proxied by Next.js rewrites.
 
 ---
 
@@ -35,14 +26,14 @@ The single container exposes **only port 3000** (Next.js). FastAPI listens on `1
 
 | Goal | Go to |
 |------|-------|
-| Get running in 5 minutes | [Quickstart (Docker)](quickstart.md) |
+| Get running in 5 minutes | [Quickstart](quickstart.md) |
 | Install natively on Linux/Mac | [Native Installation](installation.md) |
 | Deploy an app end-to-end | [End-to-End Tutorial](tutorial.md) |
 | All configuration keys | [Configuration Reference](configuration.md) |
 | CLI command reference | [CLI Reference](cli/index.md) |
 | REST API reference | [FastAPI Backend](api/index.md) |
 | Web UI guide | [Web UI](ui/index.md) |
-| Extend or contribute | [Developer Guide](contributing.md) |
+| Developer Guide | [Contributing](contributing.md) |
 
 ---
 
@@ -54,12 +45,3 @@ The single container exposes **only port 3000** (Next.js). FastAPI listens on `1
 - **Real-time Monitoring** — Live CPU, memory, and disk metrics streamed from workers via Server-Sent Events
 - **Backup & Restore** — Timestamped Redis RDB and registry data backups with one-click restore
 - **Optional Authentication** — Firebase-based authentication toggled by a single environment variable
-
----
-
-## Development & Maintenance
-
-Gustavo was conceived and developed by researchers at Oklahoma State University and Georgia Tech.
-
-- [Paritosh Ramanan](https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html) — Oklahoma State University
-- [Nagi Gebraeel](https://www.isye.gatech.edu/users/nagi-gebraeel) — Georgia Tech

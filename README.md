@@ -17,44 +17,22 @@ Open [http://localhost:3000](http://localhost:3000). See the [Quickstart](https:
 
 ## Documentation
 
-Gustavo's documentation is hosted at: **[https://disys-lab.github.io/gustavo/](https://disys-lab.github.io/gustavo/)**
+Full documentation is available at: **[https://disys-lab.github.io/gustavo/](https://disys-lab.github.io/gustavo/)**
 
-For the CLI command reference and basic usage, see the [CLI Reference](https://disys-lab.github.io/gustavo/cli/index.md/) section of the documentation.
+For a 5-minute installation guide, see the [Quickstart](https://disys-lab.github.io/gustavo/quickstart.md).
 
-The recommended approach for most users is the Docker-based web interface, which provides a user-friendly dashboard and REST API. See the [Quickstart](https://disys-lab.github.io/gustavo/quickstart.md) for a 5-minute installation guide.
+For the CLI command reference and basic usage, see the [CLI Reference](https://disys-lab.github.io/gustavo/cli/index.md) in the documentation.
 
-```
-Usage: gustavo [OPTIONS] COMMAND [ARGS]...
+For troubleshooting, see the [documentation](https://disys-lab.github.io/gustavo/).
 
-  Manage gustavo from a simple CLI.
-
-Options:
-  --version  Show the version and exit.
-  --help     Show this message and exit.
-
-Commands:
-  apps          Manage applications
-  cache         obtain status of various workers on the platform
-  device-group  Manage device groups.
-  manager       Administer the manager.
-  ping          check nebula api responds
-  prune         prune images.
-  registry      Manage local registry.
-  utils         utility commands
-  worker        Manage worker.
-```
-
-## Common Gotchas
-
-- **Podman**: You must login using ```podman login docker.io``` prior to launching this tool. Else there will be authentication errors.
-- **Docker in bridge mode**: If managed services (Redis, MongoDB, etc.) run in Docker containers, use container names (via a shared network) rather than dynamic bridge IPs. Bridge IPs change when containers restart.
-
-## Development and Maintenance
+## Development
 
 Gustavo was conceived and developed by researchers at Oklahoma State University and Georgia Tech.
 
 - [Paritosh Ramanan](https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html) — Oklahoma State University
 - [Nagi Gebraeel](https://www.isye.gatech.edu/users/nagi-gebraeel) — Georgia Tech
+
+See the [Developer Guide](https://disys-lab.github.io/gustavo/contributing.md) for setup and contribution details.
 
 ## Contributing
 
