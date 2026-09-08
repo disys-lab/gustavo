@@ -10,11 +10,8 @@ The Dashboard is the landing page after login. It provides an at-a-glance view o
 
 Top to bottom: the Platform Services card (status pills + expandable
 management table), a 3-column row (System Vitals, Apps, Device
-Groups), and Recent Activity. In this screenshot only Mongo shows
-`Up` — Redis/Registry/Manager status is a local Docker container-name
-lookup on the machine `gustavo` itself runs on (see the Platform
-Services card section below), so it doesn't reflect those services
-being reachable elsewhere.
+Groups), and Recent Activity. See the Platform Services card section
+below for what the `Up`/`Down` pills actually check.
 
 ---
 
