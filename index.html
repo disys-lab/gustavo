@@ -361,17 +361,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#development-maintenance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Development &amp; Maintenance
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1916,26 +1905,17 @@
 <p><strong>Gustavo</strong> is a container orchestration platform, built for the NASA HOME STRI Project. It provides a web-based dashboard and REST API to manage the full lifecycle of platform services, applications, device groups, backups, and real-time monitoring across distributed edge nodes.</p>
 <hr />
 <h2 id="architecture">Architecture</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────┐
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│            Docker Container             │
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│                                         │
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  ┌───────────────┐  ┌────────────────┐  │
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  │  Next.js UI   │  │  FastAPI API   │  │
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  │   port 3000   │──│  127.0.0.1:8000│  │
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  └───────────────┘  └────────────────┘  │
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│         │                  │            │
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│         └──── /api/* ──────┘            │
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│                            │            │
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│                   ┌────────────────┐    │
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│                   │  gustavo.src   │    │
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│                   │ Manager, Cache │    │
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│                   │ Composer, etc. │    │
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│                   └────────────────┘    │
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>└─────────────────────────────────────────┘
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>              │ Docker socket
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>         Host Docker daemon
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌───────────────────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│   Docker Container            │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│  ┌───────────────┐  ┌────────┐ │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  │  Next.js UI   │  │ FastAPI│ │
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  │   port 3000   │──│:8000   │ │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  └───────────────┘  └────────┘ │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│         │                  │   │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│         └──── /api/* ──────┘   │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>└────────────────────────────────┘
 </code></pre></div>
-<p>The single container exposes <strong>only port 3000</strong> (Next.js). FastAPI listens on <code>127.0.0.1:8000</code> (loopback only) and is proxied by Next.js rewrites. The CLI tool (<code>gustavo</code>) provides direct access to the same underlying Python library.</p>
+<p>The single container exposes <strong>only port 3000</strong> (Next.js). FastAPI listens on <code>127.0.0.1:8000</code> (loopback only) and is proxied by Next.js rewrites.</p>
 <hr />
 <h2 id="quick-links">Quick Links</h2>
 <table>
@@ -1948,7 +1928,7 @@
 <tbody>
 <tr>
 <td>Get running in 5 minutes</td>
-<td><a href="quickstart/">Quickstart (Docker)</a></td>
+<td><a href="quickstart/">Quickstart</a></td>
 </tr>
 <tr>
 <td>Install natively on Linux/Mac</td>
@@ -1975,8 +1955,8 @@
 <td><a href="ui/">Web UI</a></td>
 </tr>
 <tr>
-<td>Extend or contribute</td>
-<td><a href="contributing/">Developer Guide</a></td>
+<td>Developer Guide</td>
+<td><a href="contributing/">Contributing</a></td>
 </tr>
 </tbody>
 </table>
@@ -1989,13 +1969,6 @@
 <li><strong>Real-time Monitoring</strong> — Live CPU, memory, and disk metrics streamed from workers via Server-Sent Events</li>
 <li><strong>Backup &amp; Restore</strong> — Timestamped Redis RDB and registry data backups with one-click restore</li>
 <li><strong>Optional Authentication</strong> — Firebase-based authentication toggled by a single environment variable</li>
-</ul>
-<hr />
-<h2 id="development-maintenance">Development &amp; Maintenance</h2>
-<p>Gustavo was conceived and developed by researchers at Oklahoma State University and Georgia Tech.</p>
-<ul>
-<li><a href="https://ceat.okstate.edu/iem/people/ramanan-faculty-profile.html">Paritosh Ramanan</a> — Oklahoma State University</li>
-<li><a href="https://www.isye.gatech.edu/users/nagi-gebraeel">Nagi Gebraeel</a> — Georgia Tech</li>
 </ul>
 
 

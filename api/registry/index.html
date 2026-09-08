@@ -1226,6 +1226,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Functions:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gustavo.api.routers.registry.authorize_registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        authorize_registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -1983,6 +2000,133 @@ compute_permissions(cfg, session.username)["apps"] for the requested repo.</p>
 
 
 <h3 id="gustavo.api.routers.registry-functions">Functions:</h3>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="gustavo.api.routers.registry.authorize_registry" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">authorize_registry</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return 200 if the request carries valid Nebula/Gustavo credentials, else 401 (raised inside the dependency).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>session</code>
+            </td>
+            <td>
+                  <code><span title="gustavo.api.session.Session">Session</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The authenticated caller, via <code>verify_session_or_basic</code>. Not
+otherwise inspected - reaching this line at all means auth
+succeeded (see module docstring: Tier 1 only, no per-repo
+check).</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="fastapi.Depends">Depends</span>(<a class="autorefs autorefs-internal" title="verify_session_or_basic(request, credentials=Security(_bearer))
+
+  
+      async
+   (gustavo.api.auth.verify_session_or_basic)" href="../auth/#gustavo.api.auth.verify_session_or_basic">verify_session_or_basic</a>)</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>{"error": False, "response": "ok"}</code>. The body is ignored
+by nginx; only the HTTP status code matters.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>gustavo/api/routers/registry.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="nd">@router</span><span class="o">.</span><span class="n">api_route</span><span class="p">(</span><span class="s2">"/authorize"</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"HEAD"</span><span class="p">,</span> <span class="s2">"PUT"</span><span class="p">,</span> <span class="s2">"POST"</span><span class="p">,</span> <span class="s2">"PATCH"</span><span class="p">,</span> <span class="s2">"DELETE"</span><span class="p">])</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">authorize_registry</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Return 200 if the request carries valid Nebula/Gustavo credentials, else 401 (raised inside the dependency).</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`. Not</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        otherwise inspected - reaching this line at all means auth</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        succeeded (see module docstring: Tier 1 only, no per-repo</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        check).</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    dict</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        ``{"error": False, "response": "ok"}``. The body is ignored</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        by nginx; only the HTTP status code matters.</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    """</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 

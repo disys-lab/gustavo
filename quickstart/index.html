@@ -423,6 +423,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#bring-up-a-worker" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -445,7 +456,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#prerequisites_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Prerequisites
@@ -489,32 +500,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-configure-the-platform" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4 — Configure the platform
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-5-launch-platform-services" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5 — Launch platform services
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#authentication-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
         Authentication (optional)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next steps
       
     </span>
   </a>
@@ -2014,11 +2014,7 @@
 
 
 <h1 id="quickstart-docker-recommended">Quickstart — Docker (Recommended)</h1>
-<p>Running Gustavo as a Docker container is the recommended approach. You get a self-contained image with the Next.js UI, FastAPI backend, and all Python dependencies pre-installed. No virtualenv management, no Node.js setup, no system-level dependencies.</p>
-<div class="admonition tip">
-<p class="admonition-title">Recommended</p>
-<p>Use Docker for any deployment — development, staging, or production. The native installation path is intended for contributors or environments where Docker is not available.</p>
-</div>
+<p>Running Gustavo as a Docker container is the recommended approach. You get a self-contained image with the Next.js UI, FastAPI backend, and all Python dependencies pre-installed.</p>
 <hr />
 <h2 id="try-it-now">Try it now</h2>
 <p>Two commands, no setup, no existing Nebula platform required — this brings up just the Gustavo container itself, with login disabled, so you can look around the dashboard immediately:</p>
@@ -2026,7 +2022,14 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 <p>Open <a href="http://localhost:3000">http://localhost:3000</a>. The first load may take a few seconds while FastAPI completes its health check.</p>
-<p>At this point Gustavo is running against its own built-in defaults — nothing is actually connected to a real Registry, Redis, MongoDB, or Nebula Manager yet. To point it at (or bring up) a real platform, continue with the full setup below; the same container keeps running the whole time, so nothing from this step needs to be redone.</p>
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<p>For the full setup with a real Nebula platform:</p>
+<ul>
+<li>Docker Engine 20.10 or later</li>
+<li>Docker Compose v2 (<code>docker compose</code> command)</li>
+<li>A running <a href="https://nebula-orchestrator.github.io/">Nebula Manager</a> with accessible API</li>
+</ul>
 <hr />
 <h2 id="bring-up-a-worker">Bring up a worker</h2>
 <p>Once Gustavo itself is running and a device group exists, bring up a worker for it the same way — one <code>curl</code> to fetch a ready-made compose file, scoped to your own Nebula identity, then <code>docker compose up -d</code>:</p>
@@ -2039,150 +2042,57 @@
 </code></pre></div>
 <p>See <a href="../cli/worker/">gustavo worker</a> for the full CLI reference, and <a href="../ui/device-groups/#get-worker-config">Device Groups UI</a> for the other download formats (native <code>.env</code>, launcher scripts for macOS/Linux/Windows).</p>
 <hr />
+<hr />
 <h2 id="full-setup">Full setup</h2>
-<p>The rest of this page walks through the complete picture: persisting configuration across restarts, connecting to (or launching) real platform services, and enabling authentication. If you followed "Try it now" above, this replaces that trial compose file with a more complete one — stop the trial container first (<code>docker compose down</code>).</p>
-<h2 id="prerequisites">Prerequisites</h2>
+<p>The rest of this page walks through the complete setup. If you followed "Try it now", stop the trial container first (<code>docker compose down</code>).</p>
+<h2 id="prerequisites_1">Prerequisites</h2>
+<p>For full setup with a real Nebula platform:</p>
 <ul>
 <li>Docker Engine 20.10 or later</li>
 <li>Docker Compose v2 (<code>docker compose</code> command)</li>
 <li>A running <a href="https://nebula-orchestrator.github.io/">Nebula Manager</a> with accessible API</li>
 </ul>
 <hr />
+<p>See <a href="../deployment/">Deployment</a> for complete configuration examples, including <a href="../deployment/#minimal-setup">minimal setup</a> and <a href="../deployment/#production">production with authentication</a>.</p>
 <h2 id="step-1-create-the-configuration-directory">Step 1 — Create the configuration directory</h2>
 <p>Gustavo persists its platform configuration to a YAML file mounted from the host:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>./config
 </code></pre></div>
-<p>Optionally pre-seed it with a <code>platform.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># config/platform.yaml</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">MANAGER_HOST</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.100</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">MANAGER_PORT</span><span class="p">:</span><span class="w"> </span><span class="s">"80"</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nt">REGISTRY_HOST</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.100</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">REGISTRY_PORT</span><span class="p">:</span><span class="w"> </span><span class="s">"5001"</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nt">REDIS_HOST</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.100</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nt">REDIS_PORT</span><span class="p">:</span><span class="w"> </span><span class="s">"6379"</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nt">REDIS_AUTH_TOKEN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-redis-token</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nt">MONGO_HOST</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.100</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="nt">MONGO_PORT</span><span class="p">:</span><span class="w"> </span><span class="s">"27017"</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="nt">MONGO_USERNAME</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nebula</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="nt">MONGO_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nebula</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="nt">NEBULA_USERNAME</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nebula</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="nt">NEBULA_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nebula</span>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="nt">NEBULA_AUTH_TOKEN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bmVidWxhOm5lYnVsYQ==</span>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="nt">NEBULA_PROTOCOL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
-</code></pre></div>
-<p>If the file doesn't exist, Gustavo creates it on first save from the Settings page.</p>
-<hr />
+<p>Optionally pre-seed it with a <code>platform.yaml</code>.</p>
 <h2 id="step-2-create-docker-composeyml">Step 2 — Create <code>docker-compose.yml</code></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">services</span><span class="p">:</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">gustavo</span><span class="p">:</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/disys-lab/gustavo:latest</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gustavo</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">platform</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">linux/amd64</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"3000:3000"</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./config:/etc/gustavo</span><span class="w">        </span><span class="c1"># Platform config persistence</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/docker.sock:/var/run/docker.sock</span><span class="w">  </span><span class="c1"># Docker management</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/:/tmp/</span><span class="w">                   </span><span class="c1"># Backup scratch space</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">      </span><span class="nt">PYTHONWARNINGS</span><span class="p">:</span><span class="w"> </span><span class="s">"ignore"</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">      </span><span class="nt">GUSTAVO_API_CONFIG</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/gustavo/platform.yaml</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">      </span><span class="nt">AUTH_ENABLED</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span><span class="w">            </span><span class="c1"># Login is Nebula-backed and works immediately —</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">                                       </span><span class="c1"># default admin credential is nebula:nebula.</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">                                       </span><span class="c1"># Set to "false" to skip login entirely (local/dev only).</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">      </span><span class="c1"># NEBULA_USERNAME: "nebula"     # Override the admin login for anything beyond a quick trial</span>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">      </span><span class="c1"># NEBULA_PASSWORD: "nebula"</span>
-<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">      </span><span class="c1"># GUSTAVO_SESSION_SECRET: ""    # Pin this in production — see Deployment</span>
-<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">      </span><span class="c1"># Optional SSO bridge, hidden from the login page unless set:</span>
-<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">      </span><span class="c1"># AUTH_ENDPOINT: "https://your-auth-endpoint.example.com"</span>
-<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">      </span><span class="c1"># FIREBASE_API_KEY: "your-firebase-web-api-key"</span>
-<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">      </span><span class="c1"># CUSTOM_TOKEN_URL: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken"</span>
-<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-</code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Worker deployment</p>
-<p>For deploying and removing worker nodes via Docker Compose, see the <a href="../deployment/#full-example">full example in Deployment</a>.</p>
-</div>
-<hr />
+<p>See <a href="../deployment/#minimal-setup">Deployment</a> for a minimal example, or <a href="../deployment/#production">Deployment with authentication</a> for production-ready settings.</p>
 <h2 id="step-3-start-gustavo">Step 3 — Start Gustavo</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
-<p>Open <a href="http://localhost:3000">http://localhost:3000</a> in your browser.</p>
-<p>The first load may take a few seconds while FastAPI completes its health check.</p>
-<hr />
-<h2 id="step-4-configure-the-platform">Step 4 — Configure the platform</h2>
-<p>Navigate to <strong>Settings</strong> (gear icon in the sidebar) and fill in the connection details for your Nebula platform:</p>
-<table>
-<thead>
-<tr>
-<th>Section</th>
-<th>Fields</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Manager</td>
-<td>Host, port, network mode, image</td>
-</tr>
-<tr>
-<td>Registry</td>
-<td>Host, port, image, backup directory</td>
-</tr>
-<tr>
-<td>Redis</td>
-<td>Host, port, auth token, image</td>
-</tr>
-<tr>
-<td>MongoDB</td>
-<td>Host, port, username, password, image</td>
-</tr>
-<tr>
-<td>Syncer</td>
-<td>Image, network mode, DREGSY config paths</td>
-</tr>
-</tbody>
-</table>
-<p>Click <strong>Save Settings</strong>. The values are written to <code>/etc/gustavo/platform.yaml</code> on the volume and take effect immediately.</p>
-<hr />
-<h2 id="step-5-launch-platform-services">Step 5 — Launch platform services</h2>
-<p>Go to the <strong>Dashboard</strong> and expand <strong>Manage Platform Services</strong>. Click <strong>Launch</strong> next to each service in order:</p>
-<ol>
-<li>Registry</li>
-<li>Redis</li>
-<li>MongoDB</li>
-<li>Manager</li>
-</ol>
-<p>Each launch runs in the background; a spinner shows while the job is pending. The status pill turns green when the service is up.</p>
-<hr />
+<p>Open <a href="http://localhost:3000">http://localhost:3000</a>.</p>
 <h2 id="authentication-optional">Authentication (optional)</h2>
-<p>To require login before accessing Gustavo, see <a href="../deployment/#with-authentication">Deployment — With authentication</a> for the full docker-compose snippet and explanation.</p>
+<p>To require login, see <a href="../deployment/#production">Deployment with authentication</a>.</p>
+<hr />
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li><a href="../tutorial/">End-to-End Tutorial</a> — deploy apps to edge devices</li>
+<li><a href="../configuration/">Configuration Reference</a> — tune Redis expiry, network modes, and image versions</li>
+<li><a href="../installation/">Native Installation</a> — run Gustavo natively without Docker</li>
+</ul>
 <hr />
 <h2 id="building-the-image-locally">Building the image locally</h2>
-<p>If you want to build from source rather than pulling from the registry:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Clone the repo</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/disys-lab/gustavo.git
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nb">cd</span><span class="w"> </span>gustavo
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Build</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>gustavo:local<span class="w"> </span>.
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Run</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<p>If you want to build from source:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/disys-lab/gustavo.git
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>gustavo
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>gustavo:local<span class="w"> </span>.
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
-<p>For available build arguments see <a href="../deployment/#build-arguments">Deployment — Build arguments</a>.</p>
+<p>See <a href="../deployment/#build-arguments">Build arguments</a> for customization options.</p>
 <hr />
 <h2 id="updating">Updating</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>pull
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>pull
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 <p>Configuration in <code>./config/platform.yaml</code> is preserved across updates.</p>
 <hr />
 <h2 id="stopping-and-removing">Stopping and removing</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Stop (preserves config volume)</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>down
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Stop and remove everything including the config volume</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w"> </span>-v
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w">        </span><span class="c1"># Stop (preserves config volume)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w"> </span>-v<span class="w">     </span><span class="c1"># Stop and remove everything including config volume</span>
 </code></pre></div>
 
 

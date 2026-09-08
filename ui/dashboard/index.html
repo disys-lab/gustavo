@@ -1957,24 +1957,11 @@
 <p>The Dashboard is the landing page after login. It provides an at-a-glance view of the platform state.</p>
 <hr />
 <h2 id="layout">Layout</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────┐
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  Platform Services                                   │
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐       │
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  │ Redis  │ │ Mongo  │ │Registry│ │Manager │       │
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  │  Up ●  │ │  Up ●  │ │  Up ●  │ │  Up ●  │       │
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  └────────┘ └────────┘ └────────┘ └────────┘       │
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  ▶ Manage Platform Services                          │
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├───────────────┬──────────────┬──────────────────────┤
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│ System Vitals │     Apps     │   Device Groups       │
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│ CPU  ████ 23% │              │                       │
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│ Mem  ██   50% │      4       │         3             │
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│ Disk ███  60% │ apps deployed│   groups configured   │
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├───────────────┴──────────────┴──────────────────────┤
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│  Recent Activity                                     │
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  Redis launched       Launching Redis…    2 min ago  │
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│  Settings saved       Config updated      5 min ago  │
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>└─────────────────────────────────────────────────────┘
-</code></pre></div>
+<p><img alt="Dashboard" src="../../assets/screenshots/dashboard.png" /></p>
+<p>Top to bottom: the Platform Services card (status pills + expandable
+management table), a 3-column row (System Vitals, Apps, Device
+Groups), and Recent Activity. See the Platform Services card section
+below for what the <code>Up</code>/<code>Down</code> pills actually check.</p>
 <hr />
 <h2 id="platform-services-card">Platform Services card</h2>
 <p>Always visible. Shows a status pill for each of the 4 platform services (Redis, MongoDB, Registry, Manager).</p>
@@ -1983,6 +1970,14 @@
 <li><strong>Red dot</strong> — service is <code>Down</code></li>
 <li><strong>Gray</strong> — status unknown (loading)</li>
 </ul>
+<p>"Up"/"Down" is a local Docker container-name lookup (<code>docker
+containers.get("redis")</code>/<code>"registry"</code>/<code>"manager"</code>/<code>"mongo"</code>) against
+whatever Docker daemon the <code>gustavo</code> container's mounted
+<code>/var/run/docker.sock</code> points at — <strong>not</strong> a network reachability
+check against <code>REDIS_HOST</code>/<code>MANAGER_HOST</code>/etc. If a service actually
+runs as a container on a different host than <code>gustavo</code> itself, its
+pill shows <code>Down</code> even though the service is healthy — the pill only
+finds services running on <code>gustavo</code>'s own Docker host.</p>
 <p>The status strip auto-refreshes every 30 seconds. Clicking <strong>Status</strong> in the expanded table forces an immediate refresh and updates the strip.</p>
 <h3 id="manage-platform-services-expandable">Manage Platform Services (expandable)</h3>
 <p>Click the <code>▶ Manage Platform Services</code> toggle to expand a table with action buttons:</p>
