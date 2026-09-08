@@ -28,6 +28,22 @@ class ActionRequest(BaseModel):
 
 
 def _get_status_for(man, svc: str) -> dict:
+    """
+    Call `man.serviceStatus(svc)`, catching any exception into an error dict.
+
+    Parameters
+    ----------
+    man : Manager
+    svc : str
+        Service/container name.
+
+    Returns
+    -------
+    dict
+        `Manager.serviceStatus`'s return shape, or
+        ``{"error": True, "response": <str(exception)>}`` if it
+        raised.
+    """
     try:
         return man.serviceStatus(svc)
     except Exception as exc:
@@ -36,11 +52,25 @@ def _get_status_for(man, svc: str) -> dict:
 
 @router.get("")
 async def list_services(_session=Depends(verify_firebase_token)):
-    """Return status for all 5 services. Read-only, open to any authenticated
-    user (launch/stop/restart/remove stay admin-only, below).
+    """
+    Return status for all 5 services. Read-only, open to any authenticated user.
 
-    Docker calls are blocking, so we run them in a single background thread
-    (sequential, same Manager instance) to avoid blocking the event loop.
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {svc: <status dict>, ...}}``
+        for `redis`, `mongo`, `registry`, `syncer`, `manager`. On a
+        25s timeout or an unexpected failure, every service's status
+        dict is replaced with a shared error message rather than
+        failing the whole request.
+
+    Notes
+    -----
+    Launch/stop/restart/remove stay admin-only (see the other routes
+    in this module). Docker calls are blocking, so all 5 status
+    checks run sequentially in a single background thread (same
+    Manager instance), to avoid blocking the event loop without
+    spawning a thread per service.
     """
     cfg = config_store.get()
     services = ["redis", "mongo", "registry", "syncer", "manager"]
@@ -67,7 +97,25 @@ async def list_services(_session=Depends(verify_firebase_token)):
 
 @router.get("/jobs/{job_id}")
 async def get_job(job_id: str, _session=Depends(require_admin)):
-    """Poll the result of a background run/restore job."""
+    """
+    Poll the result of a background run/restore job. Admin-only.
+
+    Parameters
+    ----------
+    job_id : str
+        A job id returned by `run_service` (or a backup route in
+        `backups.py`).
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": <job dict>}``.
+
+    Raises
+    ------
+    HTTPException
+        404 if `job_id` isn't a known job.
+    """
     job = background.get_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -76,7 +124,21 @@ async def get_job(job_id: str, _session=Depends(require_admin)):
 
 @router.get("/{svc}/status")
 async def service_status(svc: str, _session=Depends(verify_firebase_token)):
-    """Check status of a single service. Read-only, open to any authenticated user."""
+    """
+    Check status of a single service. Read-only, open to any authenticated user.
+
+    Parameters
+    ----------
+    svc : str
+        One of `VALID_SERVICES`.
+
+    Returns
+    -------
+    dict
+        `Manager.serviceStatus`'s return shape, or
+        ``{"error": True, "response": "Unknown service: ..."}`` if
+        `svc` isn't recognized.
+    """
     if svc not in VALID_SERVICES:
         return {"error": True, "response": f"Unknown service: {svc}"}
     cfg = config_store.get()
@@ -91,8 +153,23 @@ async def run_service(
     _session=Depends(require_admin),
 ):
     """
-    Launch a service (long-running). Returns a job_id immediately.
-    Poll GET /api/services/jobs/{job_id} for the result.
+    Launch a service via `Manager.run` as a background job. Admin-only.
+
+    Parameters
+    ----------
+    svc : str
+        One of `VALID_SERVICES`.
+    bg : BackgroundTasks
+        Unused - accepted but not called; the job actually runs via
+        `background.run_in_background`, not FastAPI's `BackgroundTasks`.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"job_id": str, "status":
+        "running"}}``, or ``{"error": True, "response": "Unknown
+        service: ..."}`` if `svc` isn't recognized. Poll
+        `GET /api/services/jobs/{job_id}` for the result.
     """
     if svc not in VALID_SERVICES:
         return {"error": True, "response": f"Unknown service: {svc}"}
@@ -115,8 +192,22 @@ async def service_action(
     _session=Depends(require_admin),
 ):
     """
-    Perform a lifecycle action on a service.
-    action: stop | start | kill | remove | restart
+    Perform a lifecycle action on a service via `Manager.handleService`. Admin-only.
+
+    Parameters
+    ----------
+    svc : str
+        One of `VALID_SERVICES`.
+    req : ActionRequest
+        `action` - one of `"stop"`, `"start"`, `"kill"`, `"remove"`,
+        `"restart"`.
+
+    Returns
+    -------
+    dict
+        `Manager.handleService`'s return shape, or an
+        ``{"error": True, ...}`` dict if `svc`/`req.action` isn't
+        recognized or the call raised.
     """
     if svc not in VALID_SERVICES:
         return {"error": True, "response": f"Unknown service: {svc}"}

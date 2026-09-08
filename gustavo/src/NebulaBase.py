@@ -5,72 +5,100 @@ from gustavo.pages.config.Logging import setup_logging
 setup_logging()
 import logging
 class PathInvalid(Exception):
+    """Raised when `GUSTAVO_CONFIG_FILE` points at a path that doesn't exist."""
     pass
 
 
 class FileUndefined(Exception):
+    """Raised when `mode="CLI"` is used but `GUSTAVO_CONFIG_FILE` isn't set in the environment."""
     pass
 
 
 class NebulaBase:
     """
-    NebulaBase class holds the configuration parameters as defined in the GUSTAVO_CONFIG_FILE
+    Base configuration class holding platform connection parameters.
+
+    Every other core class (`Manager`, `Composer`, `Cache`) subclasses
+    this to inherit Redis/Registry/Manager/Nebula connection details,
+    loaded either from a dotenv file (`mode="CLI"`) or a session-state
+    dict passed in directly (the FastAPI backend's usage - see
+    `gustavo.api.dependencies`).
 
     Attributes
     ----------
+    nebulaObj : Nebula
+        The Nebula object provided by the Nebula Python SDK. `None`
+        until a subclass (e.g. `Composer`) constructs it.
+    REGISTRY_IP : str
+        Hostname or IP address of the Docker registry.
+    REGISTRY_PORT : str
+        Port number of the registry.
+    REDIS_IP : str
+        Hostname or IP address of Redis.
+    REDIS_PORT : str
+        Port number of the Redis DB.
+    REDIS_AUTH_TOKEN : str
+        Auth token for Redis.
+    MANAGER_IP : str
+        Hostname or IP address of the machine hosting the Nebula manager.
+    MANAGER_PORT : str
+        Port number of the Nebula manager.
+    NEBULA_USERNAME : str
+        Username for Nebula.
+    NEBULA_PASSWORD : str
+        Password for Nebula.
+    NEBULA_AUTH_TOKEN : str
+        Auth token for the Nebula API.
+    NEBULA_PROTOCOL : str
+        Protocol for communicating with Nebula - `"http"` or `"https"`.
+    DOCKER_HOST : str
+        Docker host address, e.g. `"unix:/var/run/docker.sock"`.
+    DOCKER_HOST_SOCKET : str
+        Socket path portion of `DOCKER_HOST`.
+    WORKER_NMODE : str
+        Worker network mode (e.g. `"bridge"`).
+    CACHE_PREFIX : str
+        Redis key prefix used by `Cache`. Set only in `mode="CLI"`.
 
-    nebulaObj : nebula object
-        The nebula object provided by the Nebula Python API
-
-    REGISTRY_IP : string
-        Hostname or IP address of Registry
-
-    REGISTRY_PORT : string
-        Port number of Registry
-
-    REDIS_IP : string
-        Hostname or IP address of Redis
-
-    REDIS_PORT : string
-        Port number of Redis DB
-
-    REDIS_AUTH_TOKEN : string
-        Auth token for Redis
-
-    MANAGER_IP : string
-        Hostname or IP address of the machine where the Manager is hosted
-
-    NEBULA_USERNAME : string
-        Username for Nebula
-
-    NEBULA_PASSWORD : string
-        Password for Nebula
-
-    NEBULA_AUTH_TOKEN : string
-        Auth token for the Nebula API
-
-    NEBULA_PROTOCOL : string
-        Protocol for communicating with Nebula, http or https
-
-    DOCKER_HOST : string
-        Docker Hostname
-
-    DOCKER_HOST_SOCKET : string
-        Socket for Docker Client
-
-    WORKER_NMODE: string
-        Worker network mode
-
-    TODO: Make setNebulaParams() REST API-friendly, which means that instead of a sys.exit(), it needs to either
-          throw an appropriate exception or return a status value or both.
-          Good way to do it would be to throw an exception here and then catch it on gustavo.py
-
+    Notes
+    -----
+    `setNebulaParams` predates the FastAPI backend and still returns an
+    ``{"error": True, "response": ...}`` dict on some failure paths
+    instead of raising - a REST-friendlier version would raise a real
+    exception for every failure path, not just some, so callers never
+    need to check both a return value and for an exception.
     """
 
     def __init__(self,mode,session_state):
         """
-        Inorder to make NebulaBase rest friendly replaced sys.exit() with raising exceptions which will get excepted
-        in gustavo.py and eventually return a dictionary there {"error": True, "response": reason for error}
+        Populate connection attributes from a config file (`mode="CLI"`) or a session-state dict.
+
+        Parameters
+        ----------
+        mode : str
+            `"CLI"` loads `GUSTAVO_CONFIG_FILE` via `setNebulaParams`.
+            Any other value (e.g. the FastAPI backend's usage) reads
+            directly from `session_state` instead.
+        session_state : dict or None
+            Required (and must contain every attribute this class
+            defines) when `mode` isn't `"CLI"`. Ignored when `mode` is
+            `"CLI"`.
+
+        Raises
+        ------
+        FileUndefined
+            If `mode="CLI"` and `GUSTAVO_CONFIG_FILE` isn't set in the
+            environment.
+        PathInvalid
+            If `mode="CLI"` and `GUSTAVO_CONFIG_FILE` points at a
+            nonexistent file.
+
+        Notes
+        -----
+        Originally called `sys.exit()` on failure; replaced with raising
+        real exceptions so a REST caller (`gustavo.py`) can catch them
+        and return ``{"error": True, "response": <reason>}`` instead of
+        killing the process.
         """
         self.base_config = None
 
@@ -138,9 +166,21 @@ class NebulaBase:
 
     def setNebulaParams(self):
         """
-        Sets the Nebula Params for all the class attributes
-        Inorder to make NebulaBase rest friendly replaced sys.exit(); return a dictionary there
-        {"error": True, "response": reason for error}
+        Populate connection attributes from environment variables (loaded from `GUSTAVO_CONFIG_FILE`).
+
+        Called only when `mode="CLI"`; the `GUSTAVO_CONFIG_FILE` dotenv
+        file has already been loaded into `os.environ` by the time this
+        runs (see `__init__`).
+
+        Returns
+        -------
+        dict or None
+            ``{"error": True, "response": <reason>}`` if a required
+            variable (`REDIS_HOST`, `REDIS_PORT`, `REDIS_AUTH_TOKEN`,
+            `REGISTRY_HOST`, `REGISTRY_PORT`, `MANAGER_HOST`, or
+            `MANAGER_PORT`) is missing - returns immediately on the
+            first missing one, so later attributes may be left unset.
+            `None` (implicitly) on success.
         """
         if "GUSTAVO_CONFIG_FILE" in os.environ:
             dotenv_path = Path(self.base_config)

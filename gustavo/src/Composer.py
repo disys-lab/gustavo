@@ -9,15 +9,42 @@ from python_on_whales import docker as dockerow
 
 class Composer(NebulaBase):
     """
-    Creates a class Composer with NebulaBase as the base class.
+    Creates, updates, and deletes user-deployed apps and device groups via the Nebula API.
 
-    TODO: Make methods in this class REST API-friendly, which means that instead of a sys.exit(), it needs to either
-          throw an appropriate exception or return a status value or both.
-          Good way to do it would be to throw an exception here and then catch it on gustavo.py
+    Inherits connection parameters from `NebulaBase`. Unlike `Manager`
+    (which manages the platform's own services), `Composer` talks to
+    the Nebula manager's REST API through `nebulaObj` (a
+    `NebulaPythonSDK.Nebula` client) to manage what device groups run
+    which apps.
 
+    Notes
+    -----
+    Several methods here still call `sys.exit()` (see
+    `checkLocalRepoImages`) or return an ``{"error": True, ...}`` dict
+    rather than raising on every failure path - a REST-friendlier
+    version would raise a real exception for every failure path, not
+    just some, so callers never need to check both a return value and
+    for an exception.
     """
 
     def __init__(self,mode = "CLI",params = None):
+        """
+        Populate connection attributes via `NebulaBase.__init__`, then construct `nebulaObj`.
+
+        Parameters
+        ----------
+        mode : str, optional
+            Passed through to `NebulaBase.__init__`. `"CLI"` (default)
+            loads params from `GUSTAVO_CONFIG_FILE`; any other value
+            reads from `params` instead.
+        params : dict or None, optional
+            Passed through to `NebulaBase.__init__` as `session_state`.
+
+        Notes
+        -----
+        `NEBULA_PROTOCOL` defaults to `"http"` if it wasn't set by
+        `NebulaBase.__init__`.
+        """
         NebulaBase.__init__(self, mode = mode,session_state=params)
         if self.NEBULA_PROTOCOL:
             self.nebulaObj = Nebula(
@@ -42,25 +69,39 @@ class Composer(NebulaBase):
 
     def checkLocalRepoImages(self, name, tag):
         """
-        Checks the existence of local images
+        Query the registry's `/v2` catalog/tag-list API for an image (and optionally a specific tag).
 
         Parameters
         ----------
-
-        name: string
-            Name of the image
-
-        tag: string
-            The tag of the image
+        name : str
+            Repository name to look up, or `"all"` to list the whole
+            registry catalog instead.
+        tag : str
+            A specific tag to check for, or `"all"` to return every
+            tag for `name`. Ignored when `name == "all"`.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the images were not found
-        If the key "error" is False it means that the images were not found
+        dict
+            ``{"error": bool, "response": ...}``. When `name == "all"`,
+            `response` is the raw catalog JSON (`{"repositories": [...]}`)
+            on success or `{"status": <code>}` on a non-200 response.
+            Otherwise, `response` is the raw tag-list JSON when
+            `tag == "all"`, a message string confirming `name:tag`
+            exists, or a message string explaining why it doesn't
+            (image not found, tag not found, unknown registry error).
 
-
+        Raises
+        ------
+        SystemExit
+            If `name != "all"` and the request to the registry itself
+            fails (connection error, timeout, etc.) - not caught like
+            the other failure paths here, which return an error dict
+            instead.
+        requests.exceptions.RequestException
+            If `name == "all"` and the request fails - that branch
+            doesn't wrap the call in a try/except at all, unlike the
+            `name != "all"` branch.
         """
         if name == "all":
             url = urlparse(
@@ -148,13 +189,20 @@ class Composer(NebulaBase):
 
     def checkImageExists(self, name):
         """
-        Check if image exists
+        Check whether a fully-qualified `registry:port/repo[:tag]` image reference exists in the local registry.
 
         Parameters
         ----------
+        name : str
+            Image reference including the `REGISTRY_IP:REGISTRY_PORT/`
+            prefix, e.g. `"10.0.0.70:5000/myapp:latest"`. Defaults the
+            tag to `"latest"` if none is given.
 
-        name: string
-            Name of the image to be checked
+        Notes
+        -----
+        Delegates to `checkLocalRepoImages` but discards its return
+        value - this method's result is only visible via the logging
+        that happens inside `checkLocalRepoImages`.
         """
         repository_name = name.split(
             str(self.REGISTRY_IP) + ":" + str(self.REGISTRY_PORT) + "/"
@@ -169,12 +217,35 @@ class Composer(NebulaBase):
     def printDiagnosticResponse(
         self, reply, accept_code, moding, asset_type, asset_name
     ):
-        # Returns
-        # -------
-        # dictionary: {"error": True / False, "response": "Gives appropriate message depending on the kind of failure or a
-        #              success message if everything is running"}
-        #               If the key "error" is True it means that there is some error which is printed in printDiagnosticResponse
-        #              If the key "error" is False it means that there is some error which is printed in printDiagnosticResponse
+        """
+        Translate a raw Nebula API `reply` into a logged message and a `{"error", "response"}` dict.
+
+        Parameters
+        ----------
+        reply : dict
+            The raw Nebula SDK response, expected to have
+            `"status_code"` and (on a 403) a `"reply"` dict.
+        accept_code : int
+            The HTTP status code that counts as success for this call
+            (200 for create/delete, 202 for update - see `handleAsset`).
+        moding : str
+            The verb stem used in log/response messages, e.g.
+            `"creat"`, `"updat"`, `"delet"` (a trailing `"e"` or
+            `"ing"` is appended by the caller's phrasing).
+        asset_type : str
+            `"app"` or `"device_group"` - used only for message text.
+        asset_name : str
+            The asset's name - used only for message text.
+
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `False` only if `reply["status_code"] == accept_code`;
+            `True` for a 400 (bad params), a 403 (asset already
+            exists / doesn't exist, or another 403 the SDK's `reply`
+            doesn't explain), or any other status code.
+        """
         # print(reply)
         # returnval = False
         if reply["status_code"] == accept_code:
@@ -255,14 +326,20 @@ class Composer(NebulaBase):
 
     def prune_device_group_images(self, app):
         """
-        Prunes the images on device group
+        Ask the Nebula manager to prune unused images on every device running `app`.
 
         Parameters
         ----------
+        app : str
+            Name of the app whose devices should have their images
+            pruned.
 
-        app: string
-            Name of the app whose images are to be pruned
-
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `False` only if the Nebula API accepted the prune request
+            (HTTP 202); `True` otherwise.
         """
         reply = self.nebulaObj.prune__device_group_images(app)
         if reply["status_code"] == 202:
@@ -282,29 +359,31 @@ class Composer(NebulaBase):
     def handleAsset(self, asset_type, asset_name, mode, config=None):
 
         """
-        Handles a generic asset either an app or a device group and performs the functions of create, update or delete.
+        Create, update, or delete an app or device group via the Nebula API.
 
         Parameters
         ----------
-
-        asset_type : string
-            Type of asset, legal values could be either an "app" or "device_group"
-
-        asset_name: string
-            The name of the asset
-
-        mode : string
-            The mode of handling, allowed values are "create", "update" and "delete"
-
-        config : dict
-            The configuration of the asset to be created or updated. Not applicable in case of delete.
+        asset_type : str
+            `"app"` or `"device_group"`.
+        asset_name : str
+            The asset's name.
+        mode : str
+            `"create"`, `"update"`, or `"delete"` (case-insensitive).
+        config : dict or None, optional
+            The asset's configuration. Required for `"create"`/
+            `"update"`; ignored for `"delete"`. For `asset_type="app"`,
+            must contain `"docker_image"` - it's checked against the
+            local registry (`checkImageExists`) before the Nebula
+            call is made.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the handle asset did not run successfully
-        If the key "error" is False it means that the handle asset did not run successfully
+        dict
+            ``{"error": bool, "response": <message str>}``, produced
+            by `printDiagnosticResponse` from the Nebula API's reply -
+            or an earlier error dict if `config` is missing when
+            required, `asset_type` is unrecognized, or `mode` is
+            unrecognized.
         """
 
         # retval = False
@@ -367,26 +446,31 @@ class Composer(NebulaBase):
 
     def handleDeviceGroup(self, app_list, mode, device_group="bca"):
         """
-        Handles aspects of the device group such as deleting, updating of apps
+        Add or remove apps from a device group's app list.
+
+        Fetches the device group's current app list, computes the new
+        list by adding (`mode="update"`) or removing (`mode="delete"`)
+        the apps named in `app_list`, then calls `handleAsset` to push
+        the updated list.
 
         Parameters
         ----------
-
-        app_list : string
-            Comma separated list of strings to be updated or deleted from the device group
-
-        mode: string
-            The mode i.e. update or delete
-
-        device_group : string
-            The device group name to be handled
+        app_list : str
+            Comma-separated app names to add or remove.
+        mode : str
+            `"update"` to add the named apps (skipping ones already
+            present), or `"delete"` to remove them.
+        device_group : str, optional
+            The device group to modify. Defaults to `"bca"`.
 
         Returns
         -------
-        dictionary : {"error": True/False, "response": "Gives appropriate message depending on the kind of failure or a
-                     success message if everything is running"}
-        If the key "error" is True it means that there is some error and the handle device group did not run successfully
-        If the key "error" is False it means that the handle device group did run successfully
+        dict
+            ``{"error": bool, "response": ...}``. On success,
+            `response` is the device group's resulting app list
+            (`list`). On failure, `response` is a message string -
+            from `mode` being unrecognized, `handleAsset` failing to
+            push the update, or the initial list-fetch failing.
         """
         response = self.nebulaObj.list_device_group(device_group)
         success = self.printDiagnosticResponse(

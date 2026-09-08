@@ -42,7 +42,14 @@ class TokenRequest(BaseModel):
 
 
 def _admin_session() -> Session:
-    """The break-glass platform-admin Session (NEBULA_USERNAME/PASSWORD)."""
+    """
+    Build the break-glass platform-admin `Session`, from `NEBULA_USERNAME`/`NEBULA_PASSWORD`.
+
+    Returns
+    -------
+    Session
+        `user_type="local"`, `is_admin=True`.
+    """
     cfg = config_store.get()
     return Session(
         username=cfg.get("NEBULA_USERNAME", "nebula"),
@@ -53,11 +60,29 @@ def _admin_session() -> Session:
 
 
 def _session_response(session: Session) -> dict:
-    # Only real Nebula ("db") users have group memberships to look up -
-    # the break-glass admin ("local") isn't a real Nebula identity at all,
-    # and doesn't need one: is_admin already bypasses every grant check
-    # this is used for (see e.g. device_groups.py's _require_dg_access),
-    # so an empty list here is correct, not a gap.
+    """
+    Build the standard login-success response for `session`: a signed token plus display info.
+
+    Parameters
+    ----------
+    session : Session
+        The session to mint a token for.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"token": ..., "username": ...,
+        "is_admin": ..., "groups": [...]}}``.
+
+    Notes
+    -----
+    `groups` is only looked up for `user_type == "db"` (real Nebula
+    users). The break-glass admin (`user_type == "local"`) isn't a
+    real Nebula identity and doesn't need group membership: `is_admin`
+    already bypasses every grant check this is used for (see e.g.
+    `device_groups.py`'s `_require_dg_access`), so an empty list here
+    is correct, not a gap.
+    """
     groups = nebula_auth.user_groups(config_store.get(), session.username) if session.user_type == "db" else []
     return {
         "error": False,
@@ -72,7 +97,15 @@ def _session_response(session: Session) -> dict:
 
 @router.get("/status")
 async def auth_status():
-    """Which login mode(s) the frontend should offer."""
+    """
+    Which login mode(s) the frontend should offer.
+
+    Returns
+    -------
+    dict
+        ``{"auth_enabled": bool, "nebula_enabled": True,
+        "firebase_enabled": bool}``.
+    """
     return {
         "auth_enabled": AUTH_ENABLED,
         "nebula_enabled": True,
@@ -83,13 +116,31 @@ async def auth_status():
 @router.post("/login")
 async def login(req: LoginRequest):
     """
-    Single unified login endpoint. `credential` is "identifier:secret":
-      - identifier:secret == NEBULA_USERNAME:NEBULA_PASSWORD (env vars, hard
-        checked, no Nebula reachability required) -> break-glass admin session.
-      - otherwise, identifier is a claimed Nebula username and secret is that
-        user's Nebula password (== their token, see users.py) -> verified via
-        Nebula Basic auth, which is identity-bound (checked against that
-        specific user's own stored hash), unlike Bearer/token verification.
+    Single unified login endpoint.
+
+    Parameters
+    ----------
+    req : LoginRequest
+        `credential`, formatted `"identifier:secret"`.
+
+    Returns
+    -------
+    dict
+        `_session_response`'s shape on success, or
+        ``{"error": True, "response": <reason>}`` if `credential`
+        isn't `"identifier:secret"`-shaped or the credentials don't
+        verify.
+
+    Notes
+    -----
+    - `identifier:secret == NEBULA_USERNAME:NEBULA_PASSWORD` (env
+      vars, hard-checked, no Nebula reachability required) -> the
+      break-glass admin session.
+    - Otherwise, `identifier` is a claimed Nebula username and
+      `secret` is that user's Nebula password (== their token, see
+      `users.py`) -> verified via Nebula Basic auth, which is
+      identity-bound (checked against that specific user's own stored
+      hash), unlike Bearer/token verification.
     """
     if ":" not in req.credential:
         return {"error": True, "response": "Invalid credential format"}
@@ -105,12 +156,33 @@ async def login(req: LoginRequest):
 @router.post("/token")
 async def get_token(req: TokenRequest):
     """
-    Firebase bridge (mirrors AuthTokenHandler.py / Home.py):
-      1. Exchange user_id + user_token for a Firebase custom token via AUTH_ENDPOINT.
-      2. Exchange the custom token for a Firebase idToken.
-    A successful exchange is treated purely as a credential check — on success
-    we mint a Gustavo session for the platform admin identity, same response
-    shape as /login. The Firebase idToken itself is discarded.
+    Optional Firebase/AUTH_ENDPOINT login bridge.
+
+    1. Exchange `user_id` + `user_token` for a Firebase custom token
+       via `AUTH_ENDPOINT`.
+    2. Exchange the custom token for a Firebase `idToken`.
+
+    Parameters
+    ----------
+    req : TokenRequest
+        `user_id`, `user_token`.
+
+    Returns
+    -------
+    dict
+        `_session_response`'s shape on success, or
+        ``{"error": True, "response": <reason>}`` on any failure
+        (endpoint/key not configured, either exchange step failing).
+        If `AUTH_ENABLED` is `False`, always succeeds immediately
+        without contacting `AUTH_ENDPOINT` at all.
+
+    Notes
+    -----
+    A successful exchange is treated purely as a credential check - on
+    success this mints a Gustavo session for the platform admin
+    identity, same response shape as `/login`. There's no per-user
+    Firebase identity bridging yet, so the Firebase `idToken` itself
+    is discarded after step 2 confirms it exists.
     """
     if not AUTH_ENABLED:
         return _session_response(_admin_session())

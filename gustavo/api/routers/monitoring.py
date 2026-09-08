@@ -26,6 +26,20 @@ SSE_INTERVAL_SECONDS = 10
 
 
 def _get_hosts_sync(device_group: str = "all", host: str = "all") -> dict:
+    """
+    Blocking wrapper around `Cache.getHosts`, run via `run_in_executor` since `Cache` uses a sync Redis client.
+
+    Parameters
+    ----------
+    device_group : str, optional
+    host : str, optional
+
+    Returns
+    -------
+    dict
+        `Cache.getHosts`'s return shape, or
+        ``{"error": True, "response": <str(exception)>}`` on failure.
+    """
     try:
         cache = build_cache()
         return cache.getHosts(device_group, host)
@@ -35,6 +49,20 @@ def _get_hosts_sync(device_group: str = "all", host: str = "all") -> dict:
 
 
 def _get_vitals_sync(device_group: str = "all", host: str = "all") -> dict:
+    """
+    Blocking wrapper around `Cache.getAssetsForAll("vitals", ...)`, run via `run_in_executor`.
+
+    Parameters
+    ----------
+    device_group : str, optional
+    host : str, optional
+
+    Returns
+    -------
+    dict
+        `Cache.getAssetsForAll`'s return shape, or
+        ``{"error": True, "response": <str(exception)>}`` on failure.
+    """
     try:
         cache = build_cache()
         return cache.getAssetsForAll("vitals", device_group, host)
@@ -44,6 +72,20 @@ def _get_vitals_sync(device_group: str = "all", host: str = "all") -> dict:
 
 
 def _get_containers_sync(device_group: str = "all", host: str = "all") -> dict:
+    """
+    Blocking wrapper around `Cache.getAssetsForAll("containers", ...)`, run via `run_in_executor`.
+
+    Parameters
+    ----------
+    device_group : str, optional
+    host : str, optional
+
+    Returns
+    -------
+    dict
+        `Cache.getAssetsForAll`'s return shape, or
+        ``{"error": True, "response": <str(exception)>}`` on failure.
+    """
     try:
         cache = build_cache()
         return cache.getAssetsForAll("containers", device_group, host)
@@ -58,6 +100,21 @@ async def get_hosts(
     host: str = Query("all"),
     _session=Depends(require_admin),
 ):
+    """
+    Which hosts and/or device groups currently exist in the cache. Admin-only.
+
+    Parameters
+    ----------
+    device_group : str, optional
+        A device group name, or `"all"` (default).
+    host : str, optional
+        A host name, or `"all"` (default).
+
+    Returns
+    -------
+    dict
+        `Cache.getHosts`'s return shape.
+    """
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_hosts_sync, device_group, host)
     return result
@@ -69,6 +126,21 @@ async def get_vitals(
     host: str = Query("all"),
     _session=Depends(require_admin),
 ):
+    """
+    Cached CPU/memory/disk vitals for a device group/host filter. Admin-only.
+
+    Parameters
+    ----------
+    device_group : str, optional
+        A device group name, or `"all"` (default).
+    host : str, optional
+        A host name, or `"all"` (default).
+
+    Returns
+    -------
+    dict
+        `Cache.getAssetsForAll`'s return shape.
+    """
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_vitals_sync, device_group, host)
     return result
@@ -80,17 +152,47 @@ async def get_containers(
     host: str = Query("all"),
     _session=Depends(require_admin),
 ):
+    """
+    Cached container status for a device group/host filter. Admin-only.
+
+    Parameters
+    ----------
+    device_group : str, optional
+        A device group name, or `"all"` (default).
+    host : str, optional
+        A host name, or `"all"` (default).
+
+    Returns
+    -------
+    dict
+        `Cache.getAssetsForAll`'s return shape.
+    """
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_containers_sync, device_group, host)
     return result
 
 
 def _extract_vitals(vitals_result: dict) -> dict:
-    """Parse the Nebula vitals string into structured metrics.
+    """
+    Parse `Cache.getIndividualVitals`'s summary string (via `getAssetsForAll`) into structured metrics.
 
-    Input shape: {"error": false, "response": {"error": false, "response": "<string>"}}
-    The inner string looks like:
-      "host@ip at time:TIMESTAMP\\t mem:{'total':...}\\tdisk:{...}\\tcpu_cores:N\\tcpu_percent:X.X"
+    Parameters
+    ----------
+    vitals_result : dict
+        `_get_vitals_sync`'s return value - the nested shape
+        ``{"error": bool, "response": {"error": bool, "response":
+        "<string>"}}``, where the inner string looks like
+        `"host@ip at time:TIMESTAMP\\t mem:{'total':...}\\t
+        disk:{...}\\tcpu_cores:N\\tcpu_percent:X.X"`.
+
+    Returns
+    -------
+    dict
+        ``{"host": str, "timestamp": int, "cpu_percent": float,
+        "cpu_cores": int, "memory_mb": dict, "disk_mb": dict}``, with
+        any field missing from the input's regex matches simply
+        absent (not defaulted). `{}` if the input isn't parseable at
+        all.
     """
     try:
         inner = vitals_result.get("response", {})
@@ -130,10 +232,27 @@ def _extract_vitals(vitals_result: dict) -> dict:
 
 
 def _extract_containers(containers_result: dict) -> list:
-    """Parse the Nebula containers string into simplified per-container metrics.
+    """
+    Parse `Cache.getIndividualContainers`'s summary string (via `getAssetsForAll`) into simplified per-container metrics.
 
-    Input: {"error": false, "response": {"error": false, "response": "<string>"}}
-    The inner string ends with: "containers:[{<docker stats dict>}, ...]"
+    Parameters
+    ----------
+    containers_result : dict
+        `_get_containers_sync`'s return value - the nested shape
+        ``{"error": bool, "response": {"error": bool, "response":
+        "<string>"}}``, where the inner string ends with
+        `"containers:[{<docker stats dict>}, ...]"`.
+
+    Returns
+    -------
+    list of dict
+        One entry per container: ``{"name": str, "cpu_percent":
+        float, "memory_mb": float, "memory_limit_mb": float,
+        "memory_percent": float}``, computed from each raw Docker
+        stats dict via the standard Docker CPU%/memory% formulas.
+        `[]` if the input isn't parseable at all; a given container's
+        cpu/memory fields default to `0.0` if that container's stats
+        dict is missing the keys the formula needs.
     """
     try:
         inner = containers_result.get("response", {})
@@ -189,7 +308,24 @@ async def _monitoring_event_generator(
     device_group: str,
     host: str,
 ) -> AsyncGenerator[dict, None]:
-    """Yield monitoring snapshots as SSE events every SSE_INTERVAL_SECONDS."""
+    """
+    Yield monitoring snapshots as SSE events every `SSE_INTERVAL_SECONDS`, forever.
+
+    Parameters
+    ----------
+    device_group : str
+        A device group name, or `"all"`.
+    host : str
+        A host name, or `"all"`.
+
+    Yields
+    ------
+    dict
+        ``{"event": "monitoring", "data": <JSON str of {"vitals":
+        ..., "containers": [...]}>}`` each tick, or ``{"event":
+        "error", "data": <JSON str of {"error": ...}>}`` if fetching
+        that tick's snapshot raised.
+    """
     loop = asyncio.get_event_loop()
     while True:
         try:
@@ -213,11 +349,27 @@ async def monitoring_stream(
     _session=Depends(require_admin),
 ):
     """
-    Server-Sent Events endpoint. Emits monitoring snapshots every 10 s.
-    Browsers can't set Authorization headers on EventSource, so the browser
-    never calls this directly — the Next.js proxy route
-    (app/api/monitoring/stream/route.ts) reads the gustavo_token cookie and
-    forwards it here as a real Authorization: Bearer header.
+    Server-Sent Events endpoint. Emits monitoring snapshots every `SSE_INTERVAL_SECONDS`. Admin-only.
+
+    Parameters
+    ----------
+    device_group : str, optional
+        A device group name, or `"all"` (default).
+    host : str, optional
+        A host name, or `"all"` (default).
+
+    Returns
+    -------
+    EventSourceResponse
+        `text/event-stream`, backed by `_monitoring_event_generator`.
+
+    Notes
+    -----
+    Browsers can't set `Authorization` headers on `EventSource`, so
+    the browser never calls this directly - the Next.js proxy route
+    (`app/api/monitoring/stream/route.ts`) reads the `gustavo_token`
+    cookie and forwards it here as a real `Authorization: Bearer`
+    header.
     """
     return EventSourceResponse(
         _monitoring_event_generator(device_group, host),

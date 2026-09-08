@@ -31,4 +31,21 @@ router = APIRouter()
 
 @router.api_route("/authorize", methods=["GET", "HEAD", "PUT", "POST", "PATCH", "DELETE"])
 async def authorize_registry(session: Session = Depends(verify_session_or_basic)):
+    """
+    Return 200 if the request carries valid Nebula/Gustavo credentials, else 401 (raised inside the dependency).
+
+    Parameters
+    ----------
+    session : Session
+        The authenticated caller, via `verify_session_or_basic`. Not
+        otherwise inspected - reaching this line at all means auth
+        succeeded (see module docstring: Tier 1 only, no per-repo
+        check).
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": "ok"}``. The body is ignored
+        by nginx; only the HTTP status code matters.
+    """
     return {"error": False, "response": "ok"}
