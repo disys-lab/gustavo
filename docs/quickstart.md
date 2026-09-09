@@ -6,7 +6,16 @@ Running Gustavo as a Docker container is the recommended approach. You get a sel
 
 ## Try it now
 
-Two commands, no setup, no existing Nebula platform required — this brings up just the Gustavo container itself, with login disabled, so you can look around the dashboard immediately:
+Two commands, no setup, no existing Nebula platform required — this brings up just the Gustavo container itself for local testing:
+
+```bash
+curl -o docker-compose.yml https://raw.githubusercontent.com/disys-lab/gustavo/main/sample_config_files/docker-compose.quickstart.yml
+docker compose up -d
+```
+
+Open [http://localhost:3000](http://localhost:3000). The first load may take a few seconds while FastAPI completes its health check.
+
+The quickstart uses `AUTH_ENABLED=false`, which skips login and uses default Nebula credentials (`nebula:nebula`). To work with a real Nebula platform, proceed with the [full setup](#full-setup) below.
 
 ```bash
 curl -o docker-compose.yml https://raw.githubusercontent.com/disys-lab/gustavo/main/sample_config_files/docker-compose.quickstart.yml
@@ -36,12 +45,14 @@ curl -s -u your-username:your-nebula-secret http://<gustavo-host>:<port>/api/dev
 docker compose up -d
 ```
 
-To grant this worker GPU access, add `?gpu=true` to the URL — only do this on hardware that actually has a GPU `nvidia-container-toolkit` can expose:
+To grant this worker GPU access, add `?gpu=true` to the URL:
 
 ```bash
 curl -s -u your-username:your-nebula-secret "http://<gustavo-host>:<port>/api/device-groups/<device-group>/worker-compose?gpu=true" -o docker-compose.yml
 docker compose up -d
 ```
+
+The endpoint requires authentication (Basic auth or session token) to fetch the worker config. The credentials you provide are embedded in the `docker-compose.yml` file for the worker to use when connecting to your Nebula platform.
 
 See [gustavo worker](cli/worker.md) for the full CLI reference, and [Device Groups UI](ui/device-groups.md#get-worker-config) for the other download formats (native `.env`, launcher scripts for macOS/Linux/Windows).
 
