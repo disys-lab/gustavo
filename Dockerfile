@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 
 ARG py_version=python3.11
-ARG gustavo_version=v0.4.0-beta.3
+ARG gustavo_version=v0.8.0
 ARG node_version=20
 ARG NEXT_PUBLIC_AUTH_ENABLED=true
 
