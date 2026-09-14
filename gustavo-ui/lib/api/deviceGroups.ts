@@ -33,22 +33,26 @@ export const removeAppsFromDeviceGroup = (name: string, apps: string[]) =>
 // reporter switches worker status reporting to gustavo-reporter's REST API
 // instead of direct Redis writes - mutually exclusive with the default
 // Redis reporting fields, see nebula_auth.build_worker_env.
-export const downloadWorkerEnv = (name: string, gpu = false, reporter = false) =>
+//
+// check_in_time is NEBULA_MANAGER_CHECK_IN_TIME (seconds) - how often the
+// worker polls the Nebula manager and reports status; the same loop tick
+// drives both, there's no separate report-only timer.
+export const downloadWorkerEnv = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
   apiClient
-    .get(`/device-groups/${name}/worker-env`, { responseType: "text", params: { gpu, reporter } })
+    .get(`/device-groups/${name}/worker-env`, { responseType: "text", params: { gpu, reporter, check_in_time } })
     .then((r) => r.data as string);
 
-export const downloadWorkerCompose = (name: string, gpu = false, reporter = false) =>
+export const downloadWorkerCompose = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
   apiClient
-    .get(`/device-groups/${name}/worker-compose`, { responseType: "text", params: { gpu, reporter } })
+    .get(`/device-groups/${name}/worker-compose`, { responseType: "text", params: { gpu, reporter, check_in_time } })
     .then((r) => r.data as string);
 
-export const downloadWorkerScript = (name: string, gpu = false, reporter = false) =>
+export const downloadWorkerScript = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script`, { responseType: "text", params: { gpu, reporter } })
+    .get(`/device-groups/${name}/worker-script`, { responseType: "text", params: { gpu, reporter, check_in_time } })
     .then((r) => r.data as string);
 
-export const downloadWorkerScriptWindows = (name: string, gpu = false, reporter = false) =>
+export const downloadWorkerScriptWindows = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text", params: { gpu, reporter } })
+    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text", params: { gpu, reporter, check_in_time } })
     .then((r) => r.data as string);

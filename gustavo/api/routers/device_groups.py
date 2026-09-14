@@ -447,7 +447,7 @@ def _batch_quote(value: str) -> str:
 
 @router.get("/{name}/worker-env", response_class=PlainTextResponse)
 async def download_worker_env(
-    name: str, gpu: bool = False, reporter: bool = False,
+    name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -468,6 +468,11 @@ async def download_worker_env(
         status reporting to gustavo-reporter's REST API instead of
         direct Redis writes. Mutually exclusive with the Redis
         reporting fields - see `nebula_auth.build_worker_env`.
+    check_in_time : int, optional
+        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
+        worker polls the Nebula manager and reports status; the same
+        loop tick drives both, there's no separate report-only timer.
+        Defaults to 60.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -514,6 +519,7 @@ async def download_worker_env(
         f"NEBULA_USERNAME={username}",
         f"NEBULA_PASSWORD={password}",
         f"NEBULA_AUTH_TOKEN={auth_token}",
+        f"NEBULA_MANAGER_CHECK_IN_TIME={check_in_time}",
     ]
     if gpu:
         lines.append("GPU_ENABLED=true")
@@ -522,7 +528,7 @@ async def download_worker_env(
 
 @router.get("/{name}/worker-compose", response_class=PlainTextResponse)
 async def download_worker_compose(
-    name: str, gpu: bool = False, reporter: bool = False,
+    name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -539,6 +545,10 @@ async def download_worker_compose(
         If `True`, switches worker status reporting to
         gustavo-reporter's REST API instead of direct Redis writes -
         see `nebula_auth.build_worker_env`.
+    check_in_time : int, optional
+        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
+        worker polls the Nebula manager and reports status. Defaults
+        to 60.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -562,7 +572,8 @@ async def download_worker_compose(
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     env = nebula_auth.build_worker_env(
-        cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu, use_reporter=reporter,
+        cfg, session.username, session.nebula_secret, name,
+        gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
     )
     service: dict = {
         "image": _WORKER_IMAGE,
@@ -582,7 +593,7 @@ async def download_worker_compose(
 
 @router.get("/{name}/worker-script", response_class=PlainTextResponse)
 async def download_worker_script(
-    name: str, gpu: bool = False, reporter: bool = False,
+    name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -599,6 +610,10 @@ async def download_worker_script(
         If `True`, switches worker status reporting to
         gustavo-reporter's REST API instead of direct Redis writes -
         see `nebula_auth.build_worker_env`.
+    check_in_time : int, optional
+        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
+        worker polls the Nebula manager and reports status. Defaults
+        to 60.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -626,7 +641,8 @@ async def download_worker_script(
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     env = nebula_auth.build_worker_env(
-        cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu, use_reporter=reporter,
+        cfg, session.username, session.nebula_secret, name,
+        gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
     )
     # shlex.quote, not naive f-string interpolation: these values include
     # admin-set secrets that can contain anything (quotes, $, backticks) -
@@ -648,7 +664,7 @@ async def download_worker_script(
 
 @router.get("/{name}/worker-script-windows", response_class=PlainTextResponse)
 async def download_worker_script_windows(
-    name: str, gpu: bool = False, reporter: bool = False,
+    name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -665,6 +681,10 @@ async def download_worker_script_windows(
         If `True`, switches worker status reporting to
         gustavo-reporter's REST API instead of direct Redis writes -
         see `nebula_auth.build_worker_env`.
+    check_in_time : int, optional
+        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
+        worker polls the Nebula manager and reports status. Defaults
+        to 60.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -689,7 +709,8 @@ async def download_worker_script_windows(
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     env = nebula_auth.build_worker_env(
-        cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu, use_reporter=reporter,
+        cfg, session.username, session.nebula_secret, name,
+        gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
     )
     container_name = _batch_quote(f"worker_{name}")
     args = [f"docker run -d --name {container_name} --restart unless-stopped"]
