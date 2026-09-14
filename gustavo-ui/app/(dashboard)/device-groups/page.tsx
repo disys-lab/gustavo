@@ -223,7 +223,7 @@ export default function DeviceGroupsPage() {
                       className="h-4 w-4 rounded border-gray-300"
                     />
                     <label htmlFor={`reporter-enabled-${dg}`} className="text-xs text-muted-foreground">
-                      Report via Reporter — sends worker status over HTTPS to the Reporter
+                      Report via Reporter — sends worker status over HTTP(S) to the Reporter
                       service instead of writing to Redis directly. Leave unchecked for direct
                       Redis reporting (default).
                     </label>
