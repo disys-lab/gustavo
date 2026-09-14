@@ -11,6 +11,8 @@ import { DeviceGroupForm } from "@/components/device-groups/DeviceGroupForm";
 import { AppSelector } from "@/components/device-groups/AppSelector";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useActivityToast } from "@/hooks/use-activity-toast";
@@ -27,6 +29,7 @@ export default function DeviceGroupsPage() {
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [gpuEnabled, setGpuEnabled] = useState<Record<string, boolean>>({});
   const [reporterEnabled, setReporterEnabled] = useState<Record<string, boolean>>({});
+  const [checkInTime, setCheckInTime] = useState<Record<string, number>>({});
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
 
@@ -99,11 +102,13 @@ export default function DeviceGroupsPage() {
 
   const handleWorkerDownload = async (
     dg: string,
-    fetcher: (name: string, gpu?: boolean, reporter?: boolean) => Promise<string>,
+    fetcher: (name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number) => Promise<string>,
     filename: string
   ) => {
     try {
-      const text = await fetcher(dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false);
+      const text = await fetcher(
+        dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false, checkInTime[dg] ?? 60
+      );
       downloadTextFile(text, filename);
     } catch (exc) {
       toast({ variant: "destructive", title: "Download failed", description: String(exc) });
@@ -227,6 +232,21 @@ export default function DeviceGroupsPage() {
                       service instead of writing to Redis directly. Leave unchecked for direct
                       Redis reporting (default).
                     </label>
+                  </div>
+                  <div className="mb-2">
+                    <Label htmlFor={`check-in-time-${dg}`} className="text-xs text-muted-foreground">
+                      Check-in / Report Interval (seconds)
+                    </Label>
+                    <Input
+                      id={`check-in-time-${dg}`}
+                      type="number"
+                      min={1}
+                      value={checkInTime[dg] ?? 60}
+                      onChange={(e) =>
+                        setCheckInTime((prev) => ({ ...prev, [dg]: Number(e.target.value) || 60 }))
+                      }
+                      className="mt-1 w-32"
+                    />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button

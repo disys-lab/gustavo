@@ -198,7 +198,7 @@ def resolve_basic_credentials(cfg: dict, identifier: str, secret: str) -> tuple[
 def build_worker_env(
     cfg: dict, username: str, secret: str, device_group: str,
     prefix: str = "gustavo-reports", expire_time: str = "10",
-    gpu_enabled: bool = False, use_reporter: bool = False,
+    gpu_enabled: bool = False, use_reporter: bool = False, check_in_time: int = 60,
 ) -> dict[str, str]:
     """
     Container-facing env vars for a gustavo-worker — the exact variable names
@@ -224,6 +224,11 @@ def build_worker_env(
     through whichever backend's own host var is actually present. Default is
     False, keeping today's direct-Redis behavior unchanged for every
     existing caller.
+
+    check_in_time controls NEBULA_MANAGER_CHECK_IN_TIME, which doubles as
+    both the worker's Nebula-manager poll interval and its reporting
+    interval - they're the same loop tick on the worker side, there's no
+    separate report-only timer. Defaults to 60s.
     """
     env = {
         "DEVICE_GROUP": device_group,
@@ -245,7 +250,7 @@ def build_worker_env(
         "NEBULA_MANAGER_HOST": str(cfg.get("MANAGER_HOST", "")),
         "NEBULA_MANAGER_PORT": str(cfg.get("MANAGER_PORT", "")),
         "NEBULA_MANAGER_PROTOCOL": str(cfg.get("NEBULA_PROTOCOL", "http")),
-        "NEBULA_MANAGER_CHECK_IN_TIME": "5",
+        "NEBULA_MANAGER_CHECK_IN_TIME": str(check_in_time),
         "REGISTRY_AUTH_USER": username,
         "REGISTRY_AUTH_PASSWORD": secret,
     })
