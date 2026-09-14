@@ -15,21 +15,24 @@ export async function GET(request: NextRequest) {
   // EventSource can't set an Authorization header, so the browser sends the
   // gustavo_token cookie instead (mirrored there by AuthContext on login).
   // Forward it as a real Bearer header so the FastAPI /stream route can be
-  // gated with the same require_admin dependency as every other monitoring
-  // endpoint.
+  // gated with the same verify_firebase_token dependency as every other
+  // monitoring endpoint. No cookie at all is also valid, deliberately not
+  // 401'd here: AUTH_ENABLED=false never sets one (the whole login flow is
+  // skipped in that mode - see AuthContext.tsx), and verify_firebase_token
+  // already ignores credentials entirely when AUTH_ENABLED is false. So the
+  // upstream call is the single source of truth for whether this request is
+  // allowed, not a local cookie-presence check here - matching how every
+  // other endpoint in this app already defers to the backend rather than
+  // gating on the frontend.
   const token = request.cookies.get("gustavo_token")?.value;
-  if (!token) {
-    return new Response("Unauthorized", { status: 401 });
+  const headers: Record<string, string> = { Accept: "text/event-stream" };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const upstream = await fetch(
     `${FASTAPI_URL}/api/monitoring/stream?device_group=${encodeURIComponent(device_group)}&host=${encodeURIComponent(host)}`,
-    {
-      headers: {
-        Accept: "text/event-stream",
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers }
   );
 
   if (upstream.status === 401 || upstream.status === 403) {
