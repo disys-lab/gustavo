@@ -5,6 +5,11 @@ GET /api/monitoring/hosts       → Cache.getHosts()
 GET /api/monitoring/vitals      → ?device_group=all&host=all
 GET /api/monitoring/containers  → ?device_group=all&host=all
 GET /api/monitoring/stream      → SSE, emits every 10 s
+
+Open to any authenticated user, not just admins - non-admins see the
+same shape of data an admin does, scoped to their own device-group
+grants (ro or rw; viewing doesn't need rw). See
+_permitted_device_groups/_scope_hosts_response/_scoped_asset_call.
 """
 import ast
 import asyncio
@@ -13,12 +18,13 @@ import logging
 import re
 from typing import AsyncGenerator
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sse_starlette.sse import EventSourceResponse
 
-from gustavo.api import config_store
-from gustavo.api.auth import require_admin
+from gustavo.api import config_store, nebula_auth
+from gustavo.api.auth import verify_firebase_token
 from gustavo.api.cache_shim import build_cache
+from gustavo.api.session import Session
 
 router = APIRouter()
 
@@ -94,14 +100,119 @@ def _get_containers_sync(device_group: str = "all", host: str = "all") -> dict:
         return {"error": True, "response": str(exc)}
 
 
+def _permitted_device_groups(session: Session, cfg: dict) -> list[str] | None:
+    """
+    Which device groups `session` may view monitoring data for.
+
+    Parameters
+    ----------
+    session : Session
+    cfg : dict
+        Current platform config.
+
+    Returns
+    -------
+    list of str or None
+        `None` means unrestricted (admin) - every device group.
+        Otherwise, the caller's own device-group grants, `ro` or `rw`
+        - viewing doesn't require `rw`.
+    """
+    if session.is_admin:
+        return None
+    return list(nebula_auth.compute_permissions(cfg, session.username)["device_groups"].keys())
+
+
+def _scope_hosts_response(result: dict, permitted: list[str]) -> dict:
+    """
+    Narrow a `Cache.getHosts` result to `permitted` device groups.
+
+    Parameters
+    ----------
+    result : dict
+        `_get_hosts_sync`'s return value.
+    permitted : list of str
+        The caller's own device-group grants.
+
+    Returns
+    -------
+    dict
+        `result`, with its `response` narrowed in place. The dict
+        shape (`{host: [device_group, ...]}`, both filters `"all"`)
+        has each host's list filtered, dropping hosts left with none.
+        The list shape (one filter specific, the other `"all"`) is
+        filtered directly. The bool shape (neither `"all"`) is
+        unreachable here - the caller already 403s an unpermitted
+        specific device group before this runs.
+    """
+    response = result.get("response")
+    if isinstance(response, dict):
+        narrowed = {host: [dg for dg in dgs if dg in permitted] for host, dgs in response.items()}
+        result["response"] = {host: dgs for host, dgs in narrowed.items() if dgs}
+    elif isinstance(response, list):
+        result["response"] = [dg for dg in response if dg in permitted]
+    return result
+
+
+async def _scoped_asset_call(sync_fn, device_group: str, host: str, session: Session, cfg: dict) -> dict:
+    """
+    Run `sync_fn` (`_get_vitals_sync` or `_get_containers_sync`), scoped to `session`'s own device groups.
+
+    Parameters
+    ----------
+    sync_fn : callable
+        `_get_vitals_sync` or `_get_containers_sync`.
+    device_group, host : str
+    session : Session
+    cfg : dict
+        Current platform config.
+
+    Returns
+    -------
+    dict
+        `sync_fn`'s own return shape.
+
+    Raises
+    ------
+    HTTPException
+        403 if `device_group` is a specific value the caller isn't
+        granted on.
+
+    Notes
+    -----
+    `Cache.getAssetsForAll("all", ...)` returns only the *first*
+    matching host it finds scanning every cached device group - not
+    filterable after the fact, since a "no data matches" result and a
+    real match are both `error: False` and only distinguishable by
+    sniffing the response string. So for a non-admin's `device_group
+    == "all"`, this calls `sync_fn` once per permitted device group
+    instead (real per-group semantics, already well-defined), keeping
+    the first real match - the same "first match wins" behavior an
+    admin's `"all"` query already has, just restricted to the
+    caller's own groups instead of every cached one.
+    """
+    loop = asyncio.get_event_loop()
+    permitted = _permitted_device_groups(session, cfg)
+
+    if permitted is None or device_group != "all":
+        if permitted is not None and device_group not in permitted:
+            raise HTTPException(status_code=403, detail=f"Not permitted for device group '{device_group}'")
+        return await loop.run_in_executor(None, sync_fn, device_group, host)
+
+    for dg in permitted:
+        result = await loop.run_in_executor(None, sync_fn, dg, host)
+        if not result.get("error") and "at time:" in str(result.get("response", "")):
+            return result
+    return {"error": False, "response": "No data matches the query for your device groups"}
+
+
 @router.get("/hosts")
 async def get_hosts(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _session=Depends(require_admin),
+    session: Session = Depends(verify_firebase_token),
 ):
     """
-    Which hosts and/or device groups currently exist in the cache. Admin-only.
+    Which hosts and/or device groups currently exist in the cache.
 
     Parameters
     ----------
@@ -109,14 +220,30 @@ async def get_hosts(
         A device group name, or `"all"` (default).
     host : str, optional
         A host name, or `"all"` (default).
+    session : Session
+        The authenticated caller.
 
     Returns
     -------
     dict
-        `Cache.getHosts`'s return shape.
+        `Cache.getHosts`'s return shape, narrowed to the caller's own
+        device-group grants if not admin.
+
+    Raises
+    ------
+    HTTPException
+        403 if `device_group` is a specific value the caller isn't
+        granted on.
     """
+    cfg = config_store.get()
+    permitted = _permitted_device_groups(session, cfg)
+    if permitted is not None and device_group != "all" and device_group not in permitted:
+        raise HTTPException(status_code=403, detail=f"Not permitted for device group '{device_group}'")
+
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _get_hosts_sync, device_group, host)
+    if permitted is not None:
+        result = _scope_hosts_response(result, permitted)
     return result
 
 
@@ -124,10 +251,10 @@ async def get_hosts(
 async def get_vitals(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _session=Depends(require_admin),
+    session: Session = Depends(verify_firebase_token),
 ):
     """
-    Cached CPU/memory/disk vitals for a device group/host filter. Admin-only.
+    Cached CPU/memory/disk vitals for a device group/host filter.
 
     Parameters
     ----------
@@ -135,25 +262,27 @@ async def get_vitals(
         A device group name, or `"all"` (default).
     host : str, optional
         A host name, or `"all"` (default).
+    session : Session
+        The authenticated caller.
 
     Returns
     -------
     dict
-        `Cache.getAssetsForAll`'s return shape.
+        `Cache.getAssetsForAll`'s return shape, scoped to the
+        caller's own device-group grants if not admin - see
+        `_scoped_asset_call`.
     """
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, _get_vitals_sync, device_group, host)
-    return result
+    return await _scoped_asset_call(_get_vitals_sync, device_group, host, session, config_store.get())
 
 
 @router.get("/containers")
 async def get_containers(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _session=Depends(require_admin),
+    session: Session = Depends(verify_firebase_token),
 ):
     """
-    Cached container status for a device group/host filter. Admin-only.
+    Cached container status for a device group/host filter.
 
     Parameters
     ----------
@@ -161,15 +290,17 @@ async def get_containers(
         A device group name, or `"all"` (default).
     host : str, optional
         A host name, or `"all"` (default).
+    session : Session
+        The authenticated caller.
 
     Returns
     -------
     dict
-        `Cache.getAssetsForAll`'s return shape.
+        `Cache.getAssetsForAll`'s return shape, scoped to the
+        caller's own device-group grants if not admin - see
+        `_scoped_asset_call`.
     """
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, _get_containers_sync, device_group, host)
-    return result
+    return await _scoped_asset_call(_get_containers_sync, device_group, host, session, config_store.get())
 
 
 def _extract_vitals(vitals_result: dict) -> dict:
@@ -307,6 +438,8 @@ def _extract_containers(containers_result: dict) -> list:
 async def _monitoring_event_generator(
     device_group: str,
     host: str,
+    session: Session,
+    cfg: dict,
 ) -> AsyncGenerator[dict, None]:
     """
     Yield monitoring snapshots as SSE events every `SSE_INTERVAL_SECONDS`, forever.
@@ -317,6 +450,12 @@ async def _monitoring_event_generator(
         A device group name, or `"all"`.
     host : str
         A host name, or `"all"`.
+    session : Session
+        The authenticated caller - scoping is resolved once here, not
+        re-checked per tick, since it doesn't change within the
+        lifetime of one SSE connection.
+    cfg : dict
+        Current platform config.
 
     Yields
     ------
@@ -326,11 +465,10 @@ async def _monitoring_event_generator(
         "error", "data": <JSON str of {"error": ...}>}`` if fetching
         that tick's snapshot raised.
     """
-    loop = asyncio.get_event_loop()
     while True:
         try:
-            vitals_raw = await loop.run_in_executor(None, _get_vitals_sync, device_group, host)
-            containers_raw = await loop.run_in_executor(None, _get_containers_sync, device_group, host)
+            vitals_raw = await _scoped_asset_call(_get_vitals_sync, device_group, host, session, cfg)
+            containers_raw = await _scoped_asset_call(_get_containers_sync, device_group, host, session, cfg)
             payload = json.dumps({
                 "vitals": _extract_vitals(vitals_raw),
                 "containers": _extract_containers(containers_raw),
@@ -346,10 +484,10 @@ async def _monitoring_event_generator(
 async def monitoring_stream(
     device_group: str = Query("all"),
     host: str = Query("all"),
-    _session=Depends(require_admin),
+    session: Session = Depends(verify_firebase_token),
 ):
     """
-    Server-Sent Events endpoint. Emits monitoring snapshots every `SSE_INTERVAL_SECONDS`. Admin-only.
+    Server-Sent Events endpoint. Emits monitoring snapshots every `SSE_INTERVAL_SECONDS`.
 
     Parameters
     ----------
@@ -357,11 +495,19 @@ async def monitoring_stream(
         A device group name, or `"all"` (default).
     host : str, optional
         A host name, or `"all"` (default).
+    session : Session
+        The authenticated caller.
 
     Returns
     -------
     EventSourceResponse
         `text/event-stream`, backed by `_monitoring_event_generator`.
+
+    Raises
+    ------
+    HTTPException
+        403 if `device_group` is a specific value the caller isn't
+        granted on.
 
     Notes
     -----
@@ -371,7 +517,12 @@ async def monitoring_stream(
     cookie and forwards it here as a real `Authorization: Bearer`
     header.
     """
+    cfg = config_store.get()
+    permitted = _permitted_device_groups(session, cfg)
+    if permitted is not None and device_group != "all" and device_group not in permitted:
+        raise HTTPException(status_code=403, detail=f"Not permitted for device group '{device_group}'")
+
     return EventSourceResponse(
-        _monitoring_event_generator(device_group, host),
+        _monitoring_event_generator(device_group, host, session, cfg),
         media_type="text/event-stream",
     )
