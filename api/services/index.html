@@ -2159,12 +2159,12 @@
     <div class="doc doc-contents first">
 
         <p>/api/services — Manager service lifecycle endpoints.</p>
-<p>GET  /api/services                      → all 5 services + status (any authenticated user)
+<p>GET  /api/services                      → all 6 services + status (any authenticated user)
 GET  /api/services/{svc}/status         → Manager.serviceStatus(svc) (any authenticated user)
 POST /api/services/{svc}/run            → background task → returns job_id (admin-only)
 POST /api/services/{svc}/action         → body: {action: stop|start|kill|remove|restart} (admin-only)
 GET  /api/services/jobs/{job_id}        → poll result of background run (admin-only)</p>
-<p>Valid {svc}: redis, mongo, registry, syncer, manager, all</p>
+<p>Valid {svc}: redis, mongo, registry, syncer, manager, reporter, all</p>
 
 
 
@@ -2201,7 +2201,7 @@ GET  /api/services/jobs/{job_id}        → poll result of background run (admin
 
     <div class="doc doc-contents ">
 
-        <p>Return status for all 5 services. Read-only, open to any authenticated user.</p>
+        <p>Return status for all 6 services. Read-only, open to any authenticated user.</p>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -2220,10 +2220,10 @@ GET  /api/services/jobs/{job_id}        → poll result of background run (admin
             <td>
               <div class="doc-md-description">
                 <p><code>{"error": False, "response": {svc: &lt;status dict&gt;, ...}}</code>
-for <code>redis</code>, <code>mongo</code>, <code>registry</code>, <code>syncer</code>, <code>manager</code>. On a
-25s timeout or an unexpected failure, every service's status
-dict is replaced with a shared error message rather than
-failing the whole request.</p>
+for <code>redis</code>, <code>mongo</code>, <code>registry</code>, <code>syncer</code>, <code>manager</code>,
+<code>reporter</code>. On a 25s timeout or an unexpected failure, every
+service's status dict is replaced with a shared error message
+rather than failing the whole request.</p>
               </div>
             </td>
           </tr>
@@ -2234,7 +2234,7 @@ failing the whole request.</p>
 <details class="note" open>
   <summary>Notes</summary>
   <p>Launch/stop/restart/remove stay admin-only (see the other routes
-in this module). Docker calls are blocking, so all 5 status
+in this module). Docker calls are blocking, so all 6 status
 checks run sequentially in a single background thread (same
 Manager instance), to avoid blocking the event loop without
 spawning a thread per service.</p>
@@ -2287,27 +2287,27 @@ spawning a thread per service.</p>
 <span class="normal"><a href="#__codelineno-0-95">95</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 <a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_services</span><span class="p">(</span><span class="n">_session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
 <a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Return status for all 5 services. Read-only, open to any authenticated user.</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Return status for all 6 services. Read-only, open to any authenticated user.</span>
 <a id="__codelineno-0-57" name="__codelineno-0-57"></a>
 <a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    Returns</span>
 <a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    -------</span>
 <a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    dict</span>
 <a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        ``{"error": False, "response": {svc: &lt;status dict&gt;, ...}}``</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        for `redis`, `mongo`, `registry`, `syncer`, `manager`. On a</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        25s timeout or an unexpected failure, every service's status</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">        dict is replaced with a shared error message rather than</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">        failing the whole request.</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        for `redis`, `mongo`, `registry`, `syncer`, `manager`,</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        `reporter`. On a 25s timeout or an unexpected failure, every</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">        service's status dict is replaced with a shared error message</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">        rather than failing the whole request.</span>
 <a id="__codelineno-0-66" name="__codelineno-0-66"></a>
 <a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">    Notes</span>
 <a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">    -----</span>
 <a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">    Launch/stop/restart/remove stay admin-only (see the other routes</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    in this module). Docker calls are blocking, so all 5 status</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    in this module). Docker calls are blocking, so all 6 status</span>
 <a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">    checks run sequentially in a single background thread (same</span>
 <a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    Manager instance), to avoid blocking the event loop without</span>
 <a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">    spawning a thread per service.</span>
 <a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">    """</span>
 <a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="n">services</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"redis"</span><span class="p">,</span> <span class="s2">"mongo"</span><span class="p">,</span> <span class="s2">"registry"</span><span class="p">,</span> <span class="s2">"syncer"</span><span class="p">,</span> <span class="s2">"manager"</span><span class="p">]</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="n">services</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"redis"</span><span class="p">,</span> <span class="s2">"mongo"</span><span class="p">,</span> <span class="s2">"registry"</span><span class="p">,</span> <span class="s2">"syncer"</span><span class="p">,</span> <span class="s2">"manager"</span><span class="p">,</span> <span class="s2">"reporter"</span><span class="p">]</span>
 <a id="__codelineno-0-77" name="__codelineno-0-77"></a>
 <a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_all_statuses</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">man</span> <span class="o">=</span> <span class="n">_build_manager</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
