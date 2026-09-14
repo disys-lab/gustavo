@@ -120,9 +120,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Once loaded: if auth is disabled, everyone is authenticated; otherwise require a token.
   const isAuthenticated = authEnabled === false || (authEnabled === true && !!token);
 
+  // When auth is disabled, isAuthenticated short-circuits to true without ever
+  // calling /login - so the `isAdmin` state (only ever set from a login
+  // response) never gets populated and stays stuck at its useState(false)
+  // default, hiding every admin-gated control even though the backend
+  // (verify_firebase_token's AUTH_ENABLED=false branch) treats every request
+  // as admin. Mirror that here instead of trusting the un-derived state.
+  const effectiveIsAdmin = authEnabled === false ? true : isAdmin;
+
   return (
     <AuthContext.Provider
-      value={{ token, username, isAdmin, isAuthenticated, firebaseEnabled, login, loginFirebase, logout }}
+      value={{ token, username, isAdmin: effectiveIsAdmin, isAuthenticated, firebaseEnabled, login, loginFirebase, logout }}
     >
       {children}
     </AuthContext.Provider>
