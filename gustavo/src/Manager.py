@@ -35,6 +35,7 @@ class Manager(NebulaBase):
     * `mongo`
     * `manager`
     * `syncer`
+    * `reporter`
 
     Attributes
     ----------
@@ -77,6 +78,19 @@ class Manager(NebulaBase):
     MANAGER_NMODE : str
         Docker network mode for the manager container. Defaults to
         `"bridge"`.
+    REPORTER_IMAGE : str
+        Docker image to run for the reporter service.
+    REPORTER_HOST : str
+        Hostname or IP address reporter is reachable at - not used to
+        launch it, only recorded for other things (e.g. worker
+        config) to read later.
+    REPORTER_PORT : str
+        Host port reporter's container is published on.
+    GUSTAVO_API_HOST : str
+        Hostname or IP address reporter uses to reach gustavo's own
+        API.
+    GUSTAVO_API_PORT : str
+        Port reporter uses to reach gustavo's own API.
     service_list : str
         Comma-separated list of the service names this class manages.
 
@@ -128,7 +142,13 @@ class Manager(NebulaBase):
         self.MANAGER_NMODE = None
         self.SYNCER_NMODE = None
 
-        self.service_list = "registry,redis,mongo,manager,syncer"
+        self.REPORTER_IMAGE = None
+        self.REPORTER_HOST = None
+        self.REPORTER_PORT = None
+        self.GUSTAVO_API_HOST = None
+        self.GUSTAVO_API_PORT = None
+
+        self.service_list = "registry,redis,mongo,manager,syncer,reporter"
 
         if mode == "CLI":
             self.setManagerParams()
@@ -308,6 +328,36 @@ class Manager(NebulaBase):
         else:
             self.SYNCER_NMODE = "bridge"
             logging.error(f"SYNCE_NMODE undefined in base_config file")
+
+        if "REPORTER_IMAGE" in os.environ.keys():
+            self.REPORTER_IMAGE = os.getenv("REPORTER_IMAGE")
+        else:
+            self.REPORTER_IMAGE = ""
+            logging.error(f"REPORTER_IMAGE undefined in base_config file")
+
+        if "REPORTER_HOST" in os.environ.keys():
+            self.REPORTER_HOST = os.getenv("REPORTER_HOST")
+        else:
+            self.REPORTER_HOST = ""
+            logging.error(f"REPORTER_HOST undefined in base_config file")
+
+        if "REPORTER_PORT" in os.environ.keys():
+            self.REPORTER_PORT = os.getenv("REPORTER_PORT")
+        else:
+            self.REPORTER_PORT = ""
+            logging.error(f"REPORTER_PORT undefined in base_config file")
+
+        if "GUSTAVO_API_HOST" in os.environ.keys():
+            self.GUSTAVO_API_HOST = os.getenv("GUSTAVO_API_HOST")
+        else:
+            self.GUSTAVO_API_HOST = ""
+            logging.error(f"GUSTAVO_API_HOST undefined in base_config file")
+
+        if "GUSTAVO_API_PORT" in os.environ.keys():
+            self.GUSTAVO_API_PORT = os.getenv("GUSTAVO_API_PORT")
+        else:
+            self.GUSTAVO_API_PORT = ""
+            logging.error(f"GUSTAVO_API_PORT undefined in base_config file")
 
         return {"error": False, "response": "Manager Params set successfully"}
 
@@ -687,6 +737,63 @@ class Manager(NebulaBase):
                 "response": "Manager Image Not defined in config files",
             }
 
+    def runReporter(self, client):
+        """
+        Bring up the reporter container via `client`, wired to Redis and gustavo's own API.
+
+        Parameters
+        ----------
+        client : docker.DockerClient
+            The Docker client to run the container with.
+
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": <message str>}``. `error` is
+            `True` if `REPORTER_IMAGE` isn't configured, the image
+            can't be pulled, or the Docker API errors; `False` on
+            success. `response` describes which.
+        """
+
+        if self.REPORTER_IMAGE:
+            # success = True
+            dockerow.pull(self.REPORTER_IMAGE)
+            try:
+                client.containers.run(
+                    image=self.REPORTER_IMAGE,
+                    detach=True,
+                    security_opt=["label=disable"],
+                    name="reporter",
+                    ports={"8080": str(self.REPORTER_PORT)},
+                    restart_policy={"Name": "always"},
+                    environment=[
+                        "GUSTAVO_API_HOST=" + str(self.GUSTAVO_API_HOST),
+                        "GUSTAVO_API_PORT=" + str(self.GUSTAVO_API_PORT),
+                        "REDIS_HOST=" + str(self.REDIS_IP),
+                        "REDIS_PORT=" + str(self.REDIS_PORT),
+                        "REDIS_AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN),
+                        "CACHE_PREFIX=" + str(self.CACHE_PREFIX),
+                    ],
+                )
+            except docker.errors.ImageNotFound as e:
+                logging.error(f"{e}")
+                logging.error(f"Reporter image not found")
+                return {"error": True, "response": "Reporter image not found"}
+            except docker.errors.APIError as e:
+                logging.error(f"{e}")
+                logging.error(f"Reporter:Troble reaching the docker API")
+                return {
+                    "error": True,
+                    "response": "Reporter:Trouble reaching the docker API, exception:{}".format(str(e)),
+                }
+            return {"error": False, "response": "Reporter run successfully"}
+        else:
+            logging.error(f"Reporter Image Not defined in config files")
+            return {
+                "error": True,
+                "response": "Reporter Image Not defined in config files",
+            }
+
     def checkManager(self):
         """
         Check whether the Nebula manager's `/api/v2/status` endpoint responds with HTTP 200.
@@ -766,9 +873,9 @@ class Manager(NebulaBase):
         ----------
         service_name : str
             One of `"registry"`, `"redis"`, `"mongo"`, `"manager"`,
-            `"syncer"`, or `"all"` (brings up all five in that order,
-            stopping at the first failure; if `"manager"` succeeds,
-            also calls `waitManager`).
+            `"syncer"`, `"reporter"`, or `"all"` (brings up all six in
+            that order, stopping at the first failure; if `"manager"`
+            succeeds, also calls `waitManager`).
 
         Returns
         -------
@@ -836,6 +943,19 @@ class Manager(NebulaBase):
                     "error": True,
                     "response": success["response"],
                 }
+        elif service_name == "reporter":
+            success = self.runReporter(client)
+            if not success["error"]:
+                logging.info(f"Reporter Up")
+                return {
+                    "error": False,
+                    "response": "Reporter Up",
+                }
+            else:
+                return {
+                    "error": True,
+                    "response": success["response"],
+                }
         elif service_name == "manager":
             success = self.runManager(client)
             if not success["error"]:
@@ -878,6 +998,14 @@ class Manager(NebulaBase):
             success = self.runMongo(client)
             if not success["error"]:
                 logging.info(f"Mongo Up")
+            else:
+                return {
+                    "error": True,
+                    "response": success["response"],
+                }
+            success = self.runReporter(client)
+            if not success["error"]:
+                logging.info(f"Reporter Up")
             else:
                 return {
                     "error": True,
