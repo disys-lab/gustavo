@@ -41,7 +41,7 @@ def build_and_push_docker_image(image_name, sc_version, py_version, dockerfile_p
         # Build the Docker image
         result = subprocess.run(
             ["docker", "buildx" ,"build",
-             "--platform", "linux/amd64",
+             "--platform", "linux/amd64,linux/arm64",
              "--no-cache",
              "--pull",
              "-t", image_name, "-t", "ghcr.io/disys-lab/gustavo:latest",
