@@ -7,7 +7,7 @@ interface ServiceStatusRowProps {
 }
 
 // "syncer" is intentionally excluded — preserved for future re-enablement
-const SERVICE_NAMES: ServiceName[] = ["redis", "mongo", "registry", "manager"];
+const SERVICE_NAMES: ServiceName[] = ["redis", "mongo", "registry", "manager", "reporter"];
 
 export function ServiceStatusRow({ services }: ServiceStatusRowProps) {
   return (

@@ -73,6 +73,22 @@ const REGISTRY_FIELDS: ConfigField[] = [
   { key: "DREGSY_MAPPING_FILE_PATH", label: "DREGSY Mapping File" },
 ];
 
+const REPORTER_FIELDS: ConfigField[] = [
+  { key: "REPORTER_HOST", label: "Reporter Host" },
+  { key: "REPORTER_PORT", label: "Reporter Port" },
+  { key: "REPORTER_IMAGE", label: "Reporter Image" },
+  {
+    key: "GUSTAVO_API_HOST",
+    label: "Gustavo API Host",
+    hint: "Where reporter reaches gustavo's own API to verify worker credentials.",
+  },
+  {
+    key: "GUSTAVO_API_PORT",
+    label: "Gustavo API Port",
+    hint: "Must be gustavo's Next.js port (3000 by default) — not FastAPI's 8000, which is bound to 127.0.0.1 inside gustavo's own container.",
+  },
+];
+
 function FieldGrid({ fields, register }: {
   fields: ConfigField[];
   register: ReturnType<typeof useForm<PlatformConfig>>["register"];
@@ -300,10 +316,16 @@ export default function SettingsPage() {
               </div>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="registry" className="border-b-0">
+          <AccordionItem value="registry">
             <AccordionTrigger className="text-sm font-semibold">Registry &amp; Syncer</AccordionTrigger>
             <AccordionContent>
               <FieldGrid fields={REGISTRY_FIELDS} register={register} />
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="reporter" className="border-b-0">
+            <AccordionTrigger className="text-sm font-semibold">Reporter</AccordionTrigger>
+            <AccordionContent>
+              <FieldGrid fields={REPORTER_FIELDS} register={register} />
             </AccordionContent>
           </AccordionItem>
         </Accordion>

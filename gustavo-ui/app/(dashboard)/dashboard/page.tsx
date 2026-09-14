@@ -20,7 +20,7 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { cn } from "@/lib/utils";
 
 // "syncer" is intentionally excluded — preserved for future re-enablement
-const VISIBLE_SERVICES = ["redis", "mongo", "registry", "manager"] as const;
+const VISIBLE_SERVICES = ["redis", "mongo", "registry", "manager", "reporter"] as const;
 
 const LEVEL_COLORS: Record<string, string> = {
   success: "text-green-600",
@@ -152,7 +152,7 @@ export default function DashboardPage() {
               {VISIBLE_SERVICES.map((s) => <Skeleton key={s} className="h-12 w-32" />)}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
               {VISIBLE_SERVICES.map((svc) => {
                 const entry = services[svc];
                 const status = entry ? (entry.error ? "Down" : "Up") : "Unknown";

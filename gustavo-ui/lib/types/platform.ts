@@ -25,6 +25,12 @@ export interface PlatformConfig {
   SYNCER_NMODE: string;
   DREGSY_CONFIG_FILE_PATH: string;
   DREGSY_MAPPING_FILE_PATH: string;
+  // Reporter
+  REPORTER_IMAGE: string;
+  REPORTER_HOST: string;
+  REPORTER_PORT: string;
+  GUSTAVO_API_HOST: string;
+  GUSTAVO_API_PORT: string;
   // Redis
   REDIS_HOST: string;
   REDIS_PORT: string;
@@ -44,7 +50,7 @@ export interface PlatformConfig {
   WORKER_NMODE: string;
 }
 
-export type ServiceName = "redis" | "mongo" | "registry" | "syncer" | "manager";
+export type ServiceName = "redis" | "mongo" | "registry" | "syncer" | "manager" | "reporter";
 
 export interface AppConfig {
   docker_image: string;
