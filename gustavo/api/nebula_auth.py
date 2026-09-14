@@ -198,7 +198,7 @@ def resolve_basic_credentials(cfg: dict, identifier: str, secret: str) -> tuple[
 def build_worker_env(
     cfg: dict, username: str, secret: str, device_group: str,
     prefix: str = "gustavo-reports", expire_time: str = "10",
-    gpu_enabled: bool = False,
+    gpu_enabled: bool = False, use_reporter: bool = False,
 ) -> dict[str, str]:
     """
     Container-facing env vars for a gustavo-worker — the exact variable names
@@ -216,14 +216,28 @@ def build_worker_env(
     and applies to every container it launches (app or cron job) - it's a
     property of the hardware that worker runs on, not of any individual app,
     so it only belongs here, not in an app's own env_vars.
+
+    use_reporter switches worker status reporting from direct Redis writes
+    to gustavo-reporter's REST API: REPORTER_HOST/REPORTER_PORT are emitted
+    instead of REDIS_HOST/REDIS_PORT/REDIS_AUTH_TOKEN/REDIS_EXPIRE_TIME/
+    REDIS_KEY_PREFIX. The two are mutually exclusive - a worker only reports
+    through whichever backend's own host var is actually present. Default is
+    False, keeping today's direct-Redis behavior unchanged for every
+    existing caller.
     """
     env = {
         "DEVICE_GROUP": device_group,
-        "REDIS_HOST": str(cfg.get("REDIS_HOST", "")),
-        "REDIS_PORT": str(cfg.get("REDIS_PORT", "")),
-        "REDIS_AUTH_TOKEN": str(cfg.get("REDIS_AUTH_TOKEN", "")),
-        "REDIS_EXPIRE_TIME": str(expire_time),
-        "REDIS_KEY_PREFIX": prefix,
+    }
+    if use_reporter:
+        env["REPORTER_HOST"] = str(cfg.get("REPORTER_HOST", ""))
+        env["REPORTER_PORT"] = str(cfg.get("REPORTER_PORT", ""))
+    else:
+        env["REDIS_HOST"] = str(cfg.get("REDIS_HOST", ""))
+        env["REDIS_PORT"] = str(cfg.get("REDIS_PORT", ""))
+        env["REDIS_AUTH_TOKEN"] = str(cfg.get("REDIS_AUTH_TOKEN", ""))
+        env["REDIS_EXPIRE_TIME"] = str(expire_time)
+        env["REDIS_KEY_PREFIX"] = prefix
+    env.update({
         "REGISTRY_HOST": f"http://{cfg.get('REGISTRY_HOST', '')}:{cfg.get('REGISTRY_PORT', '')}/",
         "MAX_RESTART_WAIT_IN_SECONDS": "0",
         "NEBULA_MANAGER_AUTH_USER": username,
@@ -234,7 +248,7 @@ def build_worker_env(
         "NEBULA_MANAGER_CHECK_IN_TIME": "5",
         "REGISTRY_AUTH_USER": username,
         "REGISTRY_AUTH_PASSWORD": secret,
-    }
+    })
     if gpu_enabled:
         env["GPU_ENABLED"] = "true"
     return env
