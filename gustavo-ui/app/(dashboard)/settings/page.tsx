@@ -202,6 +202,7 @@ export default function SettingsPage() {
     setValue("REDIS_HOST", host);
     setValue("MONGO_HOST", host);
     setValue("REGISTRY_HOST", host);
+    setValue("REPORTER_HOST", host);
   };
 
   useEffect(() => {
@@ -283,7 +284,7 @@ export default function SettingsPage() {
             <AccordionTrigger className="text-sm font-semibold">Manager &amp; Nebula</AccordionTrigger>
             <AccordionContent>
               <div className="mb-4 flex items-center justify-between rounded-md border border-blue-100 bg-blue-50 px-3 py-2">
-                <p className="text-xs text-blue-700">Apply Manager Host to Redis, Mongo &amp; Registry</p>
+                <p className="text-xs text-blue-700">Apply Manager Host to Redis, Mongo, Registry &amp; Reporter</p>
                 <Button
                   type="button"
                   size="sm"
