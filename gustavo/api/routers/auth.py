@@ -10,6 +10,10 @@ POST /api/auth/token  → optional Firebase/AUTH_ENDPOINT bridge (only meaningfu
                          when AUTH_ENDPOINT is configured). A successful Firebase
                          login is treated as the platform admin — no per-user
                          Firebase identity bridging yet.
+POST /api/auth/verify → check a "identifier:secret" pair, no session token
+                         minted. For other services (e.g. gustavo-reporter)
+                         authorizing a request against a Nebula identity
+                         without going through Gustavo's own login flow.
 """
 import logging
 import os
@@ -39,6 +43,10 @@ class LoginRequest(BaseModel):
 class TokenRequest(BaseModel):
     user_id: str
     user_token: str
+
+
+class VerifyRequest(BaseModel):
+    credential: str
 
 
 def _admin_session() -> Session:
@@ -151,6 +159,55 @@ async def login(req: LoginRequest):
     if error:
         return {"error": True, "response": error}
     return _session_response(session)
+
+
+@router.post("/verify")
+async def verify(req: VerifyRequest):
+    """
+    Check a Nebula `identifier:secret` pair without minting a session token.
+
+    Parameters
+    ----------
+    req : VerifyRequest
+        `credential`, formatted `"identifier:secret"`.
+
+    Returns
+    -------
+    dict
+        ``{"error": False, "response": {"username": ..., "is_admin":
+        ..., "device_groups": {name: "ro"|"rw"}}}`` on success, or
+        ``{"error": True, "response": <reason>}`` if `credential`
+        isn't `"identifier:secret"`-shaped or doesn't verify.
+
+    Notes
+    -----
+    Same two checks as `/login` (break-glass admin, else Nebula Basic
+    auth), via `nebula_auth.resolve_basic_credentials`. `device_groups`
+    is the caller's own grant map, via `compute_permissions` - always
+    `{}` for the break-glass admin, since `is_admin` already bypasses
+    every grant check a caller of this endpoint would use it for.
+    """
+    if ":" not in req.credential:
+        return {"error": True, "response": "Invalid credential format"}
+
+    identifier, secret = req.credential.split(":", 1)
+    cfg = config_store.get()
+    session, error = nebula_auth.resolve_basic_credentials(cfg, identifier, secret)
+    if error:
+        return {"error": True, "response": error}
+
+    device_groups = (
+        nebula_auth.compute_permissions(cfg, session.username)["device_groups"]
+        if session.user_type == "db" else {}
+    )
+    return {
+        "error": False,
+        "response": {
+            "username": session.username,
+            "is_admin": session.is_admin,
+            "device_groups": device_groups,
+        },
+    }
 
 
 @router.post("/token")

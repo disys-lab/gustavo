@@ -1,13 +1,13 @@
 /**
  * API functions for the /api/services endpoints.
  *
- * Services managed: redis, mongo, registry, syncer, manager.
+ * Services managed: redis, mongo, registry, syncer, manager, reporter.
  * Long-running operations (run) return a job_id; poll with getJob().
  */
 import apiClient from "./client";
 import type { ApiResponse, ServicesMap, Job } from "@/lib/types/api";
 
-/** Return the status of all 5 platform services. */
+/** Return the status of all 6 platform services. */
 export const getServices = () =>
   apiClient.get<ApiResponse<ServicesMap>>("/services").then((r) => r.data);
 

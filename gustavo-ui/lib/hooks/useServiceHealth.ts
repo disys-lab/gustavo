@@ -4,12 +4,12 @@ import { getServices } from "@/lib/api/services";
 import type { ServicesMap } from "@/lib/types/api";
 
 // "syncer" is intentionally excluded — preserved for future re-enablement
-const HEALTH_SERVICES: (keyof ServicesMap)[] = ["redis", "mongo", "registry", "manager"];
+const HEALTH_SERVICES: (keyof ServicesMap)[] = ["redis", "mongo", "registry", "manager", "reporter"];
 
 /**
  * Polls /api/services every 30s. Status is read-only and open to any
  * authenticated user (launch/stop/restart/remove stay admin-only).
- * Returns `allUp: true` if all 4 platform services are running, `false` if any is down,
+ * Returns `allUp: true` if all 5 platform services are running, `false` if any is down,
  * `null` while loading or on error.
  */
 export function useServiceHealth() {

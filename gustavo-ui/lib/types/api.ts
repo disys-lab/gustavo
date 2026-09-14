@@ -15,6 +15,7 @@ export interface ServicesMap {
   registry: ServiceStatus;
   syncer: ServiceStatus;
   manager: ServiceStatus;
+  reporter: ServiceStatus;
 }
 
 export interface Job {

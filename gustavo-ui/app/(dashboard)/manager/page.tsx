@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
 // "syncer" is intentionally excluded from the UI for now — preserved for future re-enablement
-const SERVICES = ["redis", "mongo", "registry", "manager"] as const;
+const SERVICES = ["redis", "mongo", "registry", "manager", "reporter"] as const;
 
 export default function ManagerPage() {
   const { data, isLoading, isError, refetch } = useQuery({

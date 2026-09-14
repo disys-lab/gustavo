@@ -24,6 +24,7 @@ def _build_manager(cfg: dict) -> Manager:
     man.MANAGER_IMAGE = cfg.get("MANAGER_IMAGE")
     man.MANAGER_NMODE = cfg.get("MANAGER_NMODE", "bridge")
     man.CACHE_EXPIRE_TIME = cfg.get("CACHE_EXPIRE_TIME", "3600")
+    man.CACHE_PREFIX = cfg.get("CACHE_PREFIX", "gustavo-reports")
 
     # Redis
     man.REDIS_IMAGE = cfg.get("REDIS_IMAGE")
@@ -48,6 +49,13 @@ def _build_manager(cfg: dict) -> Manager:
     man.SYNCER_NMODE = cfg.get("SYNCER_NMODE", "host")
     man.DREGSY_CONFIG_FILE_PATH = cfg.get("DREGSY_CONFIG_FILE_PATH") or None
     man.DREGSY_MAPPING_FILE_PATH = cfg.get("DREGSY_MAPPING_FILE_PATH") or None
+
+    # Reporter
+    man.REPORTER_IMAGE = cfg.get("REPORTER_IMAGE")
+    man.REPORTER_HOST = cfg.get("REPORTER_HOST")
+    man.REPORTER_PORT = cfg.get("REPORTER_PORT")
+    man.GUSTAVO_API_HOST = cfg.get("GUSTAVO_API_HOST")
+    man.GUSTAVO_API_PORT = cfg.get("GUSTAVO_API_PORT")
 
     # Disable blocking wait on manager startup
     man.wait_for_manager_enabled = False

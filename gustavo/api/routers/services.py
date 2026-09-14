@@ -1,13 +1,13 @@
 """
 /api/services — Manager service lifecycle endpoints.
 
-GET  /api/services                      → all 5 services + status (any authenticated user)
+GET  /api/services                      → all 6 services + status (any authenticated user)
 GET  /api/services/{svc}/status         → Manager.serviceStatus(svc) (any authenticated user)
 POST /api/services/{svc}/run            → background task → returns job_id (admin-only)
 POST /api/services/{svc}/action         → body: {action: stop|start|kill|remove|restart} (admin-only)
 GET  /api/services/jobs/{job_id}        → poll result of background run (admin-only)
 
-Valid {svc}: redis, mongo, registry, syncer, manager, all
+Valid {svc}: redis, mongo, registry, syncer, manager, reporter, all
 """
 import asyncio
 import logging
@@ -20,7 +20,7 @@ from gustavo.api.dependencies import _build_manager
 
 router = APIRouter()
 
-VALID_SERVICES = {"redis", "mongo", "registry", "syncer", "manager", "all"}
+VALID_SERVICES = {"redis", "mongo", "registry", "syncer", "manager", "reporter", "all"}
 
 
 class ActionRequest(BaseModel):
@@ -53,27 +53,27 @@ def _get_status_for(man, svc: str) -> dict:
 @router.get("")
 async def list_services(_session=Depends(verify_firebase_token)):
     """
-    Return status for all 5 services. Read-only, open to any authenticated user.
+    Return status for all 6 services. Read-only, open to any authenticated user.
 
     Returns
     -------
     dict
         ``{"error": False, "response": {svc: <status dict>, ...}}``
-        for `redis`, `mongo`, `registry`, `syncer`, `manager`. On a
-        25s timeout or an unexpected failure, every service's status
-        dict is replaced with a shared error message rather than
-        failing the whole request.
+        for `redis`, `mongo`, `registry`, `syncer`, `manager`,
+        `reporter`. On a 25s timeout or an unexpected failure, every
+        service's status dict is replaced with a shared error message
+        rather than failing the whole request.
 
     Notes
     -----
     Launch/stop/restart/remove stay admin-only (see the other routes
-    in this module). Docker calls are blocking, so all 5 status
+    in this module). Docker calls are blocking, so all 6 status
     checks run sequentially in a single background thread (same
     Manager instance), to avoid blocking the event loop without
     spawning a thread per service.
     """
     cfg = config_store.get()
-    services = ["redis", "mongo", "registry", "syncer", "manager"]
+    services = ["redis", "mongo", "registry", "syncer", "manager", "reporter"]
 
     def _all_statuses() -> dict:
         man = _build_manager(cfg)

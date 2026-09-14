@@ -58,6 +58,15 @@ DEFAULTS: dict[str, Any] = {
     "SYNCER_NMODE": "host",
     "DREGSY_CONFIG_FILE_PATH": "",
     "DREGSY_MAPPING_FILE_PATH": "",
+    # Reporter
+    "REPORTER_IMAGE": "ghcr.io/disys-lab/gustavo-reporter:latest",
+    "REPORTER_HOST": _host_ip,
+    "REPORTER_PORT": "8090",
+    # Host/port reporter uses to reach gustavo's own API — must be the
+    # Next.js port (3000), not FastAPI's 8000, which is bound to
+    # 127.0.0.1 inside gustavo's own container.
+    "GUSTAVO_API_HOST": _host_ip,
+    "GUSTAVO_API_PORT": "3000",
     # Redis
     "REDIS_HOST": _host_ip,
     "REDIS_PORT": "6379",
