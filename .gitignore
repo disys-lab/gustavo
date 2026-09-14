@@ -34,3 +34,8 @@ env/
 nginx_app_config.yaml
 alpine_app_config.yaml
 app_settings.yaml
+
+# ── Local scratch (never committed) ──────────────────────────────────────────
+# Raw screenshots used to source docs/assets/screenshots/quickstart/ - kept
+# locally as reference, not meant to be committed as a raw folder.
+docs/gustavo_screenshot_tutorial/
