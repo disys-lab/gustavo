@@ -446,7 +446,10 @@ def _batch_quote(value: str) -> str:
 
 
 @router.get("/{name}/worker-env", response_class=PlainTextResponse)
-async def download_worker_env(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_env(
+    name: str, gpu: bool = False, reporter: bool = False,
+    session: Session = Depends(verify_session_or_basic),
+):
     """
     Native `gustavo worker up` env file for this device group, scoped to the caller's own Nebula identity.
 
@@ -459,6 +462,12 @@ async def download_worker_env(name: str, gpu: bool = False, session: Session = D
         device group whose hardware actually has a GPU
         `nvidia-container-toolkit` can grant access to; the worker
         applies it to every container it launches on that device.
+    reporter : bool, optional
+        If `True`, emits `REPORTER_HOST`/`REPORTER_PORT` instead of
+        `REDIS_HOST`/`REDIS_PORT`/`REDIS_AUTH_TOKEN`, switching worker
+        status reporting to gustavo-reporter's REST API instead of
+        direct Redis writes. Mutually exclusive with the Redis
+        reporting fields - see `nebula_auth.build_worker_env`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -484,9 +493,19 @@ async def download_worker_env(name: str, gpu: bool = False, session: Session = D
         f"DEVICE_GROUP={name}",
         f"MANAGER_HOST={cfg.get('MANAGER_HOST', '')}",
         f"MANAGER_PORT={cfg.get('MANAGER_PORT', '')}",
-        f"REDIS_HOST={cfg.get('REDIS_HOST', '')}",
-        f"REDIS_PORT={cfg.get('REDIS_PORT', '')}",
-        f"REDIS_AUTH_TOKEN={cfg.get('REDIS_AUTH_TOKEN', '')}",
+    ]
+    if reporter:
+        lines += [
+            f"REPORTER_HOST={cfg.get('REPORTER_HOST', '')}",
+            f"REPORTER_PORT={cfg.get('REPORTER_PORT', '')}",
+        ]
+    else:
+        lines += [
+            f"REDIS_HOST={cfg.get('REDIS_HOST', '')}",
+            f"REDIS_PORT={cfg.get('REDIS_PORT', '')}",
+            f"REDIS_AUTH_TOKEN={cfg.get('REDIS_AUTH_TOKEN', '')}",
+        ]
+    lines += [
         f"REGISTRY_HOST={cfg.get('REGISTRY_HOST', '')}",
         f"REGISTRY_PORT={cfg.get('REGISTRY_PORT', '')}",
         f"REGISTRY_AUTH_USER={username}",
@@ -502,7 +521,10 @@ async def download_worker_env(name: str, gpu: bool = False, session: Session = D
 
 
 @router.get("/{name}/worker-compose", response_class=PlainTextResponse)
-async def download_worker_compose(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_compose(
+    name: str, gpu: bool = False, reporter: bool = False,
+    session: Session = Depends(verify_session_or_basic),
+):
     """
     Self-contained `docker-compose.yml` for this device group's worker.
 
@@ -513,6 +535,10 @@ async def download_worker_compose(name: str, gpu: bool = False, session: Session
     gpu : bool, optional
         If `True`, adds `GPU_ENABLED=true` - only for a device group
         whose hardware actually has a GPU.
+    reporter : bool, optional
+        If `True`, switches worker status reporting to
+        gustavo-reporter's REST API instead of direct Redis writes -
+        see `nebula_auth.build_worker_env`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -535,7 +561,9 @@ async def download_worker_compose(name: str, gpu: bool = False, session: Session
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
-    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
+    env = nebula_auth.build_worker_env(
+        cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu, use_reporter=reporter,
+    )
     service: dict = {
         "image": _WORKER_IMAGE,
         "container_name": f"worker_{name}",
@@ -553,7 +581,10 @@ async def download_worker_compose(name: str, gpu: bool = False, session: Session
 
 
 @router.get("/{name}/worker-script", response_class=PlainTextResponse)
-async def download_worker_script(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_script(
+    name: str, gpu: bool = False, reporter: bool = False,
+    session: Session = Depends(verify_session_or_basic),
+):
     """
     Self-contained `docker run` launcher script for this device group's worker (macOS/Linux).
 
@@ -564,6 +595,10 @@ async def download_worker_script(name: str, gpu: bool = False, session: Session 
     gpu : bool, optional
         If `True`, adds `GPU_ENABLED=true` - only for a device group
         whose hardware actually has a GPU.
+    reporter : bool, optional
+        If `True`, switches worker status reporting to
+        gustavo-reporter's REST API instead of direct Redis writes -
+        see `nebula_auth.build_worker_env`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -590,7 +625,9 @@ async def download_worker_script(name: str, gpu: bool = False, session: Session 
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
-    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
+    env = nebula_auth.build_worker_env(
+        cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu, use_reporter=reporter,
+    )
     # shlex.quote, not naive f-string interpolation: these values include
     # admin-set secrets that can contain anything (quotes, $, backticks) -
     # unescaped, that's a shell-injection risk in a script meant to be
@@ -610,7 +647,10 @@ async def download_worker_script(name: str, gpu: bool = False, session: Session 
 
 
 @router.get("/{name}/worker-script-windows", response_class=PlainTextResponse)
-async def download_worker_script_windows(name: str, gpu: bool = False, session: Session = Depends(verify_session_or_basic)):
+async def download_worker_script_windows(
+    name: str, gpu: bool = False, reporter: bool = False,
+    session: Session = Depends(verify_session_or_basic),
+):
     """
     Same as `worker-script`, as a double-click-able Windows `.bat` instead of a bash script.
 
@@ -621,6 +661,10 @@ async def download_worker_script_windows(name: str, gpu: bool = False, session: 
     gpu : bool, optional
         If `True`, adds `GPU_ENABLED=true` - only for a device group
         whose hardware actually has a GPU.
+    reporter : bool, optional
+        If `True`, switches worker status reporting to
+        gustavo-reporter's REST API instead of direct Redis writes -
+        see `nebula_auth.build_worker_env`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -644,7 +688,9 @@ async def download_worker_script_windows(name: str, gpu: bool = False, session: 
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
-    env = nebula_auth.build_worker_env(cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu)
+    env = nebula_auth.build_worker_env(
+        cfg, session.username, session.nebula_secret, name, gpu_enabled=gpu, use_reporter=reporter,
+    )
     container_name = _batch_quote(f"worker_{name}")
     args = [f"docker run -d --name {container_name} --restart unless-stopped"]
     if cfg.get("WORKER_NMODE") == "host":

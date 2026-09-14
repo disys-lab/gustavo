@@ -26,6 +26,7 @@ export default function DeviceGroupsPage() {
   const [selectedApps, setSelectedApps] = useState<Record<string, string[]>>({});
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [gpuEnabled, setGpuEnabled] = useState<Record<string, boolean>>({});
+  const [reporterEnabled, setReporterEnabled] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
 
@@ -98,11 +99,11 @@ export default function DeviceGroupsPage() {
 
   const handleWorkerDownload = async (
     dg: string,
-    fetcher: (name: string, gpu?: boolean) => Promise<string>,
+    fetcher: (name: string, gpu?: boolean, reporter?: boolean) => Promise<string>,
     filename: string
   ) => {
     try {
-      const text = await fetcher(dg, gpuEnabled[dg] ?? false);
+      const text = await fetcher(dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false);
       downloadTextFile(text, filename);
     } catch (exc) {
       toast({ variant: "destructive", title: "Download failed", description: String(exc) });
@@ -211,6 +212,20 @@ export default function DeviceGroupsPage() {
                     <label htmlFor={`gpu-enabled-${dg}`} className="text-xs text-muted-foreground">
                       GPU Enabled — grants every container this worker launches GPU access. Only
                       enable this for hardware that actually has a GPU.
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      id={`reporter-enabled-${dg}`}
+                      type="checkbox"
+                      checked={reporterEnabled[dg] ?? false}
+                      onChange={(e) => setReporterEnabled((prev) => ({ ...prev, [dg]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <label htmlFor={`reporter-enabled-${dg}`} className="text-xs text-muted-foreground">
+                      Report via Reporter — sends worker status over HTTPS to the Reporter
+                      service instead of writing to Redis directly. Leave unchecked for direct
+                      Redis reporting (default).
                     </label>
                   </div>
                   <div className="flex flex-wrap gap-2">

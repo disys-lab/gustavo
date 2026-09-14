@@ -29,22 +29,26 @@ export const removeAppsFromDeviceGroup = (name: string, apps: string[]) =>
 // gpu grants every container this worker launches GPU access (GPU_ENABLED) -
 // only pass true for a device group whose hardware actually has a GPU
 // nvidia-container-toolkit can expose.
-export const downloadWorkerEnv = (name: string, gpu = false) =>
+//
+// reporter switches worker status reporting to gustavo-reporter's REST API
+// instead of direct Redis writes - mutually exclusive with the default
+// Redis reporting fields, see nebula_auth.build_worker_env.
+export const downloadWorkerEnv = (name: string, gpu = false, reporter = false) =>
   apiClient
-    .get(`/device-groups/${name}/worker-env`, { responseType: "text", params: { gpu } })
+    .get(`/device-groups/${name}/worker-env`, { responseType: "text", params: { gpu, reporter } })
     .then((r) => r.data as string);
 
-export const downloadWorkerCompose = (name: string, gpu = false) =>
+export const downloadWorkerCompose = (name: string, gpu = false, reporter = false) =>
   apiClient
-    .get(`/device-groups/${name}/worker-compose`, { responseType: "text", params: { gpu } })
+    .get(`/device-groups/${name}/worker-compose`, { responseType: "text", params: { gpu, reporter } })
     .then((r) => r.data as string);
 
-export const downloadWorkerScript = (name: string, gpu = false) =>
+export const downloadWorkerScript = (name: string, gpu = false, reporter = false) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script`, { responseType: "text", params: { gpu } })
+    .get(`/device-groups/${name}/worker-script`, { responseType: "text", params: { gpu, reporter } })
     .then((r) => r.data as string);
 
-export const downloadWorkerScriptWindows = (name: string, gpu = false) =>
+export const downloadWorkerScriptWindows = (name: string, gpu = false, reporter = false) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text", params: { gpu } })
+    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text", params: { gpu, reporter } })
     .then((r) => r.data as string);
