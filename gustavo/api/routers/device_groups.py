@@ -464,11 +464,12 @@ async def download_worker_env(
         `nvidia-container-toolkit` can grant access to; the worker
         applies it to every container it launches on that device.
     reporter : bool, optional
-        If `True`, emits `REPORTER_HOST`/`REPORTER_PORT` instead of
-        `REDIS_HOST`/`REDIS_PORT`/`REDIS_AUTH_TOKEN`, switching worker
-        status reporting to gustavo-reporter's REST API instead of
-        direct Redis writes. Mutually exclusive with the Redis
-        reporting fields - see `nebula_auth.build_worker_env`.
+        If `True`, emits `REPORTER_HOST`/`REPORTER_PORT`/
+        `REPORTER_PROTOCOL` instead of `REDIS_HOST`/`REDIS_PORT`/
+        `REDIS_AUTH_TOKEN`, switching worker status reporting to
+        gustavo-reporter's REST API instead of direct Redis writes.
+        Mutually exclusive with the Redis reporting fields - see
+        `nebula_auth.build_worker_env`.
     check_in_time : int, optional
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status; the same
@@ -517,9 +518,11 @@ async def download_worker_env(
     if reporter:
         reporter_host = cfg.get("PUBLIC_REPORTER_HOST", "") if public_endpoints else cfg.get("REPORTER_HOST", "")
         reporter_port = cfg.get("PUBLIC_REPORTER_PORT", "") if public_endpoints else cfg.get("REPORTER_PORT", "")
+        reporter_protocol = "https" if public_endpoints else "http"
         lines += [
             f"REPORTER_HOST={reporter_host}",
             f"REPORTER_PORT={reporter_port}",
+            f"REPORTER_PROTOCOL={reporter_protocol}",
         ]
     else:
         lines += [
