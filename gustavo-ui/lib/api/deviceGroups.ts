@@ -37,22 +37,45 @@ export const removeAppsFromDeviceGroup = (name: string, apps: string[]) =>
 // check_in_time is NEBULA_MANAGER_CHECK_IN_TIME (seconds) - how often the
 // worker polls the Nebula manager and reports status; the same loop tick
 // drives both, there's no separate report-only timer.
-export const downloadWorkerEnv = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
+//
+// include_registry, when false, omits registry host/auth entirely - for a
+// remote/external worker that can't reach this platform's own registry.
+// Without this, a worker whose config still includes registry auth it can't
+// reach used to crash outright at startup; gustavo-worker's registry_login
+// is now non-fatal on failure too, but omitting the fields is still the
+// clean way to tell a remote worker not to attempt it at all.
+export const downloadWorkerEnv = (
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+) =>
   apiClient
-    .get(`/device-groups/${name}/worker-env`, { responseType: "text", params: { gpu, reporter, check_in_time } })
+    .get(`/device-groups/${name}/worker-env`, {
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+    })
     .then((r) => r.data as string);
 
-export const downloadWorkerCompose = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
+export const downloadWorkerCompose = (
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+) =>
   apiClient
-    .get(`/device-groups/${name}/worker-compose`, { responseType: "text", params: { gpu, reporter, check_in_time } })
+    .get(`/device-groups/${name}/worker-compose`, {
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+    })
     .then((r) => r.data as string);
 
-export const downloadWorkerScript = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
+export const downloadWorkerScript = (
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script`, { responseType: "text", params: { gpu, reporter, check_in_time } })
+    .get(`/device-groups/${name}/worker-script`, {
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+    })
     .then((r) => r.data as string);
 
-export const downloadWorkerScriptWindows = (name: string, gpu = false, reporter = false, check_in_time = 60) =>
+export const downloadWorkerScriptWindows = (
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+) =>
   apiClient
-    .get(`/device-groups/${name}/worker-script-windows`, { responseType: "text", params: { gpu, reporter, check_in_time } })
+    .get(`/device-groups/${name}/worker-script-windows`, {
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+    })
     .then((r) => r.data as string);
