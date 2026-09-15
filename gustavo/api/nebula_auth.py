@@ -248,10 +248,11 @@ def build_worker_env(
     the internal LAN ones - for a worker reaching this platform from
     outside (e.g. through a Cloudflare Tunnel), which can't resolve the
     internal address at all. Protocol becomes "https" unconditionally,
-    since a public endpoint always terminates TLS at the edge. Gustavo's
-    own internal calls to Manager (Composer, checkManager) are untouched -
-    this only affects what gets baked into a downloaded worker config.
-    Default False keeps existing behavior unchanged.
+    since a public endpoint always terminates TLS at the edge - this
+    applies to both NEBULA_MANAGER_PROTOCOL and REPORTER_PROTOCOL.
+    Gustavo's own internal calls to Manager (Composer, checkManager) are
+    untouched - this only affects what gets baked into a downloaded
+    worker config. Default False keeps existing behavior unchanged.
     """
     env = {
         "DEVICE_GROUP": device_group,
@@ -260,9 +261,11 @@ def build_worker_env(
         if use_public_endpoints:
             env["REPORTER_HOST"] = str(cfg.get("PUBLIC_REPORTER_HOST", ""))
             env["REPORTER_PORT"] = str(cfg.get("PUBLIC_REPORTER_PORT", ""))
+            env["REPORTER_PROTOCOL"] = "https"
         else:
             env["REPORTER_HOST"] = str(cfg.get("REPORTER_HOST", ""))
             env["REPORTER_PORT"] = str(cfg.get("REPORTER_PORT", ""))
+            env["REPORTER_PROTOCOL"] = "http"
     else:
         env["REDIS_HOST"] = str(cfg.get("REDIS_HOST", ""))
         env["REDIS_PORT"] = str(cfg.get("REDIS_PORT", ""))
