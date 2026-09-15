@@ -30,6 +30,7 @@ export default function DeviceGroupsPage() {
   const [gpuEnabled, setGpuEnabled] = useState<Record<string, boolean>>({});
   const [reporterEnabled, setReporterEnabled] = useState<Record<string, boolean>>({});
   const [checkInTime, setCheckInTime] = useState<Record<string, number>>({});
+  const [includeRegistry, setIncludeRegistry] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
 
@@ -102,12 +103,15 @@ export default function DeviceGroupsPage() {
 
   const handleWorkerDownload = async (
     dg: string,
-    fetcher: (name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number) => Promise<string>,
+    fetcher: (
+      name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number, include_registry?: boolean
+    ) => Promise<string>,
     filename: string
   ) => {
     try {
       const text = await fetcher(
-        dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false, checkInTime[dg] ?? 60
+        dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false, checkInTime[dg] ?? 60,
+        includeRegistry[dg] ?? true
       );
       downloadTextFile(text, filename);
     } catch (exc) {
@@ -247,6 +251,21 @@ export default function DeviceGroupsPage() {
                       }
                       className="mt-1 w-32"
                     />
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      id={`include-registry-${dg}`}
+                      type="checkbox"
+                      checked={includeRegistry[dg] ?? true}
+                      onChange={(e) => setIncludeRegistry((prev) => ({ ...prev, [dg]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <label htmlFor={`include-registry-${dg}`} className="text-xs text-muted-foreground">
+                      Include Registry — bakes in this platform&apos;s registry host and login
+                      credentials so the worker can pull private images. Uncheck for a remote/
+                      external worker that can&apos;t reach this registry — it will only be able
+                      to run apps with publicly-pullable images.
+                    </label>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button

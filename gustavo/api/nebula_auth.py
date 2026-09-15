@@ -199,6 +199,7 @@ def build_worker_env(
     cfg: dict, username: str, secret: str, device_group: str,
     prefix: str = "gustavo-reports", expire_time: str = "10",
     gpu_enabled: bool = False, use_reporter: bool = False, check_in_time: int = 60,
+    include_registry: bool = True,
 ) -> dict[str, str]:
     """
     Container-facing env vars for a gustavo-worker — the exact variable names
@@ -229,6 +230,17 @@ def build_worker_env(
     both the worker's Nebula-manager poll interval and its reporting
     interval - they're the same loop tick on the worker side, there's no
     separate report-only timer. Defaults to 60s.
+
+    include_registry controls whether REGISTRY_HOST/REGISTRY_AUTH_USER/
+    REGISTRY_AUTH_PASSWORD are emitted at all. A worker with these fields
+    present always attempts a registry login at startup against
+    REGISTRY_HOST - for a remote/external worker that can't reach this
+    platform's own registry (e.g. a collaborator's worker outside this
+    network, whose device group only runs publicly-pullable images),
+    that's a real failure, not a cosmetic one. Omitting the fields
+    entirely makes the worker's own registry_login() skip the attempt
+    cleanly (registry_user/pass read as None), rather than relying on it
+    failing gracefully. Default True keeps existing behavior unchanged.
     """
     env = {
         "DEVICE_GROUP": device_group,
@@ -242,8 +254,11 @@ def build_worker_env(
         env["REDIS_AUTH_TOKEN"] = str(cfg.get("REDIS_AUTH_TOKEN", ""))
         env["REDIS_EXPIRE_TIME"] = str(expire_time)
         env["REDIS_KEY_PREFIX"] = prefix
+    if include_registry:
+        env["REGISTRY_HOST"] = f"http://{cfg.get('REGISTRY_HOST', '')}:{cfg.get('REGISTRY_PORT', '')}/"
+        env["REGISTRY_AUTH_USER"] = username
+        env["REGISTRY_AUTH_PASSWORD"] = secret
     env.update({
-        "REGISTRY_HOST": f"http://{cfg.get('REGISTRY_HOST', '')}:{cfg.get('REGISTRY_PORT', '')}/",
         "MAX_RESTART_WAIT_IN_SECONDS": "0",
         "NEBULA_MANAGER_AUTH_USER": username,
         "NEBULA_MANAGER_AUTH_PASSWORD": secret,
@@ -251,8 +266,6 @@ def build_worker_env(
         "NEBULA_MANAGER_PORT": str(cfg.get("MANAGER_PORT", "")),
         "NEBULA_MANAGER_PROTOCOL": str(cfg.get("NEBULA_PROTOCOL", "http")),
         "NEBULA_MANAGER_CHECK_IN_TIME": str(check_in_time),
-        "REGISTRY_AUTH_USER": username,
-        "REGISTRY_AUTH_PASSWORD": secret,
     })
     if gpu_enabled:
         env["GPU_ENABLED"] = "true"

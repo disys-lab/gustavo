@@ -448,6 +448,7 @@ def _batch_quote(value: str) -> str:
 @router.get("/{name}/worker-env", response_class=PlainTextResponse)
 async def download_worker_env(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
+    include_registry: bool = True,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -473,6 +474,12 @@ async def download_worker_env(
         worker polls the Nebula manager and reports status; the same
         loop tick drives both, there's no separate report-only timer.
         Defaults to 60.
+    include_registry : bool, optional
+        If `False`, omits `REGISTRY_HOST`/`REGISTRY_PORT`/
+        `REGISTRY_AUTH_USER`/`REGISTRY_AUTH_PASSWORD` entirely - for a
+        remote/external worker that can't reach this platform's own
+        registry. See `nebula_auth.build_worker_env`. Defaults to
+        `True`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -510,11 +517,14 @@ async def download_worker_env(
             f"REDIS_PORT={cfg.get('REDIS_PORT', '')}",
             f"REDIS_AUTH_TOKEN={cfg.get('REDIS_AUTH_TOKEN', '')}",
         ]
+    if include_registry:
+        lines += [
+            f"REGISTRY_HOST={cfg.get('REGISTRY_HOST', '')}",
+            f"REGISTRY_PORT={cfg.get('REGISTRY_PORT', '')}",
+            f"REGISTRY_AUTH_USER={username}",
+            f"REGISTRY_AUTH_PASSWORD={password}",
+        ]
     lines += [
-        f"REGISTRY_HOST={cfg.get('REGISTRY_HOST', '')}",
-        f"REGISTRY_PORT={cfg.get('REGISTRY_PORT', '')}",
-        f"REGISTRY_AUTH_USER={username}",
-        f"REGISTRY_AUTH_PASSWORD={password}",
         f"WORKER_NMODE={cfg.get('WORKER_NMODE', '')}",
         f"NEBULA_USERNAME={username}",
         f"NEBULA_PASSWORD={password}",
@@ -529,6 +539,7 @@ async def download_worker_env(
 @router.get("/{name}/worker-compose", response_class=PlainTextResponse)
 async def download_worker_compose(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
+    include_registry: bool = True,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -549,6 +560,11 @@ async def download_worker_compose(
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status. Defaults
         to 60.
+    include_registry : bool, optional
+        If `False`, omits registry host/auth entirely - for a
+        remote/external worker that can't reach this platform's own
+        registry. See `nebula_auth.build_worker_env`. Defaults to
+        `True`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -574,6 +590,7 @@ async def download_worker_compose(
     env = nebula_auth.build_worker_env(
         cfg, session.username, session.nebula_secret, name,
         gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
+        include_registry=include_registry,
     )
     service: dict = {
         "image": _WORKER_IMAGE,
@@ -594,6 +611,7 @@ async def download_worker_compose(
 @router.get("/{name}/worker-script", response_class=PlainTextResponse)
 async def download_worker_script(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
+    include_registry: bool = True,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -614,6 +632,11 @@ async def download_worker_script(
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status. Defaults
         to 60.
+    include_registry : bool, optional
+        If `False`, omits registry host/auth entirely - for a
+        remote/external worker that can't reach this platform's own
+        registry. See `nebula_auth.build_worker_env`. Defaults to
+        `True`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -643,6 +666,7 @@ async def download_worker_script(
     env = nebula_auth.build_worker_env(
         cfg, session.username, session.nebula_secret, name,
         gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
+        include_registry=include_registry,
     )
     # shlex.quote, not naive f-string interpolation: these values include
     # admin-set secrets that can contain anything (quotes, $, backticks) -
@@ -665,6 +689,7 @@ async def download_worker_script(
 @router.get("/{name}/worker-script-windows", response_class=PlainTextResponse)
 async def download_worker_script_windows(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
+    include_registry: bool = True,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -685,6 +710,11 @@ async def download_worker_script_windows(
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status. Defaults
         to 60.
+    include_registry : bool, optional
+        If `False`, omits registry host/auth entirely - for a
+        remote/external worker that can't reach this platform's own
+        registry. See `nebula_auth.build_worker_env`. Defaults to
+        `True`.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -711,6 +741,7 @@ async def download_worker_script_windows(
     env = nebula_auth.build_worker_env(
         cfg, session.username, session.nebula_secret, name,
         gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
+        include_registry=include_registry,
     )
     container_name = _batch_quote(f"worker_{name}")
     args = [f"docker run -d --name {container_name} --restart unless-stopped"]
