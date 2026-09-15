@@ -62,11 +62,17 @@ DEFAULTS: dict[str, Any] = {
     "REPORTER_IMAGE": "ghcr.io/disys-lab/gustavo-reporter:latest",
     "REPORTER_HOST": _host_ip,
     "REPORTER_PORT": "8090",
-    # Host/port reporter uses to reach gustavo's own API — must be the
-    # Next.js port (3000), not FastAPI's 8000, which is bound to
-    # 127.0.0.1 inside gustavo's own container.
+    # Host/port reporter uses to reach gustavo's own API. Reporter runs as
+    # its own separate container, so this must be gustavo's *host-published*
+    # port, not gustavo's internal container port or FastAPI's 8000 (which
+    # is bound to 127.0.0.1 inside gustavo's own container and unreachable
+    # from any other container entirely). This repo's own docker-compose.yml
+    # publishes gustavo as 3000:3000, but a real deployment's host port can
+    # differ (e.g. cypress-ai uses 3002:3000, to avoid colliding with
+    # another service already on host port 3000) - override this in Settings
+    # to match whatever the actual deployment maps.
     "GUSTAVO_API_HOST": _host_ip,
-    "GUSTAVO_API_PORT": "3000",
+    "GUSTAVO_API_PORT": "3002",
     # Public Facing Endpoints — the externally-reachable addresses for
     # Manager/Reporter/gustavo itself (e.g. behind a Cloudflare Tunnel),
     # separate from the internal LAN addresses above. Only used when a
