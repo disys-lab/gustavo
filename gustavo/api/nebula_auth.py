@@ -199,7 +199,7 @@ def build_worker_env(
     cfg: dict, username: str, secret: str, device_group: str,
     prefix: str = "gustavo-reports", expire_time: str = "10",
     gpu_enabled: bool = False, use_reporter: bool = False, check_in_time: int = 60,
-    include_registry: bool = True,
+    include_registry: bool = True, use_public_endpoints: bool = False,
 ) -> dict[str, str]:
     """
     Container-facing env vars for a gustavo-worker — the exact variable names
@@ -241,13 +241,28 @@ def build_worker_env(
     entirely makes the worker's own registry_login() skip the attempt
     cleanly (registry_user/pass read as None), rather than relying on it
     failing gracefully. Default True keeps existing behavior unchanged.
+
+    use_public_endpoints swaps NEBULA_MANAGER_HOST/PORT (and, if
+    use_reporter is also set, REPORTER_HOST/PORT) for the platform's
+    PUBLIC_MANAGER_HOST/PORT / PUBLIC_REPORTER_HOST/PORT values instead of
+    the internal LAN ones - for a worker reaching this platform from
+    outside (e.g. through a Cloudflare Tunnel), which can't resolve the
+    internal address at all. Protocol becomes "https" unconditionally,
+    since a public endpoint always terminates TLS at the edge. Gustavo's
+    own internal calls to Manager (Composer, checkManager) are untouched -
+    this only affects what gets baked into a downloaded worker config.
+    Default False keeps existing behavior unchanged.
     """
     env = {
         "DEVICE_GROUP": device_group,
     }
     if use_reporter:
-        env["REPORTER_HOST"] = str(cfg.get("REPORTER_HOST", ""))
-        env["REPORTER_PORT"] = str(cfg.get("REPORTER_PORT", ""))
+        if use_public_endpoints:
+            env["REPORTER_HOST"] = str(cfg.get("PUBLIC_REPORTER_HOST", ""))
+            env["REPORTER_PORT"] = str(cfg.get("PUBLIC_REPORTER_PORT", ""))
+        else:
+            env["REPORTER_HOST"] = str(cfg.get("REPORTER_HOST", ""))
+            env["REPORTER_PORT"] = str(cfg.get("REPORTER_PORT", ""))
     else:
         env["REDIS_HOST"] = str(cfg.get("REDIS_HOST", ""))
         env["REDIS_PORT"] = str(cfg.get("REDIS_PORT", ""))
@@ -258,13 +273,21 @@ def build_worker_env(
         env["REGISTRY_HOST"] = f"http://{cfg.get('REGISTRY_HOST', '')}:{cfg.get('REGISTRY_PORT', '')}/"
         env["REGISTRY_AUTH_USER"] = username
         env["REGISTRY_AUTH_PASSWORD"] = secret
+    if use_public_endpoints:
+        manager_host = str(cfg.get("PUBLIC_MANAGER_HOST", ""))
+        manager_port = str(cfg.get("PUBLIC_MANAGER_PORT", ""))
+        manager_protocol = "https"
+    else:
+        manager_host = str(cfg.get("MANAGER_HOST", ""))
+        manager_port = str(cfg.get("MANAGER_PORT", ""))
+        manager_protocol = str(cfg.get("NEBULA_PROTOCOL", "http"))
     env.update({
         "MAX_RESTART_WAIT_IN_SECONDS": "0",
         "NEBULA_MANAGER_AUTH_USER": username,
         "NEBULA_MANAGER_AUTH_PASSWORD": secret,
-        "NEBULA_MANAGER_HOST": str(cfg.get("MANAGER_HOST", "")),
-        "NEBULA_MANAGER_PORT": str(cfg.get("MANAGER_PORT", "")),
-        "NEBULA_MANAGER_PROTOCOL": str(cfg.get("NEBULA_PROTOCOL", "http")),
+        "NEBULA_MANAGER_HOST": manager_host,
+        "NEBULA_MANAGER_PORT": manager_port,
+        "NEBULA_MANAGER_PROTOCOL": manager_protocol,
         "NEBULA_MANAGER_CHECK_IN_TIME": str(check_in_time),
     })
     if gpu_enabled:

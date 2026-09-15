@@ -44,38 +44,47 @@ export const removeAppsFromDeviceGroup = (name: string, apps: string[]) =>
 // reach used to crash outright at startup; gustavo-worker's registry_login
 // is now non-fatal on failure too, but omitting the fields is still the
 // clean way to tell a remote worker not to attempt it at all.
+// public_endpoints, when true, bakes in this platform's PUBLIC_MANAGER_HOST/
+// PORT (and PUBLIC_REPORTER_HOST/PORT if reporter is also true) instead of
+// the internal LAN addresses - for a worker reaching this platform from
+// outside (e.g. through a Cloudflare Tunnel). Only meaningful if
+// PUBLIC_ENDPOINTS_ENABLED is also on in Settings.
 export const downloadWorkerEnv = (
-  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true,
+  public_endpoints = false
 ) =>
   apiClient
     .get(`/device-groups/${name}/worker-env`, {
-      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry, public_endpoints },
     })
     .then((r) => r.data as string);
 
 export const downloadWorkerCompose = (
-  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true,
+  public_endpoints = false
 ) =>
   apiClient
     .get(`/device-groups/${name}/worker-compose`, {
-      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry, public_endpoints },
     })
     .then((r) => r.data as string);
 
 export const downloadWorkerScript = (
-  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true,
+  public_endpoints = false
 ) =>
   apiClient
     .get(`/device-groups/${name}/worker-script`, {
-      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry, public_endpoints },
     })
     .then((r) => r.data as string);
 
 export const downloadWorkerScriptWindows = (
-  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true
+  name: string, gpu = false, reporter = false, check_in_time = 60, include_registry = true,
+  public_endpoints = false
 ) =>
   apiClient
     .get(`/device-groups/${name}/worker-script-windows`, {
-      responseType: "text", params: { gpu, reporter, check_in_time, include_registry },
+      responseType: "text", params: { gpu, reporter, check_in_time, include_registry, public_endpoints },
     })
     .then((r) => r.data as string);
