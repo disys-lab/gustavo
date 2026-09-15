@@ -31,6 +31,14 @@ export interface PlatformConfig {
   REPORTER_PORT: string;
   GUSTAVO_API_HOST: string;
   GUSTAVO_API_PORT: string;
+  // Public Facing Endpoints
+  PUBLIC_ENDPOINTS_ENABLED: boolean;
+  PUBLIC_MANAGER_HOST: string;
+  PUBLIC_MANAGER_PORT: string;
+  PUBLIC_REPORTER_HOST: string;
+  PUBLIC_REPORTER_PORT: string;
+  PUBLIC_GUSTAVO_HOST: string;
+  PUBLIC_GUSTAVO_PORT: string;
   // Redis
   REDIS_HOST: string;
   REDIS_PORT: string;

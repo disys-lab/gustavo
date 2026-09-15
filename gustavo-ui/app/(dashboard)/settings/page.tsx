@@ -89,6 +89,15 @@ const REPORTER_FIELDS: ConfigField[] = [
   },
 ];
 
+const PUBLIC_ENDPOINT_FIELDS: ConfigField[] = [
+  { key: "PUBLIC_MANAGER_HOST", label: "Manager Host" },
+  { key: "PUBLIC_MANAGER_PORT", label: "Manager Port" },
+  { key: "PUBLIC_REPORTER_HOST", label: "Reporter Host" },
+  { key: "PUBLIC_REPORTER_PORT", label: "Reporter Port" },
+  { key: "PUBLIC_GUSTAVO_HOST", label: "Gustavo Host" },
+  { key: "PUBLIC_GUSTAVO_PORT", label: "Gustavo Port" },
+];
+
 function FieldGrid({ fields, register }: {
   fields: ConfigField[];
   register: ReturnType<typeof useForm<PlatformConfig>>["register"];
@@ -195,6 +204,7 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, reset, watch, setValue } = useForm<PlatformConfig>();
+  const publicEndpointsEnabled = watch("PUBLIC_ENDPOINTS_ENABLED");
 
   const applyManagerHostToAll = () => {
     const host = watch("MANAGER_HOST");
@@ -324,10 +334,36 @@ export default function SettingsPage() {
               <FieldGrid fields={REGISTRY_FIELDS} register={register} />
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="reporter" className="border-b-0">
+          <AccordionItem value="reporter">
             <AccordionTrigger className="text-sm font-semibold">Reporter</AccordionTrigger>
             <AccordionContent>
               <FieldGrid fields={REPORTER_FIELDS} register={register} />
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="public-endpoints" className="border-b-0">
+            <AccordionTrigger className="text-sm font-semibold">Public Facing Endpoints</AccordionTrigger>
+            <AccordionContent>
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  id="PUBLIC_ENDPOINTS_ENABLED"
+                  type="checkbox"
+                  {...register("PUBLIC_ENDPOINTS_ENABLED")}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="PUBLIC_ENDPOINTS_ENABLED" className="text-xs">
+                  Enable public facing endpoints
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                The externally-reachable addresses for Manager, Reporter, and gustavo itself
+                — e.g. behind a Cloudflare Tunnel. Always HTTPS at a public endpoint, so
+                there&apos;s no separate protocol field. Enabling this is what makes the
+                &quot;Public Facing Access&quot; option available on the Device Groups worker
+                config download.
+              </p>
+              {publicEndpointsEnabled && (
+                <FieldGrid fields={PUBLIC_ENDPOINT_FIELDS} register={register} />
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>

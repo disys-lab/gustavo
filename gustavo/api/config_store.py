@@ -67,6 +67,21 @@ DEFAULTS: dict[str, Any] = {
     # 127.0.0.1 inside gustavo's own container.
     "GUSTAVO_API_HOST": _host_ip,
     "GUSTAVO_API_PORT": "3000",
+    # Public Facing Endpoints — the externally-reachable addresses for
+    # Manager/Reporter/gustavo itself (e.g. behind a Cloudflare Tunnel),
+    # separate from the internal LAN addresses above. Only used when a
+    # worker-config download explicitly opts in (public_endpoints=true) -
+    # every existing caller keeps using the internal *_HOST/*_PORT values
+    # above unless PUBLIC_ENDPOINTS_ENABLED is also on. Protocol is always
+    # https for these - a public tunnel entry always terminates TLS at the
+    # edge, so there's no separate PUBLIC_*_PROTOCOL field.
+    "PUBLIC_ENDPOINTS_ENABLED": False,
+    "PUBLIC_MANAGER_HOST": "",
+    "PUBLIC_MANAGER_PORT": "443",
+    "PUBLIC_REPORTER_HOST": "",
+    "PUBLIC_REPORTER_PORT": "443",
+    "PUBLIC_GUSTAVO_HOST": "",
+    "PUBLIC_GUSTAVO_PORT": "443",
     # Redis
     "REDIS_HOST": _host_ip,
     "REDIS_PORT": "6379",

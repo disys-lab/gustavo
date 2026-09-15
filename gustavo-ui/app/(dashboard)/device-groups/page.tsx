@@ -7,6 +7,7 @@ import {
   downloadWorkerEnv, downloadWorkerCompose, downloadWorkerScript, downloadWorkerScriptWindows,
 } from "@/lib/api/deviceGroups";
 import { downloadTextFile } from "@/lib/utils";
+import { useConfig } from "@/lib/context/ConfigContext";
 import { DeviceGroupForm } from "@/components/device-groups/DeviceGroupForm";
 import { AppSelector } from "@/components/device-groups/AppSelector";
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,11 @@ export default function DeviceGroupsPage() {
   const [reporterEnabled, setReporterEnabled] = useState<Record<string, boolean>>({});
   const [checkInTime, setCheckInTime] = useState<Record<string, number>>({});
   const [includeRegistry, setIncludeRegistry] = useState<Record<string, boolean>>({});
+  const [publicEndpoints, setPublicEndpoints] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
+  const { config } = useConfig();
+  const publicEndpointsAvailable = Boolean(config.PUBLIC_ENDPOINTS_ENABLED);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["device-groups"],
@@ -104,14 +108,15 @@ export default function DeviceGroupsPage() {
   const handleWorkerDownload = async (
     dg: string,
     fetcher: (
-      name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number, include_registry?: boolean
+      name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number, include_registry?: boolean,
+      public_endpoints?: boolean
     ) => Promise<string>,
     filename: string
   ) => {
     try {
       const text = await fetcher(
         dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false, checkInTime[dg] ?? 60,
-        includeRegistry[dg] ?? true
+        includeRegistry[dg] ?? true, publicEndpointsAvailable && (publicEndpoints[dg] ?? false)
       );
       downloadTextFile(text, filename);
     } catch (exc) {
@@ -263,6 +268,25 @@ export default function DeviceGroupsPage() {
                     <label htmlFor={`include-registry-${dg}`} className="text-xs text-muted-foreground">
                       Include Registry — access to the Gustavo registry. Push access depends
                       on platform configuration; check with your admin to confirm availability.
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      id={`public-endpoints-${dg}`}
+                      type="checkbox"
+                      checked={publicEndpointsAvailable && (publicEndpoints[dg] ?? false)}
+                      disabled={!publicEndpointsAvailable}
+                      onChange={(e) => setPublicEndpoints((prev) => ({ ...prev, [dg]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <label
+                      htmlFor={`public-endpoints-${dg}`}
+                      className={`text-xs ${publicEndpointsAvailable ? "text-muted-foreground" : "text-muted-foreground/50"}`}
+                    >
+                      Public Facing Access — bakes in the public Manager/Reporter addresses
+                      instead of internal ones, for a worker reaching this platform from
+                      outside.{" "}
+                      {!publicEndpointsAvailable && "Enable Public Facing Endpoints in Settings first."}
                     </label>
                   </div>
                   <div className="flex flex-wrap gap-2">
