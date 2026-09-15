@@ -261,10 +261,8 @@ export default function DeviceGroupsPage() {
                       className="h-4 w-4 rounded border-gray-300"
                     />
                     <label htmlFor={`include-registry-${dg}`} className="text-xs text-muted-foreground">
-                      Include Registry — bakes in this platform&apos;s registry host and login
-                      credentials so the worker can pull private images. Uncheck for a remote/
-                      external worker that can&apos;t reach this registry — it will only be able
-                      to run apps with publicly-pullable images.
+                      Include Registry — access to the Gustavo registry. Push access depends
+                      on platform configuration; check with your admin to confirm availability.
                     </label>
                   </div>
                   <div className="flex flex-wrap gap-2">
