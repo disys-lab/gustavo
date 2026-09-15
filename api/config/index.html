@@ -2164,13 +2164,7 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-123">123</a></span>
-<span class="normal"><a href="#__codelineno-0-124">124</a></span>
-<span class="normal"><a href="#__codelineno-0-125">125</a></span>
-<span class="normal"><a href="#__codelineno-0-126">126</a></span>
-<span class="normal"><a href="#__codelineno-0-127">127</a></span>
-<span class="normal"><a href="#__codelineno-0-128">128</a></span>
-<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-129">129</a></span>
 <span class="normal"><a href="#__codelineno-0-130">130</a></span>
 <span class="normal"><a href="#__codelineno-0-131">131</a></span>
 <span class="normal"><a href="#__codelineno-0-132">132</a></span>
@@ -2179,22 +2173,28 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 <span class="normal"><a href="#__codelineno-0-135">135</a></span>
 <span class="normal"><a href="#__codelineno-0-136">136</a></span>
 <span class="normal"><a href="#__codelineno-0-137">137</a></span>
-<span class="normal"><a href="#__codelineno-0-138">138</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="w">    </span><span class="sd">"""Read YAML from disk, merge with DEFAULTS, and return the result."""</span>
-<a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="k">global</span> <span class="n">_config</span>
-<a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="n">merged</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">DEFAULTS</span><span class="p">)</span>
-<a id="__codelineno-0-127" name="__codelineno-0-127"></a>    <span class="k">if</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<a id="__codelineno-0-128" name="__codelineno-0-128"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-129" name="__codelineno-0-129"></a>            <span class="k">with</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-130" name="__codelineno-0-130"></a>                <span class="n">on_disk</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-<a id="__codelineno-0-131" name="__codelineno-0-131"></a>            <span class="n">merged</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">on_disk</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
-<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-<a id="__codelineno-0-133" name="__codelineno-0-133"></a>            <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"config_store: failed to load </span><span class="si">{</span><span class="n">CONFIG_PATH</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-135" name="__codelineno-0-135"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
-<a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span class="n">_config</span> <span class="o">=</span> <span class="n">merged</span>
-<a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
-<a id="__codelineno-0-138" name="__codelineno-0-138"></a>    <span class="k">return</span> <span class="n">_config</span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="w">    </span><span class="sd">"""Read YAML from disk, merge with DEFAULTS, and return the result."""</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>    <span class="k">global</span> <span class="n">_config</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="n">merged</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">DEFAULTS</span><span class="p">)</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>    <span class="k">if</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>            <span class="k">with</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>                <span class="n">on_disk</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137"></a>            <span class="n">merged</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">on_disk</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>            <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"config_store: failed to load </span><span class="si">{</span><span class="n">CONFIG_PATH</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="n">_config</span> <span class="o">=</span> <span class="n">merged</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144"></a>    <span class="k">return</span> <span class="n">_config</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2217,15 +2217,15 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-141">141</a></span>
-<span class="normal"><a href="#__codelineno-0-142">142</a></span>
-<span class="normal"><a href="#__codelineno-0-143">143</a></span>
-<span class="normal"><a href="#__codelineno-0-144">144</a></span>
-<span class="normal"><a href="#__codelineno-0-145">145</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="w">    </span><span class="sd">"""Return the current in-memory config (loads lazily if not yet initialised)."""</span>
-<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
-<a id="__codelineno-0-144" name="__codelineno-0-144"></a>        <span class="n">load</span><span class="p">()</span>
-<a id="__codelineno-0-145" name="__codelineno-0-145"></a>    <span class="k">return</span> <span class="n">_config</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-147">147</a></span>
+<span class="normal"><a href="#__codelineno-0-148">148</a></span>
+<span class="normal"><a href="#__codelineno-0-149">149</a></span>
+<span class="normal"><a href="#__codelineno-0-150">150</a></span>
+<span class="normal"><a href="#__codelineno-0-151">151</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-147" name="__codelineno-0-147"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="w">    </span><span class="sd">"""Return the current in-memory config (loads lazily if not yet initialised)."""</span>
+<a id="__codelineno-0-149" name="__codelineno-0-149"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
+<a id="__codelineno-0-150" name="__codelineno-0-150"></a>        <span class="n">load</span><span class="p">()</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151"></a>    <span class="k">return</span> <span class="n">_config</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2248,25 +2248,25 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-148">148</a></span>
-<span class="normal"><a href="#__codelineno-0-149">149</a></span>
-<span class="normal"><a href="#__codelineno-0-150">150</a></span>
-<span class="normal"><a href="#__codelineno-0-151">151</a></span>
-<span class="normal"><a href="#__codelineno-0-152">152</a></span>
-<span class="normal"><a href="#__codelineno-0-153">153</a></span>
-<span class="normal"><a href="#__codelineno-0-154">154</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-154">154</a></span>
 <span class="normal"><a href="#__codelineno-0-155">155</a></span>
 <span class="normal"><a href="#__codelineno-0-156">156</a></span>
-<span class="normal"><a href="#__codelineno-0-157">157</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">partial</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-149" name="__codelineno-0-149"></a><span class="w">    </span><span class="sd">"""Merge *partial* into the config, persist to YAML and refresh the env shim."""</span>
-<a id="__codelineno-0-150" name="__codelineno-0-150"></a>    <span class="k">global</span> <span class="n">_config</span>
-<a id="__codelineno-0-151" name="__codelineno-0-151"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
-<a id="__codelineno-0-152" name="__codelineno-0-152"></a>        <span class="n">load</span><span class="p">()</span>
-<a id="__codelineno-0-153" name="__codelineno-0-153"></a>    <span class="n">_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
-<a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">_config</span><span class="p">)</span>
-<a id="__codelineno-0-155" name="__codelineno-0-155"></a>    <span class="n">_persist</span><span class="p">()</span>
-<a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
-<a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span class="k">return</span> <span class="n">_config</span>
+<span class="normal"><a href="#__codelineno-0-157">157</a></span>
+<span class="normal"><a href="#__codelineno-0-158">158</a></span>
+<span class="normal"><a href="#__codelineno-0-159">159</a></span>
+<span class="normal"><a href="#__codelineno-0-160">160</a></span>
+<span class="normal"><a href="#__codelineno-0-161">161</a></span>
+<span class="normal"><a href="#__codelineno-0-162">162</a></span>
+<span class="normal"><a href="#__codelineno-0-163">163</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-154" name="__codelineno-0-154"></a><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">partial</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-155" name="__codelineno-0-155"></a><span class="w">    </span><span class="sd">"""Merge *partial* into the config, persist to YAML and refresh the env shim."""</span>
+<a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span class="k">global</span> <span class="n">_config</span>
+<a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
+<a id="__codelineno-0-158" name="__codelineno-0-158"></a>        <span class="n">load</span><span class="p">()</span>
+<a id="__codelineno-0-159" name="__codelineno-0-159"></a>    <span class="n">_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">_config</span><span class="p">)</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a>    <span class="n">_persist</span><span class="p">()</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a>    <span class="k">return</span> <span class="n">_config</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2289,11 +2289,11 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-160">160</a></span>
-<span class="normal"><a href="#__codelineno-0-161">161</a></span>
-<span class="normal"><a href="#__codelineno-0-162">162</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-160" name="__codelineno-0-160"></a><span class="k">def</span><span class="w"> </span><span class="nf">masked</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="w">    </span><span class="sd">"""Return the config with sensitive values replaced by '***'."""</span>
-<a id="__codelineno-0-162" name="__codelineno-0-162"></a>    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="s2">"***"</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_SENSITIVE_KEYS</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-166">166</a></span>
+<span class="normal"><a href="#__codelineno-0-167">167</a></span>
+<span class="normal"><a href="#__codelineno-0-168">168</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="k">def</span><span class="w"> </span><span class="nf">masked</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="w">    </span><span class="sd">"""Return the config with sensitive values replaced by '***'."""</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a>    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="s2">"***"</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_SENSITIVE_KEYS</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2452,13 +2452,7 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-123">123</a></span>
-<span class="normal"><a href="#__codelineno-0-124">124</a></span>
-<span class="normal"><a href="#__codelineno-0-125">125</a></span>
-<span class="normal"><a href="#__codelineno-0-126">126</a></span>
-<span class="normal"><a href="#__codelineno-0-127">127</a></span>
-<span class="normal"><a href="#__codelineno-0-128">128</a></span>
-<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-129">129</a></span>
 <span class="normal"><a href="#__codelineno-0-130">130</a></span>
 <span class="normal"><a href="#__codelineno-0-131">131</a></span>
 <span class="normal"><a href="#__codelineno-0-132">132</a></span>
@@ -2467,22 +2461,28 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 <span class="normal"><a href="#__codelineno-0-135">135</a></span>
 <span class="normal"><a href="#__codelineno-0-136">136</a></span>
 <span class="normal"><a href="#__codelineno-0-137">137</a></span>
-<span class="normal"><a href="#__codelineno-0-138">138</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="w">    </span><span class="sd">"""Read YAML from disk, merge with DEFAULTS, and return the result."""</span>
-<a id="__codelineno-0-125" name="__codelineno-0-125"></a>    <span class="k">global</span> <span class="n">_config</span>
-<a id="__codelineno-0-126" name="__codelineno-0-126"></a>    <span class="n">merged</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">DEFAULTS</span><span class="p">)</span>
-<a id="__codelineno-0-127" name="__codelineno-0-127"></a>    <span class="k">if</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-<a id="__codelineno-0-128" name="__codelineno-0-128"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-129" name="__codelineno-0-129"></a>            <span class="k">with</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-0-130" name="__codelineno-0-130"></a>                <span class="n">on_disk</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-<a id="__codelineno-0-131" name="__codelineno-0-131"></a>            <span class="n">merged</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">on_disk</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
-<a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-<a id="__codelineno-0-133" name="__codelineno-0-133"></a>            <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"config_store: failed to load </span><span class="si">{</span><span class="n">CONFIG_PATH</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-135" name="__codelineno-0-135"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
-<a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span class="n">_config</span> <span class="o">=</span> <span class="n">merged</span>
-<a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
-<a id="__codelineno-0-138" name="__codelineno-0-138"></a>    <span class="k">return</span> <span class="n">_config</span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="w">    </span><span class="sd">"""Read YAML from disk, merge with DEFAULTS, and return the result."""</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>    <span class="k">global</span> <span class="n">_config</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>    <span class="n">merged</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">DEFAULTS</span><span class="p">)</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>    <span class="k">if</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>            <span class="k">with</span> <span class="n">CONFIG_PATH</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>                <span class="n">on_disk</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137"></a>            <span class="n">merged</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">on_disk</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>            <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"config_store: failed to load </span><span class="si">{</span><span class="n">CONFIG_PATH</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="n">_config</span> <span class="o">=</span> <span class="n">merged</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144"></a>    <span class="k">return</span> <span class="n">_config</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2505,15 +2505,15 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-141">141</a></span>
-<span class="normal"><a href="#__codelineno-0-142">142</a></span>
-<span class="normal"><a href="#__codelineno-0-143">143</a></span>
-<span class="normal"><a href="#__codelineno-0-144">144</a></span>
-<span class="normal"><a href="#__codelineno-0-145">145</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="w">    </span><span class="sd">"""Return the current in-memory config (loads lazily if not yet initialised)."""</span>
-<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
-<a id="__codelineno-0-144" name="__codelineno-0-144"></a>        <span class="n">load</span><span class="p">()</span>
-<a id="__codelineno-0-145" name="__codelineno-0-145"></a>    <span class="k">return</span> <span class="n">_config</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-147">147</a></span>
+<span class="normal"><a href="#__codelineno-0-148">148</a></span>
+<span class="normal"><a href="#__codelineno-0-149">149</a></span>
+<span class="normal"><a href="#__codelineno-0-150">150</a></span>
+<span class="normal"><a href="#__codelineno-0-151">151</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-147" name="__codelineno-0-147"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="w">    </span><span class="sd">"""Return the current in-memory config (loads lazily if not yet initialised)."""</span>
+<a id="__codelineno-0-149" name="__codelineno-0-149"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
+<a id="__codelineno-0-150" name="__codelineno-0-150"></a>        <span class="n">load</span><span class="p">()</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151"></a>    <span class="k">return</span> <span class="n">_config</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2536,25 +2536,25 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-148">148</a></span>
-<span class="normal"><a href="#__codelineno-0-149">149</a></span>
-<span class="normal"><a href="#__codelineno-0-150">150</a></span>
-<span class="normal"><a href="#__codelineno-0-151">151</a></span>
-<span class="normal"><a href="#__codelineno-0-152">152</a></span>
-<span class="normal"><a href="#__codelineno-0-153">153</a></span>
-<span class="normal"><a href="#__codelineno-0-154">154</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-154">154</a></span>
 <span class="normal"><a href="#__codelineno-0-155">155</a></span>
 <span class="normal"><a href="#__codelineno-0-156">156</a></span>
-<span class="normal"><a href="#__codelineno-0-157">157</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">partial</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-149" name="__codelineno-0-149"></a><span class="w">    </span><span class="sd">"""Merge *partial* into the config, persist to YAML and refresh the env shim."""</span>
-<a id="__codelineno-0-150" name="__codelineno-0-150"></a>    <span class="k">global</span> <span class="n">_config</span>
-<a id="__codelineno-0-151" name="__codelineno-0-151"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
-<a id="__codelineno-0-152" name="__codelineno-0-152"></a>        <span class="n">load</span><span class="p">()</span>
-<a id="__codelineno-0-153" name="__codelineno-0-153"></a>    <span class="n">_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
-<a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">_config</span><span class="p">)</span>
-<a id="__codelineno-0-155" name="__codelineno-0-155"></a>    <span class="n">_persist</span><span class="p">()</span>
-<a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
-<a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span class="k">return</span> <span class="n">_config</span>
+<span class="normal"><a href="#__codelineno-0-157">157</a></span>
+<span class="normal"><a href="#__codelineno-0-158">158</a></span>
+<span class="normal"><a href="#__codelineno-0-159">159</a></span>
+<span class="normal"><a href="#__codelineno-0-160">160</a></span>
+<span class="normal"><a href="#__codelineno-0-161">161</a></span>
+<span class="normal"><a href="#__codelineno-0-162">162</a></span>
+<span class="normal"><a href="#__codelineno-0-163">163</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-154" name="__codelineno-0-154"></a><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">partial</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-155" name="__codelineno-0-155"></a><span class="w">    </span><span class="sd">"""Merge *partial* into the config, persist to YAML and refresh the env shim."""</span>
+<a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span class="k">global</span> <span class="n">_config</span>
+<a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">_config</span><span class="p">:</span>
+<a id="__codelineno-0-158" name="__codelineno-0-158"></a>        <span class="n">load</span><span class="p">()</span>
+<a id="__codelineno-0-159" name="__codelineno-0-159"></a>    <span class="n">_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160"></a>    <span class="n">_apply_env_overrides</span><span class="p">(</span><span class="n">_config</span><span class="p">)</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161"></a>    <span class="n">_persist</span><span class="p">()</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162"></a>    <span class="n">_write_env_shim</span><span class="p">()</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163"></a>    <span class="k">return</span> <span class="n">_config</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2577,11 +2577,11 @@ Routes call get() to obtain the current dict; POST /api/config calls update() to
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/config_store.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-160">160</a></span>
-<span class="normal"><a href="#__codelineno-0-161">161</a></span>
-<span class="normal"><a href="#__codelineno-0-162">162</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-160" name="__codelineno-0-160"></a><span class="k">def</span><span class="w"> </span><span class="nf">masked</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-161" name="__codelineno-0-161"></a><span class="w">    </span><span class="sd">"""Return the config with sensitive values replaced by '***'."""</span>
-<a id="__codelineno-0-162" name="__codelineno-0-162"></a>    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="s2">"***"</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_SENSITIVE_KEYS</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-166">166</a></span>
+<span class="normal"><a href="#__codelineno-0-167">167</a></span>
+<span class="normal"><a href="#__codelineno-0-168">168</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-166" name="__codelineno-0-166"></a><span class="k">def</span><span class="w"> </span><span class="nf">masked</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167"></a><span class="w">    </span><span class="sd">"""Return the config with sensitive values replaced by '***'."""</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168"></a>    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="s2">"***"</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_SENSITIVE_KEYS</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
