@@ -39,6 +39,10 @@ export interface PlatformConfig {
   PUBLIC_REPORTER_PORT: string;
   PUBLIC_GUSTAVO_HOST: string;
   PUBLIC_GUSTAVO_PORT: string;
+  PUBLIC_REGISTRY_ENABLED: boolean;
+  PUBLIC_REGISTRY_HOST: string;
+  PUBLIC_REGISTRY_PORT: string;
+  EXTERNAL_USER_GROUPS: string[];
   // Redis
   REDIS_HOST: string;
   REDIS_PORT: string;

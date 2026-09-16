@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/deviceGroups";
 import { downloadTextFile } from "@/lib/utils";
 import { useConfig } from "@/lib/context/ConfigContext";
+import { useAuth } from "@/lib/context/AuthContext";
 import { DeviceGroupForm } from "@/components/device-groups/DeviceGroupForm";
 import { AppSelector } from "@/components/device-groups/AppSelector";
 import { Button } from "@/components/ui/button";
@@ -31,12 +32,25 @@ export default function DeviceGroupsPage() {
   const [gpuEnabled, setGpuEnabled] = useState<Record<string, boolean>>({});
   const [reporterEnabled, setReporterEnabled] = useState<Record<string, boolean>>({});
   const [checkInTime, setCheckInTime] = useState<Record<string, number>>({});
-  const [includeRegistry, setIncludeRegistry] = useState<Record<string, boolean>>({});
   const [publicEndpoints, setPublicEndpoints] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { toast } = useActivityToast();
   const { config } = useConfig();
+  const { groups: myGroups } = useAuth();
+  const isExternal = myGroups.some((g) => (config.EXTERNAL_USER_GROUPS ?? []).includes(g));
   const publicEndpointsAvailable = Boolean(config.PUBLIC_ENDPOINTS_ENABLED);
+
+  // Mandatory + locked for external-group users. For everyone else,
+  // pre-checked by default once available, but still freely toggleable.
+  const publicFacingChecked = (dg: string) =>
+    isExternal || (publicEndpointsAvailable && (publicEndpoints[dg] ?? true));
+
+  // Mandatory + locked for external-group users (no public Redis endpoint
+  // exists, so Reporter is the only option). For everyone else, pre-checks
+  // to match Public Facing Access's current state until the user explicitly
+  // overrides it, then stays at whatever they chose.
+  const reporterChecked = (dg: string) =>
+    isExternal || (reporterEnabled[dg] ?? publicFacingChecked(dg));
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["device-groups"],
@@ -108,15 +122,15 @@ export default function DeviceGroupsPage() {
   const handleWorkerDownload = async (
     dg: string,
     fetcher: (
-      name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number, include_registry?: boolean,
+      name: string, gpu?: boolean, reporter?: boolean, check_in_time?: number,
       public_endpoints?: boolean
     ) => Promise<string>,
     filename: string
   ) => {
     try {
       const text = await fetcher(
-        dg, gpuEnabled[dg] ?? false, reporterEnabled[dg] ?? false, checkInTime[dg] ?? 60,
-        includeRegistry[dg] ?? true, publicEndpointsAvailable && (publicEndpoints[dg] ?? false)
+        dg, gpuEnabled[dg] ?? false, reporterChecked(dg), checkInTime[dg] ?? 60,
+        publicFacingChecked(dg)
       );
       downloadTextFile(text, filename);
     } catch (exc) {
@@ -232,14 +246,40 @@ export default function DeviceGroupsPage() {
                     <input
                       id={`reporter-enabled-${dg}`}
                       type="checkbox"
-                      checked={reporterEnabled[dg] ?? false}
+                      checked={reporterChecked(dg)}
+                      disabled={isExternal}
                       onChange={(e) => setReporterEnabled((prev) => ({ ...prev, [dg]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-gray-300"
+                      className="h-4 w-4 rounded border-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
                     />
-                    <label htmlFor={`reporter-enabled-${dg}`} className="text-xs text-muted-foreground">
+                    <label
+                      htmlFor={`reporter-enabled-${dg}`}
+                      className={`text-xs ${isExternal ? "text-muted-foreground/50" : "text-muted-foreground"}`}
+                    >
                       Report via Reporter — sends worker status over HTTP(S) to the Reporter
                       service instead of writing to Redis directly. Leave unchecked for direct
-                      Redis reporting (default).
+                      Redis reporting (default).{" "}
+                      {isExternal && "Mandatory for external-group users."}
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      id={`public-endpoints-${dg}`}
+                      type="checkbox"
+                      checked={publicFacingChecked(dg)}
+                      disabled={isExternal || !publicEndpointsAvailable}
+                      onChange={(e) => setPublicEndpoints((prev) => ({ ...prev, [dg]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <label
+                      htmlFor={`public-endpoints-${dg}`}
+                      className={`text-xs ${publicEndpointsAvailable ? "text-muted-foreground" : "text-muted-foreground/50"}`}
+                    >
+                      Public Facing Access — bakes in the public Manager/Reporter addresses
+                      instead of internal ones, for a worker reaching this platform from
+                      outside.{" "}
+                      {isExternal
+                        ? "Mandatory for external-group users."
+                        : !publicEndpointsAvailable && "Enable Public Facing Endpoints in Settings first."}
                     </label>
                   </div>
                   <div className="mb-2">
@@ -256,38 +296,6 @@ export default function DeviceGroupsPage() {
                       }
                       className="mt-1 w-32"
                     />
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <input
-                      id={`include-registry-${dg}`}
-                      type="checkbox"
-                      checked={includeRegistry[dg] ?? true}
-                      onChange={(e) => setIncludeRegistry((prev) => ({ ...prev, [dg]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    <label htmlFor={`include-registry-${dg}`} className="text-xs text-muted-foreground">
-                      Include Registry — access to the Gustavo registry. Push access depends
-                      on platform configuration; check with your admin to confirm availability.
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <input
-                      id={`public-endpoints-${dg}`}
-                      type="checkbox"
-                      checked={publicEndpointsAvailable && (publicEndpoints[dg] ?? false)}
-                      disabled={!publicEndpointsAvailable}
-                      onChange={(e) => setPublicEndpoints((prev) => ({ ...prev, [dg]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <label
-                      htmlFor={`public-endpoints-${dg}`}
-                      className={`text-xs ${publicEndpointsAvailable ? "text-muted-foreground" : "text-muted-foreground/50"}`}
-                    >
-                      Public Facing Access — bakes in the public Manager/Reporter addresses
-                      instead of internal ones, for a worker reaching this platform from
-                      outside.{" "}
-                      {!publicEndpointsAvailable && "Enable Public Facing Endpoints in Settings first."}
-                    </label>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button

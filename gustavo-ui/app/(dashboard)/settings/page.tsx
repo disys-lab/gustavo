@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { useConfig } from "@/lib/context/ConfigContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useActivityToast } from "@/hooks/use-activity-toast";
 import { uploadConfig, downloadConfig, rotateMongoCredential } from "@/lib/api/config";
+import { listGroups } from "@/lib/api/users";
 import type { PlatformConfig } from "@/lib/types/platform";
 
 type ConfigField = { key: keyof PlatformConfig; label: string; type?: "text" | "password" | "checkbox"; hint?: string };
@@ -96,6 +98,11 @@ const PUBLIC_ENDPOINT_FIELDS: ConfigField[] = [
   { key: "PUBLIC_REPORTER_PORT", label: "Reporter Port" },
   { key: "PUBLIC_GUSTAVO_HOST", label: "Gustavo Host" },
   { key: "PUBLIC_GUSTAVO_PORT", label: "Gustavo Port" },
+];
+
+const PUBLIC_REGISTRY_FIELDS: ConfigField[] = [
+  { key: "PUBLIC_REGISTRY_HOST", label: "Registry Host" },
+  { key: "PUBLIC_REGISTRY_PORT", label: "Registry Port" },
 ];
 
 function FieldGrid({ fields, register }: {
@@ -205,6 +212,19 @@ export default function SettingsPage() {
 
   const { register, handleSubmit, reset, watch, setValue } = useForm<PlatformConfig>();
   const publicEndpointsEnabled = watch("PUBLIC_ENDPOINTS_ENABLED");
+  const publicRegistryEnabled = watch("PUBLIC_REGISTRY_ENABLED");
+  const externalUserGroups = watch("EXTERNAL_USER_GROUPS") ?? [];
+
+  const { data: groupsData } = useQuery({ queryKey: ["groups"], queryFn: listGroups });
+  const allGroupNames = (groupsData && !groupsData.error ? groupsData.response.groups : []).map((g) => g.name);
+
+  const toggleExternalGroup = (name: string, checked: boolean) => {
+    const current = externalUserGroups ?? [];
+    setValue(
+      "EXTERNAL_USER_GROUPS",
+      checked ? [...current, name] : current.filter((g) => g !== name)
+    );
+  };
 
   const applyManagerHostToAll = () => {
     const host = watch("MANAGER_HOST");
@@ -362,8 +382,57 @@ export default function SettingsPage() {
                 config download.
               </p>
               {publicEndpointsEnabled && (
-                <FieldGrid fields={PUBLIC_ENDPOINT_FIELDS} register={register} />
+                <>
+                  <FieldGrid fields={PUBLIC_ENDPOINT_FIELDS} register={register} />
+                  <div className="flex items-center gap-2 mt-4 mb-1">
+                    <input
+                      id="PUBLIC_REGISTRY_ENABLED"
+                      type="checkbox"
+                      {...register("PUBLIC_REGISTRY_ENABLED")}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Label htmlFor="PUBLIC_REGISTRY_ENABLED" className="text-xs">
+                      Enable public registry access
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    A separate, stricter opt-in from the toggle above — off by default even
+                    when public facing endpoints are on. When enabled, this becomes the
+                    registry for every worker config and the Registry tab, not just
+                    external-group users. When disabled, external-group users get no registry
+                    access at all.
+                  </p>
+                  {publicRegistryEnabled && (
+                    <FieldGrid fields={PUBLIC_REGISTRY_FIELDS} register={register} />
+                  )}
+                </>
               )}
+              <div className="mt-4">
+                <Label className="text-xs">External User Groups</Label>
+                <p className="text-xs text-muted-foreground mt-1 mb-2">
+                  Members of any group selected here are treated as external: their worker
+                  configs and Registry tab access are governed entirely by the settings above,
+                  regardless of any per-device-group checkbox.
+                </p>
+                <div className="rounded-md border divide-y max-h-48 overflow-y-auto">
+                  {allGroupNames.length === 0 ? (
+                    <p className="text-xs text-muted-foreground px-3 py-2">No groups exist yet.</p>
+                  ) : (
+                    allGroupNames.map((name) => (
+                      <div key={name} className="flex items-center gap-2 px-3 py-2">
+                        <input
+                          id={`external-group-${name}`}
+                          type="checkbox"
+                          checked={externalUserGroups.includes(name)}
+                          onChange={(e) => toggleExternalGroup(name, e.target.checked)}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <label htmlFor={`external-group-${name}`} className="text-xs">{name}</label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
