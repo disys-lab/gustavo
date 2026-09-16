@@ -96,7 +96,7 @@ class AppUpdateRequest(BaseModel):
 
 # Note: /registry/images, /yaml/parse and /defaults are fixed paths — declare them BEFORE /{name}
 @router.get("/defaults")
-async def get_app_defaults(_token=Depends(verify_firebase_token)):
+async def get_app_defaults(session: Session = Depends(verify_firebase_token)):
     """
     Return default env vars for new app creation, with real (unmasked) values from `config_store`.
 
@@ -118,22 +118,44 @@ async def get_app_defaults(_token=Depends(verify_firebase_token)):
     (worse) the creating user's own personal Nebula credential means
     that credential lands in plaintext on whatever remote hardware the
     app happens to be assigned to, which may not be a machine the
-    creator controls or trusts. An app that genuinely needs to call
-    back into the Manager should have its creator deliberately supply
-    a credential scoped for that purpose, not have one silently
-    defaulted in.
+    creator controls or trusts.
+
+    `REDIS_DB_HOST`/`PORT`/`PWD` are still shown - as placeholder
+    values (`127.0.0.1`, `6379`, `redis-auth-token`), never the
+    platform's real `REDIS_HOST`/`PORT`/`REDIS_AUTH_TOKEN` - so the
+    form still surfaces which keys a Redis-using app is expected to
+    set, without leaking the shared platform credential into every
+    new app's config. An app that genuinely needs to reach this
+    platform's own Redis should have its creator deliberately
+    overwrite these with the real values, not inherit them silently.
+
+    `MANAGER_HOST`/`PORT` default to the public address
+    (`PUBLIC_MANAGER_HOST`/`PORT`) whenever the caller is an
+    external-group member (unconditionally, mirroring their forced
+    treatment in worker-config downloads - see
+    `nebula_auth.is_external_user`/`build_worker_env`) or, for anyone
+    else, whenever `PUBLIC_ENDPOINTS_ENABLED` is on (mirroring the
+    pre-checked-but-changeable default already used for the Device
+    Groups "Public Facing Access" checkbox). This is a prefill only -
+    nothing here is enforced server-side at `create_app`/`update_app`
+    time, unlike the worker-config path; the creator can freely edit
+    it before saving.
     """
     cfg = config_store.get()
+    external = nebula_auth.is_external_user(cfg, session.username)
+    use_public_manager = external or bool(cfg.get("PUBLIC_ENDPOINTS_ENABLED"))
+    manager_host = cfg.get("PUBLIC_MANAGER_HOST", "") if use_public_manager else cfg.get("MANAGER_HOST", "")
+    manager_port = cfg.get("PUBLIC_MANAGER_PORT", "") if use_public_manager else cfg.get("MANAGER_PORT", "")
     keygen_public_key = "06ede5b6f133fc291d1b7bb195a105756f8aa484bdba8a0d6ef8d5ea1f26a1bc"
     return {
         "error": False,
         "response": {
             "env_vars": {
-                "REDIS_DB_HOST":     cfg.get("REDIS_HOST", ""),
-                "REDIS_DB_PORT":     cfg.get("REDIS_PORT", ""),
-                "REDIS_DB_PWD":      cfg.get("REDIS_AUTH_TOKEN", ""),
-                "MANAGER_HOST":      cfg.get("MANAGER_HOST", ""),
-                "MANAGER_PORT":      cfg.get("MANAGER_PORT", ""),
+                "REDIS_DB_HOST":     "127.0.0.1",
+                "REDIS_DB_PORT":     "6379",
+                "REDIS_DB_PWD":      "redis-auth-token",
+                "MANAGER_HOST":      manager_host,
+                "MANAGER_PORT":      manager_port,
                 "SLEEP_SECS":        "600",
                 "KEYGEN_PUBLIC_KEY": keygen_public_key,
             }
