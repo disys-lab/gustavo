@@ -159,6 +159,23 @@ def user_groups(cfg: dict, username: str) -> list[str]:
     return names
 
 
+def is_external_user(cfg: dict, username: str) -> bool:
+    """
+    Whether `username` belongs to any group listed in `EXTERNAL_USER_GROUPS`.
+
+    Deliberately uses `user_groups()` directly rather than the
+    `/users/me/groups` route's `is_admin`-short-circuits-to-`[]` behavior -
+    an admin-flagged Nebula user in an external group is still external for
+    worker-config/registry purposes; only the break-glass local admin
+    (`user_type == "local"`, not a real Nebula identity) is exempt, which
+    `user_groups()` already gives for free by only ever returning members of
+    real Nebula groups.
+    """
+    if not cfg.get("EXTERNAL_USER_GROUPS"):
+        return False
+    return bool(set(user_groups(cfg, username)) & set(cfg["EXTERNAL_USER_GROUPS"]))
+
+
 def resolve_basic_credentials(cfg: dict, identifier: str, secret: str) -> tuple[Session | None, str | None]:
     """
     Resolve an "identifier:secret" pair into a Session - shared by /login
@@ -199,7 +216,7 @@ def build_worker_env(
     cfg: dict, username: str, secret: str, device_group: str,
     prefix: str = "gustavo-reports", expire_time: str = "10",
     gpu_enabled: bool = False, use_reporter: bool = False, check_in_time: int = 60,
-    include_registry: bool = True, use_public_endpoints: bool = False,
+    use_public_endpoints: bool = False, external: bool = False,
 ) -> dict[str, str]:
     """
     Container-facing env vars for a gustavo-worker — the exact variable names
@@ -231,16 +248,17 @@ def build_worker_env(
     interval - they're the same loop tick on the worker side, there's no
     separate report-only timer. Defaults to 60s.
 
-    include_registry controls whether REGISTRY_HOST/REGISTRY_AUTH_USER/
-    REGISTRY_AUTH_PASSWORD are emitted at all. A worker with these fields
-    present always attempts a registry login at startup against
-    REGISTRY_HOST - for a remote/external worker that can't reach this
-    platform's own registry (e.g. a collaborator's worker outside this
-    network, whose device group only runs publicly-pullable images),
-    that's a real failure, not a cosmetic one. Omitting the fields
-    entirely makes the worker's own registry_login() skip the attempt
-    cleanly (registry_user/pass read as None), rather than relying on it
-    failing gracefully. Default True keeps existing behavior unchanged.
+    external marks the caller as a member of an EXTERNAL_USER_GROUPS group.
+    Registry access is then governed entirely by PUBLIC_REGISTRY_ENABLED,
+    not by any per-device-group choice: PUBLIC_REGISTRY_ENABLED=True means
+    every caller (external or not) gets PUBLIC_REGISTRY_HOST/PORT as the
+    registry, since a public endpoint is reachable from anywhere - there's
+    no reason to keep preferring the internal-only address once one exists.
+    PUBLIC_REGISTRY_ENABLED=False means an external caller gets no registry
+    fields at all (REGISTRY_HOST/REGISTRY_AUTH_USER/REGISTRY_AUTH_PASSWORD
+    omitted, so the worker's own registry_login() skips the attempt
+    cleanly), while a non-external caller keeps getting the internal
+    REGISTRY_HOST/PORT unconditionally, exactly as before this existed.
 
     use_public_endpoints swaps NEBULA_MANAGER_HOST/PORT (and, if
     use_reporter is also set, REPORTER_HOST/PORT) for the platform's
@@ -272,7 +290,11 @@ def build_worker_env(
         env["REDIS_AUTH_TOKEN"] = str(cfg.get("REDIS_AUTH_TOKEN", ""))
         env["REDIS_EXPIRE_TIME"] = str(expire_time)
         env["REDIS_KEY_PREFIX"] = prefix
-    if include_registry:
+    if cfg.get("PUBLIC_REGISTRY_ENABLED"):
+        env["REGISTRY_HOST"] = f"https://{cfg.get('PUBLIC_REGISTRY_HOST', '')}:{cfg.get('PUBLIC_REGISTRY_PORT', '')}/"
+        env["REGISTRY_AUTH_USER"] = username
+        env["REGISTRY_AUTH_PASSWORD"] = secret
+    elif not external:
         env["REGISTRY_HOST"] = f"http://{cfg.get('REGISTRY_HOST', '')}:{cfg.get('REGISTRY_PORT', '')}/"
         env["REGISTRY_AUTH_USER"] = username
         env["REGISTRY_AUTH_PASSWORD"] = secret

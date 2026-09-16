@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { login as loginRequest, signInFirebase } from "@/lib/api/auth";
+import { getMyGroups } from "@/lib/api/users";
 
 interface AuthContextValue {
   token: string | null;
@@ -8,6 +9,12 @@ interface AuthContextValue {
   isAdmin: boolean;
   isAuthenticated: boolean;
   firebaseEnabled: boolean;
+  // The caller's own Nebula group memberships, fetched fresh per session
+  // (not a login-time snapshot) since grants can change mid-session. Combine
+  // with ConfigContext's EXTERNAL_USER_GROUPS to determine external status -
+  // kept as raw groups here rather than a derived isExternal boolean, since
+  // AuthContext has no access to platform config.
+  groups: string[];
   login: (credential: string) => Promise<{ error: boolean; message?: string }>;
   loginFirebase: (userId: string, userToken: string) => Promise<{ error: boolean; message?: string }>;
   logout: () => void;
@@ -42,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // null = not yet fetched from server
   const [authEnabled, setAuthEnabled] = useState<boolean | null>(null);
   const [firebaseEnabled, setFirebaseEnabled] = useState(false);
+  const [groups, setGroups] = useState<string[]>([]);
 
   // Fetch runtime auth status from the API so it can be toggled via env var
   // without a rebuild (NEXT_PUBLIC_AUTH_ENABLED is baked and ignored here).
@@ -68,6 +76,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedUsername) setUsername(storedUsername);
     setIsAdmin(storedIsAdmin === "1");
   }, []);
+
+  // Fetch fresh (not cached at login) whenever the session becomes usable,
+  // so a mid-session grant change is picked up on the next mount/reload.
+  useEffect(() => {
+    if (authEnabled === false || token) {
+      getMyGroups()
+        .then((res) => setGroups(!res.error ? res.response.groups : []))
+        .catch(() => setGroups([]));
+    } else {
+      setGroups([]);
+    }
+  }, [authEnabled, token]);
 
   const login = async (credential: string) => {
     try {
@@ -111,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUsername(null);
     setIsAdmin(false);
+    setGroups([]);
     if (authEnabled) {
       window.location.href = "/login";
     }
@@ -130,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, username, isAdmin: effectiveIsAdmin, isAuthenticated, firebaseEnabled, login, loginFirebase, logout }}
+      value={{ token, username, isAdmin: effectiveIsAdmin, isAuthenticated, firebaseEnabled, groups, login, loginFirebase, logout }}
     >
       {children}
     </AuthContext.Provider>

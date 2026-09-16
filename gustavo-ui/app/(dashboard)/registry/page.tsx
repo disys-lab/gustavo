@@ -18,6 +18,8 @@ interface RegistryResponse {
   message?: string;
   raw_catalog?: unknown;
   raw_response?: string;
+  registry_disabled?: boolean;
+  registry_unreachable?: boolean;
 }
 
 export default function RegistryPage() {
@@ -33,6 +35,8 @@ export default function RegistryPage() {
   const apiError = data?.error ? (resp?.message ?? "Unknown error") : null;
   const rawCatalog = resp?.raw_catalog;
   const rawResponse = resp?.raw_response;
+  const registryDisabled = Boolean(data?.error && resp?.registry_disabled);
+  const registryUnreachable = Boolean(data?.error && resp?.registry_unreachable);
 
   return (
     <div>
@@ -51,6 +55,14 @@ export default function RegistryPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14" />)}
+        </div>
+      ) : registryDisabled ? (
+        <div className="rounded-md border p-4 text-sm text-muted-foreground text-center py-12">
+          Could not access registry. Check with Admin to see if Registry access is enabled.
+        </div>
+      ) : registryUnreachable ? (
+        <div className="rounded-md border p-4 text-sm text-muted-foreground text-center py-12">
+          Registry URL is unreachable, contact Admin to resolve.
         </div>
       ) : apiError ? (
         <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 space-y-2">

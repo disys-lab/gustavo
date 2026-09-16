@@ -26,7 +26,7 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
 from gustavo.api import config_store, nebula_auth
-from gustavo.api.auth import verify_firebase_token
+from gustavo.api.auth import verify_firebase_token, verify_session_or_basic
 from gustavo.api.dependencies import _build_composer, _build_composer_for
 from gustavo.api.session import Session
 
@@ -142,13 +142,23 @@ async def get_app_defaults(_token=Depends(verify_firebase_token)):
 
 
 @router.get("/registry/images")
-async def list_registry_images(_token=Depends(verify_firebase_token)):
+async def list_registry_images(session: Session = Depends(verify_session_or_basic)):
     """
-    Return all images in the local registry, each with its list of tags.
+    Return all images in the registry the caller is entitled to see, each with its list of tags.
 
     Makes direct HTTP requests to the Docker registry v2 API so we can
     return verbose diagnostic info independent of the Composer
     abstraction.
+
+    Which registry gets queried is derived from the caller's own identity,
+    not a client-supplied choice: an external-group member (see
+    `nebula_auth.is_external_user`) only ever sees the registry through
+    `PUBLIC_REGISTRY_ENABLED` - disabled means no registry access at all for
+    them, enabled means `PUBLIC_REGISTRY_HOST`/`PORT`. A non-external caller
+    keeps using the internal `REGISTRY_HOST`/`PORT` unless
+    `PUBLIC_REGISTRY_ENABLED` is on, in which case everyone uses the public
+    endpoint - it's reachable from anywhere, so there's no reason to keep
+    preferring the internal-only address once one exists.
 
     Returns
     -------
@@ -156,16 +166,45 @@ async def list_registry_images(_token=Depends(verify_firebase_token)):
         ``{"error": bool, "response": ...}``. On success, `response`
         is ``{"images": [{"name": ..., "tags": [...]}, ...],
         "registry_url": ..., "catalog_url": ..., "raw_catalog": ...}``.
-        On failure (non-200 catalog response, or a request exception),
-        `response` is a dict with a `"message"` describing why.
+        On failure, `response` has a `"message"`, plus one of
+        `"registry_disabled"` (external caller, public registry access
+        off - no request was attempted) or `"registry_unreachable"`
+        (the public registry endpoint itself couldn't be reached) to
+        let the frontend show a caller-appropriate message instead of
+        raw diagnostic detail.
     """
     import requests as _requests
 
     cfg = config_store.get()
-    protocol = cfg.get("NEBULA_PROTOCOL", "http")
-    host = cfg.get("REGISTRY_HOST", "")
-    port = cfg.get("REGISTRY_PORT", "5000")
+    external = nebula_auth.is_external_user(cfg, session.username)
+    public_registry_enabled = bool(cfg.get("PUBLIC_REGISTRY_ENABLED"))
+
+    if external and not public_registry_enabled:
+        return {"error": True, "response": {
+            "registry_disabled": True,
+            "message": "Could not access registry. Check with Admin to see if Registry access is enabled.",
+        }}
+
+    if public_registry_enabled:
+        protocol = "https"
+        host = cfg.get("PUBLIC_REGISTRY_HOST", "")
+        port = cfg.get("PUBLIC_REGISTRY_PORT", "443")
+    else:
+        protocol = cfg.get("NEBULA_PROTOCOL", "http")
+        host = cfg.get("REGISTRY_HOST", "")
+        port = cfg.get("REGISTRY_PORT", "5000")
     registry_url = f"{protocol}://{host}:{port}"
+
+    def _unreachable(message: str) -> dict:
+        if public_registry_enabled:
+            return {"error": True, "response": {
+                "registry_unreachable": True,
+                "message": "Registry URL is unreachable, contact Admin to resolve.",
+            }}
+        return {"error": True, "response": {
+            "message": message,
+            "registry_url": registry_url,
+        }}
 
     try:
         catalog_url = f"{registry_url}/v2/_catalog"
@@ -177,6 +216,8 @@ async def list_registry_images(_token=Depends(verify_firebase_token)):
             raw_json = None
 
         if r.status_code != 200:
+            if public_registry_enabled:
+                return _unreachable(f"Registry returned HTTP {r.status_code}")
             return {"error": True, "response": {
                 "message": f"Registry returned HTTP {r.status_code}",
                 "registry_url": registry_url,
@@ -200,10 +241,7 @@ async def list_registry_images(_token=Depends(verify_firebase_token)):
         }}
     except Exception as exc:
         logging.error(f"registry images failed: {exc}")
-        return {"error": True, "response": {
-            "message": str(exc),
-            "registry_url": registry_url,
-        }}
+        return _unreachable(str(exc))
 
 
 @router.post("/yaml/parse")

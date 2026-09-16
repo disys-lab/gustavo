@@ -448,7 +448,7 @@ def _batch_quote(value: str) -> str:
 @router.get("/{name}/worker-env", response_class=PlainTextResponse)
 async def download_worker_env(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
-    include_registry: bool = True, public_endpoints: bool = False,
+    public_endpoints: bool = False,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -475,18 +475,14 @@ async def download_worker_env(
         worker polls the Nebula manager and reports status; the same
         loop tick drives both, there's no separate report-only timer.
         Defaults to 60.
-    include_registry : bool, optional
-        If `False`, omits `REGISTRY_HOST`/`REGISTRY_PORT`/
-        `REGISTRY_AUTH_USER`/`REGISTRY_AUTH_PASSWORD` entirely - for a
-        remote/external worker that can't reach this platform's own
-        registry. See `nebula_auth.build_worker_env`. Defaults to
-        `True`.
     public_endpoints : bool, optional
         If `True`, uses `PUBLIC_MANAGER_HOST`/`PORT` (and
         `PUBLIC_REPORTER_HOST`/`PORT` if `reporter` is also set) instead
         of the internal LAN addresses - for a worker reaching this
         platform from outside (e.g. a Cloudflare Tunnel). See
-        `nebula_auth.build_worker_env`. Defaults to `False`.
+        `nebula_auth.build_worker_env`. Defaults to `False`. Forced
+        `True` server-side if the caller belongs to any
+        `EXTERNAL_USER_GROUPS` group, regardless of what's passed here.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -502,11 +498,19 @@ async def download_worker_env(
     HTTPException
         403 if the caller isn't admin and isn't granted this device
         group.
+
+    Notes
+    -----
+    Registry inclusion is not a caller-supplied choice - it's derived
+    entirely from `PUBLIC_REGISTRY_ENABLED` and whether the caller is an
+    external-group member, same as `nebula_auth.build_worker_env`.
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
     username = session.username
     password = session.nebula_secret
+    external = nebula_auth.is_external_user(cfg, username)
+    public_endpoints = public_endpoints or external
     auth_token = base64.b64encode(f"{username}:{password}".encode()).decode()
     manager_host = cfg.get("PUBLIC_MANAGER_HOST", "") if public_endpoints else cfg.get("MANAGER_HOST", "")
     manager_port = cfg.get("PUBLIC_MANAGER_PORT", "") if public_endpoints else cfg.get("MANAGER_PORT", "")
@@ -530,7 +534,14 @@ async def download_worker_env(
             f"REDIS_PORT={cfg.get('REDIS_PORT', '')}",
             f"REDIS_AUTH_TOKEN={cfg.get('REDIS_AUTH_TOKEN', '')}",
         ]
-    if include_registry:
+    if cfg.get("PUBLIC_REGISTRY_ENABLED"):
+        lines += [
+            f"REGISTRY_HOST={cfg.get('PUBLIC_REGISTRY_HOST', '')}",
+            f"REGISTRY_PORT={cfg.get('PUBLIC_REGISTRY_PORT', '')}",
+            f"REGISTRY_AUTH_USER={username}",
+            f"REGISTRY_AUTH_PASSWORD={password}",
+        ]
+    elif not external:
         lines += [
             f"REGISTRY_HOST={cfg.get('REGISTRY_HOST', '')}",
             f"REGISTRY_PORT={cfg.get('REGISTRY_PORT', '')}",
@@ -552,7 +563,7 @@ async def download_worker_env(
 @router.get("/{name}/worker-compose", response_class=PlainTextResponse)
 async def download_worker_compose(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
-    include_registry: bool = True, public_endpoints: bool = False,
+    public_endpoints: bool = False,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -573,17 +584,13 @@ async def download_worker_compose(
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status. Defaults
         to 60.
-    include_registry : bool, optional
-        If `False`, omits registry host/auth entirely - for a
-        remote/external worker that can't reach this platform's own
-        registry. See `nebula_auth.build_worker_env`. Defaults to
-        `True`.
     public_endpoints : bool, optional
         If `True`, uses this platform's public Manager/Reporter
         addresses instead of the internal LAN ones - for a worker
         reaching this platform from outside (e.g. a Cloudflare
         Tunnel). See `nebula_auth.build_worker_env`. Defaults to
-        `False`.
+        `False`. Forced `True` server-side if the caller belongs to
+        any `EXTERNAL_USER_GROUPS` group.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -602,14 +609,16 @@ async def download_worker_compose(
     Notes
     -----
     Independent of `worker-env`: changing/regenerating one has no
-    effect on the other.
+    effect on the other. Registry inclusion is derived, not
+    caller-supplied - see `nebula_auth.build_worker_env`.
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
+    external = nebula_auth.is_external_user(cfg, session.username)
     env = nebula_auth.build_worker_env(
         cfg, session.username, session.nebula_secret, name,
         gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
-        include_registry=include_registry, use_public_endpoints=public_endpoints,
+        use_public_endpoints=public_endpoints or external, external=external,
     )
     service: dict = {
         "image": _WORKER_IMAGE,
@@ -630,7 +639,7 @@ async def download_worker_compose(
 @router.get("/{name}/worker-script", response_class=PlainTextResponse)
 async def download_worker_script(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
-    include_registry: bool = True, public_endpoints: bool = False,
+    public_endpoints: bool = False,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -651,17 +660,13 @@ async def download_worker_script(
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status. Defaults
         to 60.
-    include_registry : bool, optional
-        If `False`, omits registry host/auth entirely - for a
-        remote/external worker that can't reach this platform's own
-        registry. See `nebula_auth.build_worker_env`. Defaults to
-        `True`.
     public_endpoints : bool, optional
         If `True`, uses this platform's public Manager/Reporter
         addresses instead of the internal LAN ones - for a worker
         reaching this platform from outside (e.g. a Cloudflare
         Tunnel). See `nebula_auth.build_worker_env`. Defaults to
-        `False`.
+        `False`. Forced `True` server-side if the caller belongs to
+        any `EXTERNAL_USER_GROUPS` group.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -684,14 +689,16 @@ async def download_worker_script(
     Notes
     -----
     Independent of both `worker-env` and `worker-compose`;
-    downloading this needs nothing else.
+    downloading this needs nothing else. Registry inclusion is
+    derived, not caller-supplied - see `nebula_auth.build_worker_env`.
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
+    external = nebula_auth.is_external_user(cfg, session.username)
     env = nebula_auth.build_worker_env(
         cfg, session.username, session.nebula_secret, name,
         gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
-        include_registry=include_registry, use_public_endpoints=public_endpoints,
+        use_public_endpoints=public_endpoints or external, external=external,
     )
     # shlex.quote, not naive f-string interpolation: these values include
     # admin-set secrets that can contain anything (quotes, $, backticks) -
@@ -714,7 +721,7 @@ async def download_worker_script(
 @router.get("/{name}/worker-script-windows", response_class=PlainTextResponse)
 async def download_worker_script_windows(
     name: str, gpu: bool = False, reporter: bool = False, check_in_time: int = 60,
-    include_registry: bool = True, public_endpoints: bool = False,
+    public_endpoints: bool = False,
     session: Session = Depends(verify_session_or_basic),
 ):
     """
@@ -735,17 +742,13 @@ async def download_worker_script_windows(
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status. Defaults
         to 60.
-    include_registry : bool, optional
-        If `False`, omits registry host/auth entirely - for a
-        remote/external worker that can't reach this platform's own
-        registry. See `nebula_auth.build_worker_env`. Defaults to
-        `True`.
     public_endpoints : bool, optional
         If `True`, uses this platform's public Manager/Reporter
         addresses instead of the internal LAN ones - for a worker
         reaching this platform from outside (e.g. a Cloudflare
         Tunnel). See `nebula_auth.build_worker_env`. Defaults to
-        `False`.
+        `False`. Forced `True` server-side if the caller belongs to
+        any `EXTERNAL_USER_GROUPS` group.
     session : Session
         The authenticated caller, via `verify_session_or_basic`.
 
@@ -765,14 +768,16 @@ async def download_worker_script_windows(
     cmd.exe's syntax and quoting are different enough from bash (no
     `set -e`, `^` instead of `\\` for line continuation, its own
     escaping rules via `_batch_quote`) that it needs its own generator
-    rather than reusing `download_worker_script`.
+    rather than reusing `download_worker_script`. Registry inclusion
+    is derived, not caller-supplied - see `nebula_auth.build_worker_env`.
     """
     cfg = config_store.get()
     _require_dg_access(cfg, session, name)
+    external = nebula_auth.is_external_user(cfg, session.username)
     env = nebula_auth.build_worker_env(
         cfg, session.username, session.nebula_secret, name,
         gpu_enabled=gpu, use_reporter=reporter, check_in_time=check_in_time,
-        include_registry=include_registry, use_public_endpoints=public_endpoints,
+        use_public_endpoints=public_endpoints or external, external=external,
     )
     container_name = _batch_quote(f"worker_{name}")
     args = [f"docker run -d --name {container_name} --restart unless-stopped"]

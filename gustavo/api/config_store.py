@@ -88,6 +88,23 @@ DEFAULTS: dict[str, Any] = {
     "PUBLIC_REPORTER_PORT": "443",
     "PUBLIC_GUSTAVO_HOST": "",
     "PUBLIC_GUSTAVO_PORT": "443",
+    # Public registry access is a separate, stricter opt-in from the above -
+    # off by default even when PUBLIC_ENDPOINTS_ENABLED is on. When enabled,
+    # PUBLIC_REGISTRY_HOST/PORT becomes THE registry for every worker config
+    # and the Registry tab alike, not just external-group users - a public
+    # endpoint is reachable from anywhere, so there's no reason to keep
+    # preferring the internal-only address once one exists. When disabled,
+    # external-group users get no registry access at all; everyone else
+    # keeps using the internal REGISTRY_HOST/PORT, unconditionally.
+    "PUBLIC_REGISTRY_ENABLED": False,
+    "PUBLIC_REGISTRY_HOST": "",
+    "PUBLIC_REGISTRY_PORT": "443",
+    # Nebula user-groups whose members are treated as "external" - their
+    # worker configs and Registry tab access are governed entirely by the
+    # PUBLIC_* settings above (mandatory, not optional), regardless of any
+    # per-device-group checkbox state. Empty by default: nobody is external
+    # until an admin explicitly assigns a group here.
+    "EXTERNAL_USER_GROUPS": [],
     # Redis
     "REDIS_HOST": _host_ip,
     "REDIS_PORT": "6379",
