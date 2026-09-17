@@ -241,7 +241,12 @@ def build_worker_env(
     REDIS_KEY_PREFIX. The two are mutually exclusive - a worker only reports
     through whichever backend's own host var is actually present. Default is
     False, keeping today's direct-Redis behavior unchanged for every
-    existing caller.
+    existing caller. Forced True unconditionally when `external` is True -
+    REDIS_AUTH_TOKEN is a single shared, unscoped platform credential (no
+    per-device-group ACL), so an external caller must never be able to
+    reach the Redis branch at all, not just be nudged away from it by a
+    client-side default. This can't be bypassed by any combination of the
+    caller's own `use_reporter`/`use_public_endpoints` arguments.
 
     check_in_time controls NEBULA_MANAGER_CHECK_IN_TIME, which doubles as
     both the worker's Nebula-manager poll interval and its reporting
@@ -275,6 +280,7 @@ def build_worker_env(
     env = {
         "DEVICE_GROUP": device_group,
     }
+    use_reporter = use_reporter or external
     if use_reporter:
         if use_public_endpoints:
             env["REPORTER_HOST"] = str(cfg.get("PUBLIC_REPORTER_HOST", ""))
