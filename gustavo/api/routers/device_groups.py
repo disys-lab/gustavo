@@ -469,7 +469,10 @@ async def download_worker_env(
         `REDIS_AUTH_TOKEN`, switching worker status reporting to
         gustavo-reporter's REST API instead of direct Redis writes.
         Mutually exclusive with the Redis reporting fields - see
-        `nebula_auth.build_worker_env`.
+        `nebula_auth.build_worker_env`. Forced `True` server-side if the
+        caller belongs to any `EXTERNAL_USER_GROUPS` group, regardless of
+        what's passed here - `REDIS_AUTH_TOKEN` is a single shared,
+        unscoped credential an external caller must never receive.
     check_in_time : int, optional
         `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the
         worker polls the Nebula manager and reports status; the same
@@ -511,6 +514,11 @@ async def download_worker_env(
     password = session.nebula_secret
     external = nebula_auth.is_external_user(cfg, username)
     public_endpoints = public_endpoints or external
+    # REDIS_AUTH_TOKEN is a single shared, unscoped platform credential - an
+    # external caller must never be able to reach the Redis branch below,
+    # regardless of what they pass for `reporter`. See build_worker_env's
+    # matching forced-reporter docstring.
+    reporter = reporter or external
     auth_token = base64.b64encode(f"{username}:{password}".encode()).decode()
     manager_host = cfg.get("PUBLIC_MANAGER_HOST", "") if public_endpoints else cfg.get("MANAGER_HOST", "")
     manager_port = cfg.get("PUBLIC_MANAGER_PORT", "") if public_endpoints else cfg.get("MANAGER_PORT", "")
