@@ -5,6 +5,7 @@ Start with:
     uvicorn gustavo.api.main:app --host 0.0.0.0 --port 8000
 """
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -44,11 +45,25 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS — allow the Next.js dev server and the same-origin production proxy
+# CORS — explicit origin allowlist, not a wildcard.
+#
+# CORS_ALLOWED_ORIGINS is a comma-separated list of origins (e.g.
+# "https://gustavo.example.org,http://localhost:3000"). Defaults to
+# localhost:3000/3002 (the Next.js dev server and this repo's own
+# docker-compose port mapping) so local dev keeps working unconfigured.
+# A public deployment MUST set this explicitly - allow_credentials=True
+# means a wildcard origin would let any website make credentialed requests
+# to this API on a logged-in user's behalf.
 # ---------------------------------------------------------------------------
+_default_origins = "http://localhost:3000,http://localhost:3002"
+_cors_allowed_origins = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", _default_origins).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # Tighten in production via env var
+    allow_origins=_cors_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
