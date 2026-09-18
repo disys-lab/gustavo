@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listDeviceGroups, createDeviceGroup, deleteDeviceGroup,
   addAppsToDeviceGroup, removeAppsFromDeviceGroup,
+  addCronJobsToDeviceGroup, removeCronJobsFromDeviceGroup,
   downloadWorkerEnv, downloadWorkerCompose, downloadWorkerScript, downloadWorkerScriptWindows,
 } from "@/lib/api/deviceGroups";
 import { downloadTextFile } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { useConfig } from "@/lib/context/ConfigContext";
 import { useAuth } from "@/lib/context/AuthContext";
 import { DeviceGroupForm } from "@/components/device-groups/DeviceGroupForm";
 import { AppSelector } from "@/components/device-groups/AppSelector";
+import { CronJobSelector } from "@/components/device-groups/CronJobSelector";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -23,11 +25,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type DeviceGroupEntry = { name: string; apps: string[] };
+type DeviceGroupEntry = { name: string; apps: string[]; cron_jobs: string[] };
 
 export default function DeviceGroupsPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedApps, setSelectedApps] = useState<Record<string, string[]>>({});
+  const [selectedCronJobs, setSelectedCronJobs] = useState<Record<string, string[]>>({});
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [gpuEnabled, setGpuEnabled] = useState<Record<string, boolean>>({});
   const [reporterEnabled, setReporterEnabled] = useState<Record<string, boolean>>({});
@@ -63,9 +66,10 @@ export default function DeviceGroupsPage() {
     if (Array.isArray(resp.device_groups)) {
       for (const item of resp.device_groups) {
         if (typeof item === "object" && item !== null && "name" in item) {
-          groups.push(item as DeviceGroupEntry);
+          const entry = item as Partial<DeviceGroupEntry> & { name: string };
+          groups.push({ name: entry.name, apps: entry.apps ?? [], cron_jobs: entry.cron_jobs ?? [] });
         } else if (typeof item === "string") {
-          groups.push({ name: item, apps: [] });
+          groups.push({ name: item, apps: [], cron_jobs: [] });
         }
       }
     }
@@ -116,6 +120,37 @@ export default function DeviceGroupsPage() {
       }
     } catch (exc) {
       toast({ variant: "destructive", title: "Failed", description: String(exc) });
+    }
+  };
+
+  const handleAddCronJobs = async (dg: string) => {
+    const cronJobs = selectedCronJobs[dg] ?? [];
+    if (cronJobs.length === 0) return;
+    try {
+      const res = await addCronJobsToDeviceGroup(dg, cronJobs);
+      if (!res.error) {
+        toast({ title: "Cron jobs added", description: `${cronJobs.join(", ")} → ${dg}` });
+        queryClient.invalidateQueries({ queryKey: ["device-groups"] });
+        setSelectedCronJobs((prev) => ({ ...prev, [dg]: [] }));
+      } else {
+        toast({ variant: "destructive", title: "Failed", description: String(res.response) });
+      }
+    } catch (exc) {
+      toast({ variant: "destructive", title: "Failed", description: String(exc) });
+    }
+  };
+
+  const handleRemoveCronJob = async (dg: string, cronJob: string) => {
+    try {
+      const res = await removeCronJobsFromDeviceGroup(dg, [cronJob]);
+      if (!res.error) {
+        toast({ title: "Cron job removed", description: `${cronJob} removed from ${dg}` });
+        queryClient.invalidateQueries({ queryKey: ["device-groups"] });
+      } else {
+        toast({ variant: "destructive", title: "Remove failed", description: String(res.response) });
+      }
+    } catch (exc) {
+      toast({ variant: "destructive", title: "Remove failed", description: String(exc) });
     }
   };
 
@@ -175,7 +210,7 @@ export default function DeviceGroupsPage() {
         <p className="text-gray-500 text-center py-12">No device groups found.</p>
       ) : (
         <div className="space-y-4">
-          {groups.map(({ name: dg, apps: currentApps }) => (
+          {groups.map(({ name: dg, apps: currentApps, cron_jobs: currentCronJobs }) => (
             <Card key={dg}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -223,6 +258,48 @@ export default function DeviceGroupsPage() {
                     disabled={(selectedApps[dg]?.length ?? 0) === 0}
                   >
                     Add Selected Apps
+                  </Button>
+                </div>
+
+                {/* Current cron jobs — each with a remove button */}
+                <div className="border-t pt-3">
+                  <p className="text-sm font-medium mb-2">
+                    Current Cron Jobs {currentCronJobs.length > 0 ? `(${currentCronJobs.length})` : ""}
+                  </p>
+                  {currentCronJobs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No cron jobs assigned</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {currentCronJobs.map((cronJob) => (
+                        <Badge key={cronJob} variant="secondary" className="flex items-center gap-1 pr-1">
+                          {cronJob}
+                          <button
+                            className="ml-1 rounded-full hover:bg-destructive/20 text-destructive px-1 text-xs leading-none"
+                            onClick={() => handleRemoveCronJob(dg, cronJob)}
+                            title={`Remove ${cronJob} from ${dg}`}
+                          >
+                            ✕
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Add cron jobs — only show cron jobs not already in this group */}
+                <div className="border-t pt-3">
+                  <CronJobSelector
+                    selected={selectedCronJobs[dg] ?? []}
+                    exclude={currentCronJobs}
+                    onChange={(cronJobs) => setSelectedCronJobs((prev) => ({ ...prev, [dg]: cronJobs }))}
+                  />
+                  <Button
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => handleAddCronJobs(dg)}
+                    disabled={(selectedCronJobs[dg]?.length ?? 0) === 0}
+                  >
+                    Add Selected Cron Jobs
                   </Button>
                 </div>
 

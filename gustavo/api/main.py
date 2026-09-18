@@ -16,6 +16,7 @@ from gustavo.api.routers import (
     config as config_router,
     services as services_router,
     apps as apps_router,
+    cron_jobs as cron_jobs_router,
     device_groups as dg_router,
     monitoring as monitoring_router,
     backups as backups_router,
@@ -76,6 +77,7 @@ app.include_router(auth_router.router,       prefix="/api/auth",          tags=[
 app.include_router(config_router.router,     prefix="/api/config",        tags=["config"])
 app.include_router(services_router.router,   prefix="/api/services",      tags=["services"])
 app.include_router(apps_router.router,       prefix="/api/apps",          tags=["apps"])
+app.include_router(cron_jobs_router.router,  prefix="/api/cron-jobs",     tags=["cron-jobs"])
 app.include_router(dg_router.router,         prefix="/api/device-groups", tags=["device-groups"])
 app.include_router(monitoring_router.router, prefix="/api/monitoring",    tags=["monitoring"])
 app.include_router(backups_router.router,    prefix="/api/backups",       tags=["backups"])

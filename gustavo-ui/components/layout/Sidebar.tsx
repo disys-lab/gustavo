@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings,
+  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -19,6 +19,7 @@ import { getMyGroups } from "@/lib/api/users";
 const NAV = [
   { href: "/dashboard",     label: "Dashboard",     icon: LayoutDashboard },
   { href: "/apps",          label: "Apps",          icon: LayoutGrid },
+  { href: "/cron-jobs",     label: "Cron Jobs",     icon: Clock },
   { href: "/registry",      label: "Registry",      icon: Database },
   { href: "/device-groups", label: "Device Groups", icon: Users },
 ];
