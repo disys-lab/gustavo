@@ -81,10 +81,14 @@ export interface AppConfig {
 // Near-identical to AppConfig, minus starting_ports/network_mode (cron
 // jobs are one-shot batch containers, not traffic-serving services) plus
 // `schedule` (a cron expression, e.g. "*/15 * * * *" - fed straight into
-// croniter on the worker side). Verified live against a real Nebula
-// manager: `command`/`shm_size` are silently dropped by Nebula's own
-// cron_job schema even when submitted, unlike apps - kept optional here
-// anyway rather than removed outright, in case that changes.
+// croniter on the worker side). `command`/`shm_size` were silently
+// dropped by Nebula's own cron_job schema (create_cron_job/
+// mongo_add_cron_job never read them, unlike the equivalent app fields) -
+// fixed in gustavo_manager (disys-lab/gustavo_manager#13, mirroring the
+// same fix already shipped for apps). Nothing here or elsewhere in this
+// repo needed to change - gustavo's own create/update calls already sent
+// both fields all along; only the Manager's own persistence layer was
+// dropping them.
 export interface CronJobConfig {
   docker_image: string;
   schedule: string;
