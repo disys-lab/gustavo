@@ -590,6 +590,50 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#reporter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reporter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-facing-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Facing Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-registry-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Registry Access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-user-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External User Groups
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#worker-misc" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1191,6 +1235,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../api/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../api/device-groups/" class="md-nav__link">
         
   
@@ -1476,6 +1548,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../ui/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ui/device-groups/" class="md-nav__link">
         
   
@@ -1484,6 +1584,34 @@
     
   
     Device Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
   
 
     
@@ -2212,6 +2340,146 @@ actually uses to talk to Nebula.</p>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="reporter">Reporter</h2>
+<p><code>REPORTER_*</code> configures the Reporter platform service — a REST endpoint
+workers can report status to instead of writing to Redis directly. See
+<a href="../ui/dashboard/#platform-services-card">Services: Reporter</a> for the
+service lifecycle, and <a href="../ui/device-groups/#get-worker-config">Device Groups: worker config</a>
+for how a worker is told to use it.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REPORTER_IMAGE</code></td>
+<td><code>ghcr.io/disys-lab/gustavo-reporter:latest</code></td>
+<td>Docker image for the Reporter service</td>
+</tr>
+<tr>
+<td><code>REPORTER_HOST</code></td>
+<td>host IP</td>
+<td>IP or hostname of the Reporter instance</td>
+</tr>
+<tr>
+<td><code>REPORTER_PORT</code></td>
+<td><code>8090</code></td>
+<td>Port the Reporter API listens on</td>
+</tr>
+<tr>
+<td><code>GUSTAVO_API_HOST</code></td>
+<td>host IP</td>
+<td>Host Reporter uses to reach Gustavo's own API to verify worker credentials</td>
+</tr>
+<tr>
+<td><code>GUSTAVO_API_PORT</code></td>
+<td><code>3002</code></td>
+<td>Gustavo's <strong>host-published</strong> port — not FastAPI's internal <code>8000</code> (bound to <code>127.0.0.1</code> inside Gustavo's own container, unreachable from Reporter's separate container)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>GUSTAVO_API_PORT</code> must match whatever port the <code>gustavo</code> container is
+actually published on for the deployment (e.g. <code>3000:3000</code> in this
+repo's own <code>docker-compose.yml</code>, but <code>3002:3000</code> on a host where port
+3000 was already taken by something else). Getting this wrong makes
+Reporter's credential-verification calls fail silently.</p>
+</div>
+<hr />
+<h2 id="public-facing-endpoints">Public Facing Endpoints</h2>
+<p>Externally-reachable addresses for Manager, Reporter, and Gustavo itself —
+e.g. behind a Cloudflare Tunnel — separate from the internal LAN addresses
+above. Only applied when a worker config download explicitly opts in, or
+the caller belongs to an <a href="#external-user-groups">external user group</a>.
+Protocol is always <code>https</code> for these: a public endpoint always terminates
+TLS at the edge.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PUBLIC_ENDPOINTS_ENABLED</code></td>
+<td><code>false</code></td>
+<td>Master switch. Off means every download keeps using the internal <code>*_HOST</code>/<code>*_PORT</code> values regardless of anything below</td>
+</tr>
+<tr>
+<td><code>PUBLIC_MANAGER_HOST</code> / <code>PUBLIC_MANAGER_PORT</code></td>
+<td><em>(empty)</em> / <code>443</code></td>
+<td>Public Manager address</td>
+</tr>
+<tr>
+<td><code>PUBLIC_REPORTER_HOST</code> / <code>PUBLIC_REPORTER_PORT</code></td>
+<td><em>(empty)</em> / <code>443</code></td>
+<td>Public Reporter address</td>
+</tr>
+<tr>
+<td><code>PUBLIC_GUSTAVO_HOST</code> / <code>PUBLIC_GUSTAVO_PORT</code></td>
+<td><em>(empty)</em> / <code>443</code></td>
+<td>Public Gustavo address (reserved for future use — no current consumer)</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../ui/settings/#public-facing-endpoints">Settings: Public Facing Endpoints</a>
+and <a href="../ui/device-groups/#get-worker-config">Device Groups: Public Facing Access</a>.</p>
+<hr />
+<h2 id="public-registry-access">Public Registry Access</h2>
+<p>A separate, stricter opt-in from <code>PUBLIC_ENDPOINTS_ENABLED</code> above — off by
+default even when that's on.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PUBLIC_REGISTRY_ENABLED</code></td>
+<td><code>false</code></td>
+<td>When <code>true</code>, <code>PUBLIC_REGISTRY_HOST</code>/<code>PORT</code> becomes <em>the</em> registry for every worker config and the Registry tab, for every caller — not just external users. When <code>false</code>, external users get no registry access at all; everyone else keeps the internal <code>REGISTRY_HOST</code>/<code>PORT</code> unconditionally</td>
+</tr>
+<tr>
+<td><code>PUBLIC_REGISTRY_HOST</code> / <code>PUBLIC_REGISTRY_PORT</code></td>
+<td><em>(empty)</em> / <code>443</code></td>
+<td>Public registry address</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../ui/registry/">Registry</a> for the full pull/push policy this drives.</p>
+<hr />
+<h2 id="external-user-groups">External User Groups</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EXTERNAL_USER_GROUPS</code></td>
+<td><code>[]</code></td>
+<td>Nebula user groups whose members are treated as external — see <a href="../ui/users/#external-user-groups">External Users</a></td>
+</tr>
+</tbody>
+</table>
+<p>Membership in any listed group makes worker-config downloads and Registry
+access mandatory-public for that user, regardless of any per-device-group
+checkbox they'd otherwise control. Nobody is external until an admin
+explicitly adds a group here.</p>
 <hr />
 <h2 id="worker-misc">Worker / Misc</h2>
 <table>

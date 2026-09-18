@@ -13,28 +13,28 @@
       
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../device-groups/">
       
       
-        <link rel="next" href="../installation/">
+        <link rel="next" href="../monitoring/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Quickstart (Docker) - Gustavo</title>
+        <title>Registry - Gustavo</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,11 +53,11 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../assets/extra.css">
+      <link rel="stylesheet" href="../../assets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quickstart-docker-recommended" class="md-skip">
+        <a href="#registry" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Gustavo" class="md-header__button md-logo" aria-label="Gustavo" data-md-component="logo">
+    <a href="../.." title="Gustavo" class="md-header__button md-logo" aria-label="Gustavo" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quickstart (Docker)
+              Registry
             
           </span>
         </div>
@@ -241,7 +241,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Gustavo" class="md-nav__button md-logo" aria-label="Gustavo" data-md-component="logo">
+    <a href="../.." title="Gustavo" class="md-nav__button md-logo" aria-label="Gustavo" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -271,7 +271,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -295,8 +295,6 @@
       
   
   
-    
-  
   
   
     
@@ -309,11 +307,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -334,7 +334,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -349,37 +349,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Quickstart (Docker)
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
         
   
   
@@ -395,247 +368,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#try-it-now" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Try it now
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-tell-gustavo-how-to-reach-itself" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1 — Tell Gustavo how to reach itself
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-launch-the-platform-services" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2 — Launch the platform services
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-create-your-first-app" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3 — Create your first app
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-4-create-a-device-group-and-add-the-app-to-it" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4 — Create a device group and add the app to it
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#checkpoint-everything-should-now-be-live" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Checkpoint — everything should now be live
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-5-bring-up-a-worker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5 — Bring up a worker
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 5 — Bring up a worker">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-download-and-double-click-no-typing-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option A — download and double-click (no typing required)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-one-command-in-a-terminal" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option B — one command in a terminal
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#full-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Full setup
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Full setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-1-create-the-configuration-directory" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1 — Create the configuration directory
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-create-docker-composeyml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2 — Create docker-compose.yml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-start-gustavo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3 — Start Gustavo
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#authentication-optional" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Authentication (optional)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#building-the-image-locally" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Building the image locally
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#updating" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Updating
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#stopping-and-removing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stopping and removing
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -648,7 +380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -676,7 +408,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial/" class="md-nav__link">
+      <a href="../../tutorial/" class="md-nav__link">
         
   
   
@@ -704,7 +436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../llm-deployments/" class="md-nav__link">
+      <a href="../../llm-deployments/" class="md-nav__link">
         
   
   
@@ -732,7 +464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../configuration/" class="md-nav__link">
         
   
   
@@ -760,7 +492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/" class="md-nav__link">
+      <a href="../../deployment/" class="md-nav__link">
         
   
   
@@ -849,7 +581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   
@@ -877,7 +609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/manager-setup/" class="md-nav__link">
+      <a href="../../cli/manager-setup/" class="md-nav__link">
         
   
   
@@ -905,7 +637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/manager/" class="md-nav__link">
+      <a href="../../cli/manager/" class="md-nav__link">
         
   
   
@@ -933,7 +665,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/worker/" class="md-nav__link">
+      <a href="../../cli/worker/" class="md-nav__link">
         
   
   
@@ -961,7 +693,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/apps/" class="md-nav__link">
+      <a href="../../cli/apps/" class="md-nav__link">
         
   
   
@@ -989,7 +721,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/device-groups/" class="md-nav__link">
+      <a href="../../cli/device-groups/" class="md-nav__link">
         
   
   
@@ -1017,7 +749,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/registry/" class="md-nav__link">
+      <a href="../../cli/registry/" class="md-nav__link">
         
   
   
@@ -1045,7 +777,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/cache/" class="md-nav__link">
+      <a href="../../cli/cache/" class="md-nav__link">
         
   
   
@@ -1073,7 +805,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/utils/" class="md-nav__link">
+      <a href="../../cli/utils/" class="md-nav__link">
         
   
   
@@ -1162,7 +894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -1190,7 +922,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/auth/" class="md-nav__link">
+      <a href="../../api/auth/" class="md-nav__link">
         
   
   
@@ -1218,7 +950,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/config/" class="md-nav__link">
+      <a href="../../api/config/" class="md-nav__link">
         
   
   
@@ -1246,7 +978,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/services/" class="md-nav__link">
+      <a href="../../api/services/" class="md-nav__link">
         
   
   
@@ -1274,7 +1006,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/apps/" class="md-nav__link">
+      <a href="../../api/apps/" class="md-nav__link">
         
   
   
@@ -1302,7 +1034,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/cron-jobs/" class="md-nav__link">
+      <a href="../../api/cron-jobs/" class="md-nav__link">
         
   
   
@@ -1330,7 +1062,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/device-groups/" class="md-nav__link">
+      <a href="../../api/device-groups/" class="md-nav__link">
         
   
   
@@ -1358,7 +1090,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/monitoring/" class="md-nav__link">
+      <a href="../../api/monitoring/" class="md-nav__link">
         
   
   
@@ -1386,7 +1118,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/backups/" class="md-nav__link">
+      <a href="../../api/backups/" class="md-nav__link">
         
   
   
@@ -1414,7 +1146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/users/" class="md-nav__link">
+      <a href="../../api/users/" class="md-nav__link">
         
   
   
@@ -1442,7 +1174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/registry/" class="md-nav__link">
+      <a href="../../api/registry/" class="md-nav__link">
         
   
   
@@ -1474,8 +1206,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -1486,13 +1220,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -1513,7 +1245,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1531,7 +1263,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -1559,7 +1291,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/dashboard/" class="md-nav__link">
+      <a href="../dashboard/" class="md-nav__link">
         
   
   
@@ -1587,7 +1319,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/apps/" class="md-nav__link">
+      <a href="../apps/" class="md-nav__link">
         
   
   
@@ -1615,7 +1347,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/cron-jobs/" class="md-nav__link">
+      <a href="../cron-jobs/" class="md-nav__link">
         
   
   
@@ -1643,7 +1375,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/device-groups/" class="md-nav__link">
+      <a href="../device-groups/" class="md-nav__link">
         
   
   
@@ -1668,10 +1400,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../ui/registry/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1687,6 +1446,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#image-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image list
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-vs-external-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal vs. external access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registry-proxy-nginx-auth_request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registry proxy (nginx auth_request)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1699,7 +1511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/monitoring/" class="md-nav__link">
+      <a href="../monitoring/" class="md-nav__link">
         
   
   
@@ -1727,7 +1539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/backups/" class="md-nav__link">
+      <a href="../backups/" class="md-nav__link">
         
   
   
@@ -1755,7 +1567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/settings/" class="md-nav__link">
+      <a href="../settings/" class="md-nav__link">
         
   
   
@@ -1783,7 +1595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/users/" class="md-nav__link">
+      <a href="../users/" class="md-nav__link">
         
   
   
@@ -1811,7 +1623,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ui/components/" class="md-nav__link">
+      <a href="../components/" class="md-nav__link">
         
   
   
@@ -1900,7 +1712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../src/nebulabase/" class="md-nav__link">
+      <a href="../../src/nebulabase/" class="md-nav__link">
         
   
   
@@ -1928,7 +1740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../src/manager/" class="md-nav__link">
+      <a href="../../src/manager/" class="md-nav__link">
         
   
   
@@ -1956,7 +1768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../src/composer/" class="md-nav__link">
+      <a href="../../src/composer/" class="md-nav__link">
         
   
   
@@ -1984,7 +1796,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../src/cache/" class="md-nav__link">
+      <a href="../../src/cache/" class="md-nav__link">
         
   
   
@@ -2073,7 +1885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../demos/nasa-home/" class="md-nav__link">
+      <a href="../../demos/nasa-home/" class="md-nav__link">
         
   
   
@@ -2108,7 +1920,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         
   
   
@@ -2135,7 +1947,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../troubleshooting/" class="md-nav__link">
+      <a href="../../troubleshooting/" class="md-nav__link">
         
   
   
@@ -2175,150 +1987,72 @@
   
 
 
-<h1 id="quickstart-docker-recommended">Quickstart — Docker (Recommended)</h1>
-<p>Running Gustavo as a Docker container is the recommended approach. You get a self-contained image with the Next.js UI, FastAPI backend, and all Python dependencies pre-installed.</p>
-<p>Everything below is done through the web UI once the container is running — no scripting knowledge needed, beyond typing the two commands in this first step and (later) one command to bring up a worker.</p>
+<h1 id="registry">Registry</h1>
+<p>Browse the images and tags available in the Docker registry from the web
+UI (<code>/registry</code>).</p>
 <hr />
-<h2 id="try-it-now">Try it now</h2>
-<p>Open a terminal (macOS: Terminal / iTerm; Windows: PowerShell or the WSL terminal; Linux: your usual shell) and run:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-o<span class="w"> </span>docker-compose.yml<span class="w"> </span>https://raw.githubusercontent.com/disys-lab/gustavo/main/sample_config_files/docker-compose.quickstart.yml
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div>
-<p>This downloads a ready-made compose file and starts the Gustavo container — no existing Nebula platform required, login disabled, so you can look around the dashboard immediately.</p>
-<p>Open <a href="http://localhost:3000">http://localhost:3000</a>. The first load may take a few seconds while FastAPI completes its health check.</p>
-<p><img alt="A fresh Gustavo Dashboard — all four platform services show Down, and no apps or device groups exist yet" src="../assets/screenshots/quickstart/dashboard-fresh.png" /></p>
-<p>This is expected. Nothing is running yet — the next steps bring each piece up, in order.</p>
+<h2 id="image-list">Image list</h2>
+<p>Shows every repository in the registry with its tags as badges. Each row's
+name is prefixed with the registry URL currently in effect (see
+<a href="#internal-vs-external-access">Internal vs. external access</a> below), so
+it's always clear which registry you're looking at. <strong>Refresh</strong> re-queries
+the catalog.</p>
+<p>If the registry has no images, or the catalog request fails, the page
+shows the raw catalog URL and response instead of a blank table — useful
+for diagnosing a misconfigured <code>REGISTRY_HOST</code>/<code>REGISTRY_PORT</code> without
+leaving the browser.</p>
 <hr />
-<h2 id="step-1-tell-gustavo-how-to-reach-itself">Step 1 — Tell Gustavo how to reach itself</h2>
-<p>The four platform services (Redis, Mongo, Registry, Manager) run as their own Docker containers, and they need an address to find each other and the Gustavo container. On a single machine, the simplest address that works is <strong>your computer's own local network IP</strong>.</p>
-<p>Find it in a terminal:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">macOS</label><label for="__tabbed_1_2">Linux</label><label for="__tabbed_1_3">Windows (PowerShell)</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>ipconfig<span class="w"> </span>getifaddr<span class="w"> </span>en0
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>hostname<span class="w"> </span>-I<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $1}'</span>
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">(</span><span class="nb">Get-NetIPAddress</span> <span class="n">-AddressFamily</span> <span class="n">IPv4</span> <span class="n">-InterfaceAlias</span> <span class="s2">"Wi-Fi"</span><span class="p">).</span><span class="n">IPAddress</span>
-</code></pre></div>
-</div>
-</div>
-</div>
-<p><img alt="Terminal output of ifconfig, with the machine's local IP address (10.203.20.129) highlighted" src="../assets/screenshots/quickstart/find-local-ip-terminal.png" /></p>
-<p>Copy that address (it will look like <code>10.x.x.x</code> or <code>192.168.x.x</code>) — you'll paste it into the UI next.</p>
-<p>In Gustavo, open <strong>Settings</strong>, and paste your IP into <strong>Manager Host</strong>:</p>
-<p><img alt="Settings page's Manager &amp; Nebula section, with Manager Host filled in with the machine's real local IP address" src="../assets/screenshots/quickstart/settings-manager-host.png" /></p>
-<p>Click <strong>Apply Manager Host to Redis, Mongo &amp; Registry</strong> (the blue banner above the fields), then <strong>Apply to all</strong> — this copies the same address into the Redis, Mongo, and Registry host fields too, so every service uses one consistent address. Scroll down and click <strong>Save Configuration</strong>.</p>
-<div class="admonition note">
-<p class="admonition-title">Why not just leave the defaults?</p>
-<p>Each service is its own container with its own internal Docker address, which changes every time it's recreated. Your machine's own network IP is stable and reachable from every container, which is why it's the simplest address to use for a single-machine setup like this.</p>
-</div>
-<hr />
-<h2 id="step-2-launch-the-platform-services">Step 2 — Launch the platform services</h2>
-<p>Back on the <strong>Dashboard</strong>, expand <strong>Manage Platform Services</strong> and click <strong>Launch</strong> on each service — <strong>Redis</strong>, <strong>Mongo</strong>, and <strong>Registry</strong> first, then <strong>Manager</strong> last (Manager depends on the other three, so give them a few seconds' head start).</p>
-<p><img alt="Dashboard with Manage Platform Services expanded, Redis showing &quot;Launching…&quot;, and a Recent Activity entry confirming Settings saved" src="../assets/screenshots/quickstart/dashboard-launching-redis.png" /></p>
-<p>Each launch is a background job — the button shows <strong>Launching…</strong> until it finishes, then the row's status pill turns green. Manager takes the longest to come up (it's initializing its own database), typically under a minute.</p>
-<p><img alt="Dashboard with Redis, Mongo, and Registry all showing Up, Manager still Launching" src="../assets/screenshots/quickstart/dashboard-services-up.png" /></p>
-<p>Wait until all four pills read <strong>Up</strong> before continuing.</p>
-<hr />
-<h2 id="step-3-create-your-first-app">Step 3 — Create your first app</h2>
-<p>Go to <strong>Apps</strong> → <strong>+ New App</strong>. Give it a name and a Docker image — for a first try, <code>hello-world:latest</code> (a tiny public image that just prints a message and exits) is a good choice:</p>
-<p><img alt="New App form filled in with name &quot;hello-world&quot;, image &quot;hello-world:latest&quot;, and environment variables pre-filled with the Redis and Manager connection details from Settings" src="../assets/screenshots/quickstart/apps-new-app-form.png" /></p>
-<p>Notice the <strong>Environment Variables</strong> section is already pre-filled with the Redis/Manager connection details you set up in Step 1 — you don't need to re-type them. Leave <strong>Running on deploy</strong> checked and save.</p>
-<hr />
-<h2 id="step-4-create-a-device-group-and-add-the-app-to-it">Step 4 — Create a device group and add the app to it</h2>
-<p>A <strong>device group</strong> is the set of machines an app is allowed to run on. Go to <strong>Device Groups</strong> → <strong>+ New Group</strong>, name it (e.g. <code>testdevicegroup1</code>), and click <strong>Create Device Group</strong>:</p>
-<p><img alt="Device Groups page, creating a new group named testdevicegroup1" src="../assets/screenshots/quickstart/device-groups-create.png" /></p>
-<p>Once created, select the app you just made under <strong>Add Apps</strong> and click <strong>Add Selected Apps</strong>:</p>
-<p><img alt="Device group page showing testdevicegroup1 with the hello-world app selected to add, and the Get worker config section below with download buttons for Native .env, Docker Compose, and launcher scripts" src="../assets/screenshots/quickstart/device-groups-add-app.png" /></p>
-<p>This same page has a <strong>Get worker config</strong> section — that's what the next step uses to actually run the app on a machine.</p>
-<hr />
-<h2 id="checkpoint-everything-should-now-be-live">Checkpoint — everything should now be live</h2>
-<p>Back on the <strong>Dashboard</strong>, you should see all four services <strong>Up</strong>, 1 app deployed, 1 device group configured, and a full trail of what just happened in <strong>Recent Activity</strong>:</p>
-<p><img alt="Dashboard showing all four platform services Up, 1 app deployed, 1 device group configured, and a Recent Activity log of every step so far" src="../assets/screenshots/quickstart/dashboard-all-up.png" /></p>
-<p>At this point Gustavo itself is fully configured. The last piece is a <strong>worker</strong> — the thing that actually pulls and runs your app's container.</p>
-<hr />
-<h2 id="step-5-bring-up-a-worker">Step 5 — Bring up a worker</h2>
-<p>A worker is a small background process that connects to Gustavo, picks up any apps assigned to its device group, and runs them as real Docker containers. You can run one on the same machine for local testing, or on any other machine that can reach this one.</p>
-<p>There are two ways to get a worker running, depending on your comfort with the command line:</p>
-<h3 id="option-a-download-and-double-click-no-typing-required">Option A — download and double-click (no typing required)</h3>
-<p>On the Device Groups page's <strong>Get worker config</strong> section (shown in Step 4), click one of:</p>
+<h2 id="internal-vs-external-access">Internal vs. external access</h2>
+<p>Which registry a request actually reaches is derived entirely from the
+caller's identity and one config flag — never a per-request choice made in
+the UI. The same policy governs both this page (<code>GET /api/apps/registry/images</code>)
+and the registry fields baked into worker config downloads
+(<code>GET /api/device-groups/{name}/worker-*</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Caller</th>
+<th><code>PUBLIC_REGISTRY_ENABLED</code> off</th>
+<th><code>PUBLIC_REGISTRY_ENABLED</code> on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Non-external</td>
+<td>Internal <code>REGISTRY_HOST</code>/<code>PORT</code></td>
+<td>Public <code>PUBLIC_REGISTRY_HOST</code>/<code>PORT</code></td>
+</tr>
+<tr>
+<td><a href="../users/#external-user-groups">External</a></td>
+<td>No registry access at all</td>
+<td>Public <code>PUBLIC_REGISTRY_HOST</code>/<code>PORT</code></td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li><strong>Launcher script (Mac/Linux)</strong> — downloads a <code>.command</code> file. Double-click it in Finder to run it (macOS may ask you to confirm it's safe to open the first time).</li>
-<li><strong>Launcher script (Windows)</strong> — downloads a <code>.bat</code> file. Double-click it in File Explorer.</li>
-</ul>
-<p>Either one starts the worker with everything already filled in — no editing, no terminal.</p>
-<h3 id="option-b-one-command-in-a-terminal">Option B — one command in a terminal</h3>
-<p>If you're already in a terminal, this is the fastest path. The quickstart container has login disabled and uses the default credentials <code>nebula:nebula</code>, so the same command shown below will work as-is if you've been following along:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>curl<span class="w"> </span>-s<span class="w"> </span>-u<span class="w"> </span>nebula:nebula<span class="w"> </span>http://localhost:3000/api/device-groups/testdevicegroup1/worker-compose<span class="w"> </span>-o<span class="w"> </span>docker-compose-worker.yml<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-worker.yml<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div>
-<p><img alt="Terminal running the curl command above to download the worker's docker-compose file and immediately start it" src="../assets/screenshots/quickstart/worker-curl-command.png" /></p>
-<p>Replace <code>testdevicegroup1</code> with whatever you actually named your device group. If you're running this from a different machine than Gustavo itself, replace <code>localhost:3000</code> with that machine's address and port.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>✓ Container worker_testdevicegroup1 Started
-</code></pre></div>
-<p><img alt="Terminal confirming the worker container started successfully" src="../assets/screenshots/quickstart/worker-container-started.png" /></p>
-<p>Either option ends the same way: open Docker Desktop (or run <code>docker ps</code>) and you'll see the app's image being pulled and started:</p>
-<p><img alt="Docker Desktop's container list showing the hello-world image being pulled, 44 seconds after the worker started" src="../assets/screenshots/quickstart/docker-desktop-hello-world-pull.png" /></p>
-<p>That's it — the worker picked up <code>hello-world</code> from its device group and ran it. Any app you add to <code>testdevicegroup1</code> from now on will run the same way, automatically, the next time the worker checks in.</p>
-<div class="admonition tip">
-<p class="admonition-title">GPU access</p>
-<p>To grant a worker GPU access, check the <strong>GPU Enabled</strong> box on the Device Groups page before downloading (Option A), or add <code>?gpu=true</code> to the URL (Option B) — only do this on hardware that actually has a GPU <code>nvidia-container-toolkit</code> can expose.</p>
-</div>
-<p>See <a href="../cli/worker/">gustavo worker</a> for the full CLI reference, and <a href="../ui/device-groups/#get-worker-config">Device Groups UI</a> for more on the other download formats (native <code>.env</code> for advanced/custom setups).</p>
-<hr />
-<h2 id="full-setup">Full setup</h2>
-<p>The rest of this page covers a production-style setup against a real, separately-hosted Nebula platform, rather than the all-in-one trial above. If you followed "Try it now", stop the trial container first (<code>docker compose down</code>).</p>
-<h3 id="prerequisites">Prerequisites</h3>
-<ul>
-<li>Docker Engine 20.10 or later</li>
-<li>Docker Compose v2 (<code>docker compose</code> command)</li>
-<li>A running <a href="https://nebula-orchestrator.github.io/">Nebula Manager</a> with accessible API</li>
-</ul>
-<p>See <a href="../deployment/">Deployment</a> for complete configuration examples, including <a href="../deployment/#minimal-setup">minimal setup</a> and <a href="../deployment/#production">production with authentication</a>.</p>
-<h3 id="step-1-create-the-configuration-directory">Step 1 — Create the configuration directory</h3>
-<p>Gustavo persists its platform configuration to a YAML file mounted from the host:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>./config
-</code></pre></div>
-<p>Optionally pre-seed it with a <code>platform.yaml</code>.</p>
-<h3 id="step-2-create-docker-composeyml">Step 2 — Create <code>docker-compose.yml</code></h3>
-<p>See <a href="../deployment/#minimal-setup">Deployment</a> for a minimal example, or <a href="../deployment/#production">Deployment with authentication</a> for production-ready settings.</p>
-<h3 id="step-3-start-gustavo">Step 3 — Start Gustavo</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div>
-<p>Open <a href="http://localhost:3000">http://localhost:3000</a>.</p>
-<h3 id="authentication-optional">Authentication (optional)</h3>
-<p>To require login, see <a href="../deployment/#production">Deployment with authentication</a>.</p>
-<hr />
-<h2 id="next-steps">Next steps</h2>
-<ul>
-<li><a href="../tutorial/">End-to-End Tutorial</a> — deploy apps to edge devices</li>
-<li><a href="../configuration/">Configuration Reference</a> — tune Redis expiry, network modes, and image versions</li>
-<li><a href="../installation/">Native Installation</a> — run Gustavo natively without Docker</li>
+<li><strong>Off by default.</strong> Until an admin sets <code>PUBLIC_REGISTRY_HOST</code>/<code>PORT</code>
+  and enables the flag in <a href="../settings/#public-registry-access">Settings</a>,
+  external users simply have no registry: the page shows "Could not access
+  registry. Check with Admin to see if Registry access is enabled." and no
+  request is attempted.</li>
+<li><strong>Once enabled, it applies to everyone</strong>, not just external users — a
+  public endpoint is reachable from anywhere, so there's no reason to keep
+  routing internal callers to the internal-only address.</li>
+<li>This is the same reasoning <code>EXTERNAL_USER_GROUPS</code> applies to Manager and
+  Reporter (see <a href="../device-groups/#get-worker-config">Device Groups: worker config</a>):
+  identity determines the endpoint, the caller doesn't choose it.</li>
 </ul>
 <hr />
-<h2 id="building-the-image-locally">Building the image locally</h2>
-<p>If you want to build from source:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/disys-lab/gustavo.git
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">cd</span><span class="w"> </span>gustavo
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>gustavo:local<span class="w"> </span>.
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div>
-<p>See <a href="../deployment/#build-arguments">Build arguments</a> for customization options.</p>
-<hr />
-<h2 id="updating">Updating</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>pull
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div>
-<p>Configuration in <code>./config/platform.yaml</code> is preserved across updates.</p>
-<hr />
-<h2 id="stopping-and-removing">Stopping and removing</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w">        </span><span class="c1"># Stop (preserves config volume)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>down<span class="w"> </span>-v<span class="w">     </span><span class="c1"># Stop and remove everything including config volume</span>
-</code></pre></div>
+<h2 id="registry-proxy-nginx-auth_request">Registry proxy (nginx <code>auth_request</code>)</h2>
+<p>Pushes and pulls against the registry itself (not this UI page) are
+gated separately, at the reverse proxy in front of the registry: every
+<code>/v2/...</code> request is authorized against Nebula's own users via
+<a href="../../api/registry/"><code>GET|HEAD|PUT|POST|PATCH|DELETE /api/registry/authorize</code></a>
+before it reaches the registry. A valid Nebula <code>username:secret</code> (Basic
+auth) or Gustavo session Bearer token is required; anything else gets a
+<code>401</code> before the registry ever sees the request. This check is
+identity-only — it does not yet distinguish which repository is being
+pushed or pulled.</p>
 
 
 
@@ -2356,7 +2090,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home">
+          <a href="../device-groups/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Device Groups">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2366,20 +2100,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Home
+                Device Groups
               </div>
             </div>
           </a>
         
         
           
-          <a href="../installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Native Installation">
+          <a href="../monitoring/" class="md-footer__link md-footer__link--next" aria-label="Next: Monitoring">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Native Installation
+                Monitoring
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2416,10 +2150,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.footer", "navigation.top", "content.code.annotate", "content.code.copy", "content.tabs.link", "toc.integrate", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

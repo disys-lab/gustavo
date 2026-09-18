@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../apps/">
+        <link rel="prev" href="../cron-jobs/">
       
       
-        <link rel="next" href="../monitoring/">
+        <link rel="next" href="../registry/">
       
       
         
@@ -1034,6 +1034,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/device-groups/" class="md-nav__link">
         
   
@@ -1316,6 +1344,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1434,6 +1490,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#current-cron-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Cron Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#get-worker-config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1448,6 +1515,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1974,6 +2069,14 @@
 <p>Apps can belong to multiple device groups. When an app is assigned to a group, all worker nodes in that group will pull and run the app's Docker container.</p>
 <p>Changes take effect on the next Nebula sync cycle on each worker.</p>
 <hr />
+<h2 id="current-cron-jobs">Current Cron Jobs</h2>
+<p>Each device group's row lists its assigned cron jobs the same way it lists
+apps. Use <strong>Add Cron Jobs</strong> / <strong>Remove Cron Jobs</strong> to manage membership
+without replacing the full list, or <strong>Edit</strong> to replace it entirely. See
+<a href="../cron-jobs/">Cron Jobs</a> for creating the cron jobs themselves.</p>
+<p>Changes take effect on the next Nebula sync cycle on each worker, same as
+app assignment.</p>
+<hr />
 <h2 id="get-worker-config">Get worker config</h2>
 <p>Each device group's row has a <strong>Get worker config</strong> section with four
 download buttons — pick whichever fits how you want to bring a worker up
@@ -2013,15 +2116,43 @@ the others, and none of them needs a second file alongside it.</p>
 <p>Every filename includes the device group's name, so downloads for
 different groups never collide or silently overwrite each other in your
 downloads folder.</p>
-<p>A <strong>GPU Enabled</strong> checkbox sits above the four buttons. Check it only for
-a device group whose hardware actually has a GPU <code>nvidia-container-toolkit</code>
-can expose — it adds <code>GPU_ENABLED=true</code> to whichever format you download,
-granting every container that worker launches GPU access. This applies to
-the worker as a whole, not to any individual app: there's nothing to
-configure per-app.</p>
-<p>All four require you to actually have access to the device group whose
-button you clicked — same permission check as everything else on this
-page. See <a href="../../api/device-groups/#worker-config-downloads">Device Groups API</a>
+<p>Four controls sit above the buttons and apply to whichever format you
+download next:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GPU Enabled</strong></td>
+<td>Adds <code>GPU_ENABLED=true</code>, granting every container the worker launches GPU access. Only check this for hardware that actually has a GPU <code>nvidia-container-toolkit</code> can expose. Applies to the worker as a whole, not per-app.</td>
+</tr>
+<tr>
+<td><strong>Report via Reporter</strong></td>
+<td>Switches worker status reporting from direct Redis writes to HTTP(S) calls to the <a href="../../configuration/#reporter">Reporter</a> service. Unchecked (direct Redis) is the default.</td>
+</tr>
+<tr>
+<td><strong>Public Facing Access</strong></td>
+<td>Bakes in the public Manager/Reporter addresses (<a href="../settings/#public-facing-endpoints">Settings: Public Facing Endpoints</a>) instead of the internal ones, for a worker reaching this platform from outside — e.g. behind a Cloudflare Tunnel. Disabled until an admin turns on <code>PUBLIC_ENDPOINTS_ENABLED</code> in Settings.</td>
+</tr>
+<tr>
+<td><strong>Check-in / Report Interval (seconds)</strong></td>
+<td>How often the worker polls Nebula and reports status — one shared timer, not two. Defaults to 60.</td>
+</tr>
+</tbody>
+</table>
+<p>If you belong to an <a href="../users/#external-user-groups">external user group</a>,
+<strong>Report via Reporter</strong> and <strong>Public Facing Access</strong> are locked on and
+can't be unchecked — an external caller is never handed the shared
+internal Redis credential or a LAN address it can't reach anyway.
+Registry inclusion is not a checkbox at all: it's decided automatically by
+<a href="../registry/#internal-vs-external-access">registry policy</a>.</p>
+<p>All four downloads require you to actually have access to the device
+group whose button you clicked — same permission check as everything else
+on this page. See <a href="../../api/device-groups/#worker-config-downloads">Device Groups API</a>
 for the underlying endpoints, including how to fetch these the same way
 from a script over SSH instead of clicking a button.</p>
 
@@ -2061,7 +2192,7 @@ from a script over SSH instead of clicking a button.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../apps/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Apps">
+          <a href="../cron-jobs/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cron Jobs">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2071,20 +2202,20 @@ from a script over SSH instead of clicking a button.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Apps
+                Cron Jobs
               </div>
             </div>
           </a>
         
         
           
-          <a href="../monitoring/" class="md-footer__link md-footer__link--next" aria-label="Next: Monitoring">
+          <a href="../registry/" class="md-footer__link md-footer__link--next" aria-label="Next: Registry">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Monitoring
+                Registry
               </div>
             </div>
             <div class="md-footer__button md-icon">

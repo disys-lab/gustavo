@@ -1034,6 +1034,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/device-groups/" class="md-nav__link">
         
   
@@ -1319,6 +1347,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../device-groups/" class="md-nav__link">
         
   
@@ -1327,6 +1383,34 @@
     
   
     Device Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
   
 
     
@@ -1517,6 +1601,17 @@
     <span class="md-ellipsis">
       
         Self-service credential rotation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-user-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External user groups
       
     </span>
   </a>
@@ -1949,6 +2044,19 @@ flag on the user).</p>
 <p>Every logged-in user (not just admins) can rotate their own credential from
 the <strong>My credential</strong> action in the sidebar, without needing an admin —
 useful after accidentally sharing a credential, or just as routine hygiene.</p>
+<h2 id="external-user-groups">External user groups</h2>
+<p>A user is <strong>external</strong> if they belong to any group listed in
+<a href="../../configuration/#external-user-groups"><code>EXTERNAL_USER_GROUPS</code></a> —
+otherwise they're internal. There's no separate flag on the user or the
+group itself; membership alone decides it, and it's checked live on every
+request, not cached at login. Set the list from
+<a href="../settings/#external-user-groups">Settings: External User Groups</a>.</p>
+<p>Being external doesn't restrict which apps or device groups a user can see
+— that's still governed entirely by their group's grants — but it forces
+worker config downloads and registry access onto public endpoints
+unconditionally, server-side, regardless of what the UI would otherwise
+default to. See <a href="../device-groups/#get-worker-config">Device Groups: worker config</a>
+and <a href="../registry/#internal-vs-external-access">Registry: internal vs. external access</a>.</p>
 
 
 

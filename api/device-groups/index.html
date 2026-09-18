@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../apps/">
+        <link rel="prev" href="../cron-jobs/">
       
       
         <link rel="next" href="../monitoring/">
@@ -1031,6 +1031,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1353,6 +1381,28 @@
     <span class="md-ellipsis">
       
         POST /api/device-groups/{name}/apps/remove
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apidevice-groupsnamecron-jobsadd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/device-groups/{name}/cron-jobs/add
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apidevice-groupsnamecron-jobsremove" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/device-groups/{name}/cron-jobs/remove
       
     </span>
   </a>
@@ -1698,6 +1748,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../ui/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../ui/device-groups/" class="md-nav__link">
         
   
@@ -1706,6 +1784,34 @@
     
   
     Device Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
   
 
     
@@ -5476,6 +5582,19 @@ is derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"apps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"old_app"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <hr />
+<h3 id="post-apidevice-groupsnamecron-jobsadd"><code>POST /api/device-groups/{name}/cron-jobs/add</code></h3>
+<p>Add one or more cron jobs to a device group without replacing the
+existing list. Mirrors <code>apps/add</code>.</p>
+<p><strong>Request body:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"cron_jobs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"new_cron_job"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="post-apidevice-groupsnamecron-jobsremove"><code>POST /api/device-groups/{name}/cron-jobs/remove</code></h3>
+<p>Remove one or more cron jobs from a device group. Mirrors <code>apps/remove</code>.</p>
+<p><strong>Request body:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"cron_jobs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"old_cron_job"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<hr />
 <h2 id="worker-config-downloads">Worker config downloads</h2>
 <p>Four independent ways to get a worker running for this device group — the
 native env file for <a href="../../cli/worker/"><code>gustavo worker up</code></a>, a
@@ -5492,25 +5611,57 @@ fresh, scoped to the caller's own Nebula identity and this device group.</p>
 <code>username:secret</code> (for one-shot use from a remote script). All four also
 require the caller to actually have access to this device group — admin,
 or a member of a group it's granted to — otherwise <code>403</code>.</p>
-<p>All four also accept an optional <code>?gpu=true</code> query param, which adds
-<code>GPU_ENABLED=true</code> to the generated worker config — only use this for a
-device group whose hardware actually has a GPU <code>nvidia-container-toolkit</code>
-can expose. It applies to every container that worker launches, not to
-any individual app.</p>
+<p>All four also accept these optional query params:</p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Default</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gpu</code></td>
+<td><code>false</code></td>
+<td>Adds <code>GPU_ENABLED=true</code> — only for a device group whose hardware actually has a GPU <code>nvidia-container-toolkit</code> can expose. Applies to every container that worker launches, not to any individual app.</td>
+</tr>
+<tr>
+<td><code>reporter</code></td>
+<td><code>false</code></td>
+<td>Emits <code>REPORTER_HOST</code>/<code>REPORTER_PORT</code>/<code>REPORTER_PROTOCOL</code> instead of <code>REDIS_HOST</code>/<code>REDIS_PORT</code>/<code>REDIS_AUTH_TOKEN</code> — mutually exclusive with direct Redis reporting. Forced <code>true</code> server-side for a caller in any <code>EXTERNAL_USER_GROUPS</code> group, regardless of what's passed — <code>REDIS_AUTH_TOKEN</code> is a single shared, unscoped credential an external caller must never receive.</td>
+</tr>
+<tr>
+<td><code>check_in_time</code></td>
+<td><code>60</code></td>
+<td><code>NEBULA_MANAGER_CHECK_IN_TIME</code> in seconds — the same loop tick drives both the Nebula poll and the status report, there's no separate timer.</td>
+</tr>
+<tr>
+<td><code>public_endpoints</code></td>
+<td><code>false</code></td>
+<td>Uses <code>PUBLIC_MANAGER_HOST</code>/<code>PORT</code> (and <code>PUBLIC_REPORTER_HOST</code>/<code>PORT</code> if <code>reporter</code> is also set) instead of the internal LAN addresses. Forced <code>true</code> server-side for a caller in any <code>EXTERNAL_USER_GROUPS</code> group.</td>
+</tr>
+</tbody>
+</table>
+<p>Registry inclusion is never a caller-supplied param — it's derived
+entirely from <code>PUBLIC_REGISTRY_ENABLED</code> and whether the caller is an
+external-group member. See <a href="../../ui/registry/#internal-vs-external-access">Registry: internal vs. external access</a>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span><span class="s2">"http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-env?reporter=true&amp;public_endpoints=true&amp;check_in_time=30"</span>
+</code></pre></div>
 <hr />
 <h3 id="get-apidevice-groupsnameworker-env"><code>GET /api/device-groups/{name}/worker-env</code></h3>
 <p>Same shape as <code>GET /api/config/worker-download</code>, scoped to this device
 group — adds <code>DEVICE_GROUP={name}</code> so the <code>gustavo worker up</code> invocation
 needs one less flag.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-env<span class="w"> </span>-o<span class="w"> </span>worker.env
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-env<span class="w"> </span>-o<span class="w"> </span>worker.env
 </code></pre></div>
 <hr />
 <h3 id="get-apidevice-groupsnameworker-compose"><code>GET /api/device-groups/{name}/worker-compose</code></h3>
 <p>A self-contained <code>docker-compose.yml</code> — every value baked directly into
 the service's <code>environment:</code> block as a literal, not <code>${VAR}</code> substitution
 from a companion <code>.env</code>. Nothing else to download:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-compose<span class="w"> </span>-o<span class="w"> </span>docker-compose.yml
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-compose<span class="w"> </span>-o<span class="w"> </span>docker-compose.yml
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 <hr />
 <h3 id="get-apidevice-groupsnameworker-script"><code>GET /api/device-groups/{name}/worker-script</code></h3>
@@ -5519,9 +5670,9 @@ independence guarantee as <code>worker-compose</code>, every value baked in dire
 Save it with a <code>.command</code> extension and it's double-click-runnable from
 macOS Finder (once marked executable); as a plain <code>.sh</code> it's a normal
 terminal script on either macOS or Linux:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-script<span class="w"> </span>-o<span class="w"> </span>worker.command
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>chmod<span class="w"> </span>+x<span class="w"> </span>worker.command
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>./worker.command
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span>http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-script<span class="w"> </span>-o<span class="w"> </span>worker.command
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>chmod<span class="w"> </span>+x<span class="w"> </span>worker.command
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>./worker.command
 </code></pre></div>
 <hr />
 <h3 id="get-apidevice-groupsnameworker-script-windows"><code>GET /api/device-groups/{name}/worker-script-windows</code></h3>
@@ -5568,7 +5719,7 @@ opens in a text editor rather than running on double-click by default.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../apps/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Apps">
+          <a href="../cron-jobs/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cron Jobs">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -5578,7 +5729,7 @@ opens in a text editor rather than running on double-click by default.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Apps
+                Cron Jobs
               </div>
             </div>
           </a>

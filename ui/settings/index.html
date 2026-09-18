@@ -1034,6 +1034,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../api/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../api/device-groups/" class="md-nav__link">
         
   
@@ -1319,6 +1347,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../device-groups/" class="md-nav__link">
         
   
@@ -1327,6 +1383,34 @@
     
   
     Device Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
   
 
     
@@ -1534,6 +1618,50 @@
     <span class="md-ellipsis">
       
         Syncer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reporter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reporter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#public-facing-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Facing Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#public-registry-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Registry Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-user-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External User Groups
       
     </span>
   </a>
@@ -2219,6 +2347,127 @@
 </tr>
 </tbody>
 </table>
+<h3 id="reporter">Reporter</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Key</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image</td>
+<td><code>REPORTER_IMAGE</code></td>
+<td>Reporter Docker image</td>
+</tr>
+<tr>
+<td>Host</td>
+<td><code>REPORTER_HOST</code></td>
+<td>Reporter IP or hostname</td>
+</tr>
+<tr>
+<td>Port</td>
+<td><code>REPORTER_PORT</code></td>
+<td>Reporter API port (default: 8090)</td>
+</tr>
+<tr>
+<td>Gustavo API Host</td>
+<td><code>GUSTAVO_API_HOST</code></td>
+<td>Host Reporter uses to reach Gustavo's own API</td>
+</tr>
+<tr>
+<td>Gustavo API Port</td>
+<td><code>GUSTAVO_API_PORT</code></td>
+<td>Gustavo's host-published port (see <a href="../../configuration/#reporter">Configuration</a>)</td>
+</tr>
+</tbody>
+</table>
+<p>Reporter is a lifecycle-managed platform service like Redis or the
+Registry — start/stop/restart it from the <a href="../dashboard/#platform-services-card">Dashboard</a>.
+These fields control where it runs and how it reaches back into Gustavo,
+not whether it's running.</p>
+<h3 id="public-facing-endpoints">Public Facing Endpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Key</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enabled</td>
+<td><code>PUBLIC_ENDPOINTS_ENABLED</code></td>
+<td>Master switch for public Manager/Reporter/Gustavo addresses</td>
+</tr>
+<tr>
+<td>Manager Host / Port</td>
+<td><code>PUBLIC_MANAGER_HOST</code> / <code>PUBLIC_MANAGER_PORT</code></td>
+<td>Public Manager address</td>
+</tr>
+<tr>
+<td>Reporter Host / Port</td>
+<td><code>PUBLIC_REPORTER_HOST</code> / <code>PUBLIC_REPORTER_PORT</code></td>
+<td>Public Reporter address</td>
+</tr>
+<tr>
+<td>Gustavo Host / Port</td>
+<td><code>PUBLIC_GUSTAVO_HOST</code> / <code>PUBLIC_GUSTAVO_PORT</code></td>
+<td>Public Gustavo address (reserved — no current consumer)</td>
+</tr>
+</tbody>
+</table>
+<p>These addresses are used instead of the internal ones when a worker config
+download opts into public access (the <strong>Public Facing Access</strong> checkbox on
+<a href="../device-groups/#get-worker-config">Device Groups</a>), or unconditionally
+for <a href="#external-user-groups">external users</a>. Disabled by default.</p>
+<h3 id="public-registry-access">Public Registry Access</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Key</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enabled</td>
+<td><code>PUBLIC_REGISTRY_ENABLED</code></td>
+<td>Serve the public registry address to every caller, not just external users</td>
+</tr>
+<tr>
+<td>Host / Port</td>
+<td><code>PUBLIC_REGISTRY_HOST</code> / <code>PUBLIC_REGISTRY_PORT</code></td>
+<td>Public registry address</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../registry/">Registry</a> for the full internal/external access policy
+this drives.</p>
+<h3 id="external-user-groups">External User Groups</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Key</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Groups</td>
+<td><code>EXTERNAL_USER_GROUPS</code></td>
+<td>Nebula user groups whose members are treated as external</td>
+</tr>
+</tbody>
+</table>
+<p>Members of a listed group get Manager and Reporter forced to their public
+endpoints and Reporter forced on, on every worker config download —
+server-enforced, not a UI convenience. See <a href="../users/#external-user-groups">Users: External Users</a>.</p>
 <hr />
 <h2 id="apply-to-all">Apply to all</h2>
 <p>The <strong>Apply to all</strong> button copies <code>MANAGER_HOST</code> to <code>REDIS_HOST</code>, <code>MONGO_HOST</code>, and <code>REGISTRY_HOST</code>. Useful when all platform services run on the same machine.</p>

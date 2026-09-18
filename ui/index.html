@@ -1034,6 +1034,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../api/cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../api/device-groups/" class="md-nav__link">
         
   
@@ -1537,6 +1565,34 @@
   
   
     <li class="md-nav__item">
+      <a href="cron-jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="device-groups/" class="md-nav__link">
         
   
@@ -1545,6 +1601,34 @@
     
   
     Device Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry
   
 
     
@@ -2123,13 +2207,17 @@
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>/dashboard                → Overview: services, vitals, stats, activity
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>/apps                     → App list + create
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>/apps/[name]              → Edit single app
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>/registry                 → Registry image browser
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>/device-groups            → Device group management
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>/monitoring               → Real-time CPU/memory charts
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>/backups                  → Redis + registry backup management
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>/settings                 → Platform configuration
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>/settings/syncer          → DREGSY YAML editor
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>/manager                  → Service control table (also embedded in Dashboard)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>/cron-jobs                → Cron job list + create
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>/cron-jobs/[name]         → Edit single cron job
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>/registry                 → Registry image browser
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>/device-groups            → Device group management
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>/monitoring               → Real-time CPU/memory charts
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>/backups                  → Redis + registry backup management
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>/settings                 → Platform configuration
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>/settings/syncer          → DREGSY YAML editor
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>/users                    → User account management (admin-only)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>/users/groups             → Group roles and grants (admin-only)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>/manager                  → Service control table (also embedded in Dashboard)
 </code></pre></div>
 <hr />
 <h2 id="native-installation">Native Installation</h2>
@@ -2291,8 +2379,16 @@
 <td>Application CRUD with YAML import/export</td>
 </tr>
 <tr>
+<td><a href="cron-jobs/">Cron Jobs</a></td>
+<td>Scheduled one-shot container CRUD</td>
+</tr>
+<tr>
 <td><a href="device-groups/">Device Groups</a></td>
-<td>Group management and app assignment</td>
+<td>Group management, app/cron-job assignment, worker config downloads</td>
+</tr>
+<tr>
+<td><a href="registry/">Registry</a></td>
+<td>Registry image browser, internal/external access policy</td>
 </tr>
 <tr>
 <td><a href="monitoring/">Monitoring</a></td>
@@ -2305,6 +2401,10 @@
 <tr>
 <td><a href="settings/">Settings</a></td>
 <td>Platform configuration editor</td>
+</tr>
+<tr>
+<td><a href="users/">Users</a></td>
+<td>User and group management, external user groups</td>
 </tr>
 </tbody>
 </table>
