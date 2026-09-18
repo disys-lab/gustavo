@@ -364,17 +364,17 @@ class Composer(NebulaBase):
         Parameters
         ----------
         asset_type : str
-            `"app"` or `"device_group"`.
+            `"app"`, `"device_group"`, or `"cron_job"`.
         asset_name : str
             The asset's name.
         mode : str
             `"create"`, `"update"`, or `"delete"` (case-insensitive).
         config : dict or None, optional
             The asset's configuration. Required for `"create"`/
-            `"update"`; ignored for `"delete"`. For `asset_type="app"`,
-            must contain `"docker_image"` - it's checked against the
-            local registry (`checkImageExists`) before the Nebula
-            call is made.
+            `"update"`; ignored for `"delete"`. For `asset_type="app"`
+            or `asset_type="cron_job"`, must contain `"docker_image"` -
+            it's checked against the local registry (`checkImageExists`)
+            before the Nebula call is made.
 
         Returns
         -------
@@ -403,6 +403,10 @@ class Composer(NebulaBase):
             elif asset_type == "device_group":
                 reply = self.nebulaObj.create_device_group(asset_name, config)
 
+            elif asset_type == "cron_job":
+                self.checkImageExists(config["docker_image"])
+                reply = self.nebulaObj.create_cron_job(asset_name, config)
+
             else:
                 logging.critical(f"Unknown asset type: {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
@@ -417,6 +421,10 @@ class Composer(NebulaBase):
             elif asset_type == "device_group":
                 reply = self.nebulaObj.update_device_group(asset_name, config)
 
+            elif asset_type == "cron_job":
+                self.checkImageExists(config["docker_image"])
+                reply = self.nebulaObj.update_cron_job(asset_name, config)
+
             else:
                 logging.critical(f"Unknown asset type: {asset_type}")
                 return {"error": True, "response": "unknown asset type " + asset_type}
@@ -429,6 +437,9 @@ class Composer(NebulaBase):
 
             elif asset_type == "device_group":
                 reply = self.nebulaObj.delete_device_group(asset_name)
+
+            elif asset_type == "cron_job":
+                reply = self.nebulaObj.delete_cron_job(asset_name)
 
             else:
                 logging.error(f"Unknown asset type: {asset_type}")
@@ -506,5 +517,75 @@ class Composer(NebulaBase):
             logging.info(f"Apps: {response['reply']['apps']}")
 
             return {"error": False, "response": response["reply"]["apps"]}
+        else:
+            return success
+
+    def handleDeviceGroupCronJobs(self, cron_job_list, mode, device_group="bca"):
+        """
+        Add or remove cron jobs from a device group's cron_jobs list.
+
+        Parallel to `handleDeviceGroup`, operating on the device group's
+        `cron_jobs` list field instead of `apps` - kept as a separate
+        method rather than generalizing `handleDeviceGroup` itself, so
+        existing app-attachment behavior can't be affected by this change.
+
+        Fetches the device group's current cron_jobs list, computes the
+        new list by adding (`mode="update"`) or removing (`mode="delete"`)
+        the cron jobs named in `cron_job_list`, then calls `handleAsset`
+        to push the updated list.
+
+        Parameters
+        ----------
+        cron_job_list : str
+            Comma-separated cron job names to add or remove.
+        mode : str
+            `"update"` to add the named cron jobs (skipping ones already
+            present), or `"delete"` to remove them.
+        device_group : str, optional
+            The device group to modify. Defaults to `"bca"`.
+
+        Returns
+        -------
+        dict
+            ``{"error": bool, "response": ...}``. On success,
+            `response` is the device group's resulting cron_jobs list
+            (`list`). On failure, `response` is a message string -
+            from `mode` being unrecognized, `handleAsset` failing to
+            push the update, or the initial list-fetch failing.
+        """
+        response = self.nebulaObj.list_device_group(device_group)
+        success = self.printDiagnosticResponse(
+            response, 200, "check", "cron_jobs list for", device_group
+        )
+        if not success["error"]:
+            new_cron_job_list = cron_job_list.split(",")
+            existing_cron_job_list = response["reply"]["cron_jobs"]
+            cron_jobs_to_be_modified = existing_cron_job_list
+            if mode != "update" and mode != "delete":
+                logging.critical(f"Unsupported mode: {mode}")
+                return {"error": True, "response": "unsupported mode"}
+            for cron_job in new_cron_job_list:
+                if mode == "update" and cron_job not in existing_cron_job_list:
+                    cron_jobs_to_be_modified = cron_jobs_to_be_modified + [cron_job]
+                if mode == "delete" and cron_job in existing_cron_job_list:
+                    cron_jobs_to_be_modified.remove(cron_job)
+
+            device_group_config = dict({"cron_jobs": cron_jobs_to_be_modified})
+            logging.info(f"Device Group Config: {device_group_config}")
+            responseDG = self.handleAsset(
+                "device_group", device_group, "update", device_group_config
+            )
+
+            if responseDG["error"]:
+                return responseDG
+
+            response = self.nebulaObj.list_device_group(device_group)
+
+            self.printDiagnosticResponse(
+                response, 200, "check", "cron_jobs list for", device_group
+            )
+            logging.info(f"Cron Jobs: {response['reply']['cron_jobs']}")
+
+            return {"error": False, "response": response["reply"]["cron_jobs"]}
         else:
             return success

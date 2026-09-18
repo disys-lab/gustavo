@@ -77,3 +77,24 @@ export interface AppConfig {
   shm_size?: string;
   [key: string]: unknown;
 }
+
+// Near-identical to AppConfig, minus starting_ports/network_mode (cron
+// jobs are one-shot batch containers, not traffic-serving services) plus
+// `schedule` (a cron expression, e.g. "*/15 * * * *" - fed straight into
+// croniter on the worker side). Verified live against a real Nebula
+// manager: `command`/`shm_size` are silently dropped by Nebula's own
+// cron_job schema even when submitted, unlike apps - kept optional here
+// anyway rather than removed outright, in case that changes.
+export interface CronJobConfig {
+  docker_image: string;
+  schedule: string;
+  env_vars?: Record<string, string>;
+  volumes?: string[];
+  devices?: string[];
+  privileged?: boolean;
+  running?: boolean;
+  networks?: string[];
+  command?: string[];
+  shm_size?: string;
+  [key: string]: unknown;
+}

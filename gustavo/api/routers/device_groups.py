@@ -8,6 +8,8 @@ PUT    /api/device-groups/{name}                   → update
 DELETE /api/device-groups/{name}                   → delete
 POST   /api/device-groups/{name}/apps/add          → body: {apps: []}
 POST   /api/device-groups/{name}/apps/remove       → body: {apps: []}
+POST   /api/device-groups/{name}/cron-jobs/add     → body: {cron_jobs: []}
+POST   /api/device-groups/{name}/cron-jobs/remove  → body: {cron_jobs: []}
 GET    /api/device-groups/{name}/worker-env        → native `gustavo worker up` env file for this device group
 GET    /api/device-groups/{name}/worker-compose    → self-contained docker-compose.yml for this device group
 GET    /api/device-groups/{name}/worker-script     → self-contained `docker run` launcher script (macOS/Linux)
@@ -48,6 +50,10 @@ class AppListRequest(BaseModel):
     apps: list[str]
 
 
+class CronJobListRequest(BaseModel):
+    cron_jobs: list[str]
+
+
 @router.get("")
 async def list_device_groups(session: Session = Depends(verify_firebase_token)):
     """
@@ -62,8 +68,9 @@ async def list_device_groups(session: Session = Depends(verify_firebase_token)):
     -------
     dict
         ``{"error": bool, "response": {"device_groups": [{"name": ...,
-        "apps": [...]}, ...]}}``, filtered to the caller's grants if
-        not an admin (Nebula's own list endpoint is unfiltered).
+        "apps": [...], "cron_jobs": [...]}, ...]}}``, filtered to the
+        caller's grants if not an admin (Nebula's own list endpoint is
+        unfiltered).
     """
     cfg = config_store.get()
     comp = _build_composer(cfg)
@@ -80,9 +87,11 @@ async def list_device_groups(session: Session = Depends(verify_firebase_token)):
         for group_name in groups_list:
             group_result = comp.nebulaObj.list_device_group(group_name)
             apps = []
+            cron_jobs = []
             if group_result.get("status_code") == 200:
                 apps = group_result.get("reply", {}).get("apps", []) or []
-            groups.append({"name": group_name, "apps": apps})
+                cron_jobs = group_result.get("reply", {}).get("cron_jobs", []) or []
+            groups.append({"name": group_name, "apps": apps, "cron_jobs": cron_jobs})
 
         return {"error": False, "response": {"device_groups": groups}}
     except Exception as exc:
@@ -327,6 +336,62 @@ def _merge_device_group_apps(cfg: dict, session: Session, name: str, apps: list[
     return {"error": False, "response": new_apps}
 
 
+def _merge_device_group_cron_jobs(cfg: dict, session: Session, name: str, cron_jobs: list[str], mode: str) -> dict:
+    """
+    Add or remove cron jobs from a device group's cron_jobs list, working around the same Nebula rw/ro permission gap.
+
+    Structural mirror of `_merge_device_group_apps` - same rw/ro-gap
+    rationale, same read-via-admin/write-via-caller split. Deliberately
+    does not call `Composer.handleDeviceGroupCronJobs` (which bundles
+    read+write+read-after) for the same reason `_merge_device_group_apps`
+    doesn't call `handleDeviceGroup`: a non-admin's grant is typically
+    rw-only, and Nebula's permission check is exact-match, so a bundled
+    call routed entirely through a per-user token would 403 on its own
+    internal read even when the write itself would be allowed.
+
+    Parameters
+    ----------
+    cfg : dict
+        Current platform config.
+    session : Session
+        The authenticated caller.
+    name : str
+        Device group name.
+    cron_jobs : list of str
+        Cron job names to add or remove.
+    mode : str
+        `"add"` (skip cron jobs already present) or anything else,
+        treated as remove.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": ...}``. On success, `response`
+        is the resulting cron_jobs list (`list`). On failure,
+        `response` is a message string.
+    """
+    admin_comp = _build_composer(cfg)
+    write_comp = admin_comp if session.is_admin else _build_composer_for(cfg, token=session.nebula_secret)
+
+    current = admin_comp.nebulaObj.list_device_group(name)
+    if current.get("status_code") != 200:
+        return {"error": True, "response": f"Device group '{name}' not found"}
+    existing_cron_jobs = current.get("reply", {}).get("cron_jobs", []) or []
+
+    if mode == "add":
+        new_cron_jobs = list(existing_cron_jobs)
+        for cron_job in cron_jobs:
+            if cron_job not in new_cron_jobs:
+                new_cron_jobs.append(cron_job)
+    else:
+        new_cron_jobs = [c for c in existing_cron_jobs if c not in cron_jobs]
+
+    result = write_comp.handleAsset("device_group", name, "update", {"cron_jobs": new_cron_jobs})
+    if result.get("error"):
+        return {"error": True, "response": result.get("response", "You do not have write access to this device group")}
+    return {"error": False, "response": new_cron_jobs}
+
+
 @router.post("/{name}/apps/add")
 async def add_apps_to_device_group(
     name: str,
@@ -392,6 +457,74 @@ async def remove_apps_from_device_group(
         return {"error": False, "response": f"Removed {req.apps} from '{name}'"}
     except Exception as exc:
         logging.error(f"remove_apps_from_dg {name} failed: {exc}")
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
+
+
+@router.post("/{name}/cron-jobs/add")
+async def add_cron_jobs_to_device_group(
+    name: str,
+    req: CronJobListRequest,
+    session: Session = Depends(verify_firebase_token),
+):
+    """
+    Add cron jobs to a device group.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    req : CronJobListRequest
+        `cron_jobs` to add.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
+    cfg = config_store.get()
+    try:
+        result = _merge_device_group_cron_jobs(cfg, session, name, req.cron_jobs, "add")
+        if result.get("error"):
+            return {"error": True, "response": result.get("response", "add failed")}
+        return {"error": False, "response": f"Added {req.cron_jobs} to '{name}'"}
+    except Exception as exc:
+        logging.error(f"add_cron_jobs_to_dg {name} failed: {exc}")
+        return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
+
+
+@router.post("/{name}/cron-jobs/remove")
+async def remove_cron_jobs_from_device_group(
+    name: str,
+    req: CronJobListRequest,
+    session: Session = Depends(verify_firebase_token),
+):
+    """
+    Remove cron jobs from a device group.
+
+    Parameters
+    ----------
+    name : str
+        Device group name.
+    req : CronJobListRequest
+        `cron_jobs` to remove.
+    session : Session
+        The authenticated caller.
+
+    Returns
+    -------
+    dict
+        ``{"error": bool, "response": <message str>}``.
+    """
+    cfg = config_store.get()
+    try:
+        result = _merge_device_group_cron_jobs(cfg, session, name, req.cron_jobs, "remove")
+        if result.get("error"):
+            return {"error": True, "response": result.get("response", "remove failed")}
+        return {"error": False, "response": f"Removed {req.cron_jobs} from '{name}'"}
+    except Exception as exc:
+        logging.error(f"remove_cron_jobs_from_dg {name} failed: {exc}")
         return {"error": True, "response": nebula_auth.friendly_write_error(exc)}
 
 

@@ -22,6 +22,12 @@ export const addAppsToDeviceGroup = (name: string, apps: string[]) =>
 export const removeAppsFromDeviceGroup = (name: string, apps: string[]) =>
   apiClient.post<ApiResponse>(`/device-groups/${name}/apps/remove`, { apps }).then((r) => r.data);
 
+export const addCronJobsToDeviceGroup = (name: string, cron_jobs: string[]) =>
+  apiClient.post<ApiResponse>(`/device-groups/${name}/cron-jobs/add`, { cron_jobs }).then((r) => r.data);
+
+export const removeCronJobsFromDeviceGroup = (name: string, cron_jobs: string[]) =>
+  apiClient.post<ApiResponse>(`/device-groups/${name}/cron-jobs/remove`, { cron_jobs }).then((r) => r.data);
+
 // Three independent worker-launch modalities — the user picks one. Each
 // returns a self-contained artifact; downloading one has no effect on the
 // others (see nebula_auth.build_worker_env's docstring for why).
