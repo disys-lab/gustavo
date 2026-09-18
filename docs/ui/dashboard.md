@@ -17,7 +17,7 @@ below for what the `Up`/`Down` pills actually check.
 
 ## Platform Services card
 
-Always visible. Shows a status pill for each of the 4 platform services (Redis, MongoDB, Registry, Manager).
+Always visible. Shows a status pill for each of the 5 platform services (Redis, MongoDB, Registry, Manager, Reporter).
 
 - **Green pulsing dot** — service is `Up`
 - **Red dot** — service is `Down`
@@ -73,6 +73,6 @@ The last 8 actions taken in the current session (launches, saves, errors). Sourc
 ## Sidebar health dot
 
 The Dashboard link in the sidebar shows a small dot:
-- **Green** — all 4 services (Redis, MongoDB, Registry, Manager) are `Up`
+- **Green** — all 5 services (Redis, MongoDB, Registry, Manager, Reporter) are `Up`
 - **Red** — at least one service is down
 - **Gray** — status not yet loaded

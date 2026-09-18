@@ -49,3 +49,19 @@ Groups are roles. Each one has:
 Every logged-in user (not just admins) can rotate their own credential from
 the **My credential** action in the sidebar, without needing an admin —
 useful after accidentally sharing a credential, or just as routine hygiene.
+
+## External user groups
+
+A user is **external** if they belong to any group listed in
+[`EXTERNAL_USER_GROUPS`](../configuration.md#external-user-groups) —
+otherwise they're internal. There's no separate flag on the user or the
+group itself; membership alone decides it, and it's checked live on every
+request, not cached at login. Set the list from
+[Settings: External User Groups](settings.md#external-user-groups).
+
+Being external doesn't restrict which apps or device groups a user can see
+— that's still governed entirely by their group's grants — but it forces
+worker config downloads and registry access onto public endpoints
+unconditionally, server-side, regardless of what the UI would otherwise
+default to. See [Device Groups: worker config](device-groups.md#get-worker-config)
+and [Registry: internal vs. external access](registry.md#internal-vs-external-access).

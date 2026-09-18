@@ -94,6 +94,31 @@ Remove one or more apps from a device group.
 
 ---
 
+### `POST /api/device-groups/{name}/cron-jobs/add`
+
+Add one or more cron jobs to a device group without replacing the
+existing list. Mirrors `apps/add`.
+
+**Request body:**
+
+```json
+{ "cron_jobs": ["new_cron_job"] }
+```
+
+---
+
+### `POST /api/device-groups/{name}/cron-jobs/remove`
+
+Remove one or more cron jobs from a device group. Mirrors `apps/remove`.
+
+**Request body:**
+
+```json
+{ "cron_jobs": ["old_cron_job"] }
+```
+
+---
+
 ## Worker config downloads
 
 Four independent ways to get a worker running for this device group — the
@@ -113,11 +138,22 @@ All four accept the same two authentication methods as
 require the caller to actually have access to this device group — admin,
 or a member of a group it's granted to — otherwise `403`.
 
-All four also accept an optional `?gpu=true` query param, which adds
-`GPU_ENABLED=true` to the generated worker config — only use this for a
-device group whose hardware actually has a GPU `nvidia-container-toolkit`
-can expose. It applies to every container that worker launches, not to
-any individual app.
+All four also accept these optional query params:
+
+| Param | Default | Effect |
+|---|---|---|
+| `gpu` | `false` | Adds `GPU_ENABLED=true` — only for a device group whose hardware actually has a GPU `nvidia-container-toolkit` can expose. Applies to every container that worker launches, not to any individual app. |
+| `reporter` | `false` | Emits `REPORTER_HOST`/`REPORTER_PORT`/`REPORTER_PROTOCOL` instead of `REDIS_HOST`/`REDIS_PORT`/`REDIS_AUTH_TOKEN` — mutually exclusive with direct Redis reporting. Forced `true` server-side for a caller in any `EXTERNAL_USER_GROUPS` group, regardless of what's passed — `REDIS_AUTH_TOKEN` is a single shared, unscoped credential an external caller must never receive. |
+| `check_in_time` | `60` | `NEBULA_MANAGER_CHECK_IN_TIME` in seconds — the same loop tick drives both the Nebula poll and the status report, there's no separate timer. |
+| `public_endpoints` | `false` | Uses `PUBLIC_MANAGER_HOST`/`PORT` (and `PUBLIC_REPORTER_HOST`/`PORT` if `reporter` is also set) instead of the internal LAN addresses. Forced `true` server-side for a caller in any `EXTERNAL_USER_GROUPS` group. |
+
+Registry inclusion is never a caller-supplied param — it's derived
+entirely from `PUBLIC_REGISTRY_ENABLED` and whether the caller is an
+external-group member. See [Registry: internal vs. external access](../ui/registry.md#internal-vs-external-access).
+
+```bash
+curl -u alice:her_secret "http://<gustavo-host>:<port>/api/device-groups/production/worker-env?reporter=true&public_endpoints=true&check_in_time=30"
+```
 
 ---
 

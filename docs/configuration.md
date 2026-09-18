@@ -84,6 +84,79 @@ actually uses to talk to Nebula.
 
 ---
 
+## Reporter
+
+`REPORTER_*` configures the Reporter platform service — a REST endpoint
+workers can report status to instead of writing to Redis directly. See
+[Services: Reporter](ui/dashboard.md#platform-services-card) for the
+service lifecycle, and [Device Groups: worker config](ui/device-groups.md#get-worker-config)
+for how a worker is told to use it.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `REPORTER_IMAGE` | `ghcr.io/disys-lab/gustavo-reporter:latest` | Docker image for the Reporter service |
+| `REPORTER_HOST` | host IP | IP or hostname of the Reporter instance |
+| `REPORTER_PORT` | `8090` | Port the Reporter API listens on |
+| `GUSTAVO_API_HOST` | host IP | Host Reporter uses to reach Gustavo's own API to verify worker credentials |
+| `GUSTAVO_API_PORT` | `3002` | Gustavo's **host-published** port — not FastAPI's internal `8000` (bound to `127.0.0.1` inside Gustavo's own container, unreachable from Reporter's separate container) |
+
+!!! note
+    `GUSTAVO_API_PORT` must match whatever port the `gustavo` container is
+    actually published on for the deployment (e.g. `3000:3000` in this
+    repo's own `docker-compose.yml`, but `3002:3000` on a host where port
+    3000 was already taken by something else). Getting this wrong makes
+    Reporter's credential-verification calls fail silently.
+
+---
+
+## Public Facing Endpoints
+
+Externally-reachable addresses for Manager, Reporter, and Gustavo itself —
+e.g. behind a Cloudflare Tunnel — separate from the internal LAN addresses
+above. Only applied when a worker config download explicitly opts in, or
+the caller belongs to an [external user group](#external-user-groups).
+Protocol is always `https` for these: a public endpoint always terminates
+TLS at the edge.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `PUBLIC_ENDPOINTS_ENABLED` | `false` | Master switch. Off means every download keeps using the internal `*_HOST`/`*_PORT` values regardless of anything below |
+| `PUBLIC_MANAGER_HOST` / `PUBLIC_MANAGER_PORT` | _(empty)_ / `443` | Public Manager address |
+| `PUBLIC_REPORTER_HOST` / `PUBLIC_REPORTER_PORT` | _(empty)_ / `443` | Public Reporter address |
+| `PUBLIC_GUSTAVO_HOST` / `PUBLIC_GUSTAVO_PORT` | _(empty)_ / `443` | Public Gustavo address (reserved for future use — no current consumer) |
+
+See [Settings: Public Facing Endpoints](ui/settings.md#public-facing-endpoints)
+and [Device Groups: Public Facing Access](ui/device-groups.md#get-worker-config).
+
+---
+
+## Public Registry Access
+
+A separate, stricter opt-in from `PUBLIC_ENDPOINTS_ENABLED` above — off by
+default even when that's on.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `PUBLIC_REGISTRY_ENABLED` | `false` | When `true`, `PUBLIC_REGISTRY_HOST`/`PORT` becomes *the* registry for every worker config and the Registry tab, for every caller — not just external users. When `false`, external users get no registry access at all; everyone else keeps the internal `REGISTRY_HOST`/`PORT` unconditionally |
+| `PUBLIC_REGISTRY_HOST` / `PUBLIC_REGISTRY_PORT` | _(empty)_ / `443` | Public registry address |
+
+See [Registry](ui/registry.md) for the full pull/push policy this drives.
+
+---
+
+## External User Groups
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `EXTERNAL_USER_GROUPS` | `[]` | Nebula user groups whose members are treated as external — see [External Users](ui/users.md#external-user-groups) |
+
+Membership in any listed group makes worker-config downloads and Registry
+access mandatory-public for that user, regardless of any per-device-group
+checkbox they'd otherwise control. Nobody is external until an admin
+explicitly adds a group here.
+
+---
+
 ## Worker / Misc
 
 | Key | Default | Description |

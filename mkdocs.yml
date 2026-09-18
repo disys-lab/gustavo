@@ -50,6 +50,7 @@ nav:
     - Configuration: api/config.md
     - Services: api/services.md
     - Apps: api/apps.md
+    - Cron Jobs: api/cron-jobs.md
     - Device Groups: api/device-groups.md
     - Monitoring: api/monitoring.md
     - Backups: api/backups.md
@@ -59,7 +60,9 @@ nav:
     - Overview: ui/index.md
     - Dashboard: ui/dashboard.md
     - Apps: ui/apps.md
+    - Cron Jobs: ui/cron-jobs.md
     - Device Groups: ui/device-groups.md
+    - Registry: ui/registry.md
     - Monitoring: ui/monitoring.md
     - Backups: ui/backups.md
     - Settings: ui/settings.md

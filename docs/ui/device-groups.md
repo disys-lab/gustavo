@@ -43,6 +43,18 @@ Changes take effect on the next Nebula sync cycle on each worker.
 
 ---
 
+## Current Cron Jobs
+
+Each device group's row lists its assigned cron jobs the same way it lists
+apps. Use **Add Cron Jobs** / **Remove Cron Jobs** to manage membership
+without replacing the full list, or **Edit** to replace it entirely. See
+[Cron Jobs](cron-jobs.md) for creating the cron jobs themselves.
+
+Changes take effect on the next Nebula sync cycle on each worker, same as
+app assignment.
+
+---
+
 ## Get worker config
 
 Each device group's row has a **Get worker config** section with four
@@ -61,15 +73,25 @@ Every filename includes the device group's name, so downloads for
 different groups never collide or silently overwrite each other in your
 downloads folder.
 
-A **GPU Enabled** checkbox sits above the four buttons. Check it only for
-a device group whose hardware actually has a GPU `nvidia-container-toolkit`
-can expose — it adds `GPU_ENABLED=true` to whichever format you download,
-granting every container that worker launches GPU access. This applies to
-the worker as a whole, not to any individual app: there's nothing to
-configure per-app.
+Four controls sit above the buttons and apply to whichever format you
+download next:
 
-All four require you to actually have access to the device group whose
-button you clicked — same permission check as everything else on this
-page. See [Device Groups API](../api/device-groups.md#worker-config-downloads)
+| Control | Effect |
+|---|---|
+| **GPU Enabled** | Adds `GPU_ENABLED=true`, granting every container the worker launches GPU access. Only check this for hardware that actually has a GPU `nvidia-container-toolkit` can expose. Applies to the worker as a whole, not per-app. |
+| **Report via Reporter** | Switches worker status reporting from direct Redis writes to HTTP(S) calls to the [Reporter](../configuration.md#reporter) service. Unchecked (direct Redis) is the default. |
+| **Public Facing Access** | Bakes in the public Manager/Reporter addresses ([Settings: Public Facing Endpoints](settings.md#public-facing-endpoints)) instead of the internal ones, for a worker reaching this platform from outside — e.g. behind a Cloudflare Tunnel. Disabled until an admin turns on `PUBLIC_ENDPOINTS_ENABLED` in Settings. |
+| **Check-in / Report Interval (seconds)** | How often the worker polls Nebula and reports status — one shared timer, not two. Defaults to 60. |
+
+If you belong to an [external user group](users.md#external-user-groups),
+**Report via Reporter** and **Public Facing Access** are locked on and
+can't be unchecked — an external caller is never handed the shared
+internal Redis credential or a LAN address it can't reach anyway.
+Registry inclusion is not a checkbox at all: it's decided automatically by
+[registry policy](registry.md#internal-vs-external-access).
+
+All four downloads require you to actually have access to the device
+group whose button you clicked — same permission check as everything else
+on this page. See [Device Groups API](../api/device-groups.md#worker-config-downloads)
 for the underlying endpoints, including how to fetch these the same way
 from a script over SSH instead of clicking a button.

@@ -1,6 +1,6 @@
 # Services API
 
-Manage the lifecycle of the five core platform services: **redis**, **mongo**, **registry**, **syncer**, and **manager**.
+Manage the lifecycle of the six core platform services: **redis**, **mongo**, **registry**, **syncer**, **manager**, and **reporter**.
 
 ::: gustavo.api.routers.services
 
@@ -15,7 +15,8 @@ Manage the lifecycle of the five core platform services: **redis**, **mongo**, *
 | `registry` | Local Docker image registry |
 | `syncer` | DREGSY image syncer |
 | `manager` | Nebula Manager API |
-| `all` | All five services (for `run` endpoint only) |
+| `reporter` | [Reporter](../configuration.md#reporter) — REST worker status endpoint |
+| `all` | All six services (for `run` endpoint only) |
 
 ---
 
@@ -23,7 +24,7 @@ Manage the lifecycle of the five core platform services: **redis**, **mongo**, *
 
 ### `GET /api/services`
 
-Return the status of all five services in a single response.
+Return the status of all six services in a single response.
 
 **Response:**
 
@@ -35,7 +36,8 @@ Return the status of all five services in a single response.
     "mongo":    { "error": false, "response": "running" },
     "registry": { "error": false, "response": "running" },
     "syncer":   { "error": true,  "response": "not found" },
-    "manager":  { "error": false, "response": "running" }
+    "manager":  { "error": false, "response": "running" },
+    "reporter": { "error": false, "response": "running" }
   }
 }
 ```

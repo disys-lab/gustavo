@@ -108,9 +108,11 @@ Return server-side default environment variables for new applications. These inc
 
 ### `GET /api/apps/registry/images`
 
-List all images and their tags in the local Docker registry.
+List all images and their tags in the registry, subject to the same
+internal/external access policy as worker config downloads — see
+[Registry: internal vs. external access](../ui/registry.md#internal-vs-external-access).
 
-**Response:**
+**Response (registry reachable):**
 
 ```json
 {
@@ -123,6 +125,18 @@ List all images and their tags in the local Docker registry.
     "catalog_url": "http://192.168.1.100:5001/v2/_catalog"
   }
 }
+```
+
+**Response (external caller, `PUBLIC_REGISTRY_ENABLED` off — no request attempted):**
+
+```json
+{ "error": true, "response": { "message": "...", "registry_disabled": true } }
+```
+
+**Response (registry configured but unreachable):**
+
+```json
+{ "error": true, "response": { "message": "...", "registry_unreachable": true } }
 ```
 
 ---
