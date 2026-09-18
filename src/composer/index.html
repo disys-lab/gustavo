@@ -1788,6 +1788,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#gustavo.src.Composer.Composer.handleDeviceGroupCronJobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        handleDeviceGroupCronJobs
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2666,7 +2677,88 @@ for an exception.</p>
 <span class="normal"><a href="#__codelineno-0-507">507</a></span>
 <span class="normal"><a href="#__codelineno-0-508">508</a></span>
 <span class="normal"><a href="#__codelineno-0-509">509</a></span>
-<span class="normal"><a href="#__codelineno-0-510">510</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">Composer</span><span class="p">(</span><span class="n">NebulaBase</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-510">510</a></span>
+<span class="normal"><a href="#__codelineno-0-511">511</a></span>
+<span class="normal"><a href="#__codelineno-0-512">512</a></span>
+<span class="normal"><a href="#__codelineno-0-513">513</a></span>
+<span class="normal"><a href="#__codelineno-0-514">514</a></span>
+<span class="normal"><a href="#__codelineno-0-515">515</a></span>
+<span class="normal"><a href="#__codelineno-0-516">516</a></span>
+<span class="normal"><a href="#__codelineno-0-517">517</a></span>
+<span class="normal"><a href="#__codelineno-0-518">518</a></span>
+<span class="normal"><a href="#__codelineno-0-519">519</a></span>
+<span class="normal"><a href="#__codelineno-0-520">520</a></span>
+<span class="normal"><a href="#__codelineno-0-521">521</a></span>
+<span class="normal"><a href="#__codelineno-0-522">522</a></span>
+<span class="normal"><a href="#__codelineno-0-523">523</a></span>
+<span class="normal"><a href="#__codelineno-0-524">524</a></span>
+<span class="normal"><a href="#__codelineno-0-525">525</a></span>
+<span class="normal"><a href="#__codelineno-0-526">526</a></span>
+<span class="normal"><a href="#__codelineno-0-527">527</a></span>
+<span class="normal"><a href="#__codelineno-0-528">528</a></span>
+<span class="normal"><a href="#__codelineno-0-529">529</a></span>
+<span class="normal"><a href="#__codelineno-0-530">530</a></span>
+<span class="normal"><a href="#__codelineno-0-531">531</a></span>
+<span class="normal"><a href="#__codelineno-0-532">532</a></span>
+<span class="normal"><a href="#__codelineno-0-533">533</a></span>
+<span class="normal"><a href="#__codelineno-0-534">534</a></span>
+<span class="normal"><a href="#__codelineno-0-535">535</a></span>
+<span class="normal"><a href="#__codelineno-0-536">536</a></span>
+<span class="normal"><a href="#__codelineno-0-537">537</a></span>
+<span class="normal"><a href="#__codelineno-0-538">538</a></span>
+<span class="normal"><a href="#__codelineno-0-539">539</a></span>
+<span class="normal"><a href="#__codelineno-0-540">540</a></span>
+<span class="normal"><a href="#__codelineno-0-541">541</a></span>
+<span class="normal"><a href="#__codelineno-0-542">542</a></span>
+<span class="normal"><a href="#__codelineno-0-543">543</a></span>
+<span class="normal"><a href="#__codelineno-0-544">544</a></span>
+<span class="normal"><a href="#__codelineno-0-545">545</a></span>
+<span class="normal"><a href="#__codelineno-0-546">546</a></span>
+<span class="normal"><a href="#__codelineno-0-547">547</a></span>
+<span class="normal"><a href="#__codelineno-0-548">548</a></span>
+<span class="normal"><a href="#__codelineno-0-549">549</a></span>
+<span class="normal"><a href="#__codelineno-0-550">550</a></span>
+<span class="normal"><a href="#__codelineno-0-551">551</a></span>
+<span class="normal"><a href="#__codelineno-0-552">552</a></span>
+<span class="normal"><a href="#__codelineno-0-553">553</a></span>
+<span class="normal"><a href="#__codelineno-0-554">554</a></span>
+<span class="normal"><a href="#__codelineno-0-555">555</a></span>
+<span class="normal"><a href="#__codelineno-0-556">556</a></span>
+<span class="normal"><a href="#__codelineno-0-557">557</a></span>
+<span class="normal"><a href="#__codelineno-0-558">558</a></span>
+<span class="normal"><a href="#__codelineno-0-559">559</a></span>
+<span class="normal"><a href="#__codelineno-0-560">560</a></span>
+<span class="normal"><a href="#__codelineno-0-561">561</a></span>
+<span class="normal"><a href="#__codelineno-0-562">562</a></span>
+<span class="normal"><a href="#__codelineno-0-563">563</a></span>
+<span class="normal"><a href="#__codelineno-0-564">564</a></span>
+<span class="normal"><a href="#__codelineno-0-565">565</a></span>
+<span class="normal"><a href="#__codelineno-0-566">566</a></span>
+<span class="normal"><a href="#__codelineno-0-567">567</a></span>
+<span class="normal"><a href="#__codelineno-0-568">568</a></span>
+<span class="normal"><a href="#__codelineno-0-569">569</a></span>
+<span class="normal"><a href="#__codelineno-0-570">570</a></span>
+<span class="normal"><a href="#__codelineno-0-571">571</a></span>
+<span class="normal"><a href="#__codelineno-0-572">572</a></span>
+<span class="normal"><a href="#__codelineno-0-573">573</a></span>
+<span class="normal"><a href="#__codelineno-0-574">574</a></span>
+<span class="normal"><a href="#__codelineno-0-575">575</a></span>
+<span class="normal"><a href="#__codelineno-0-576">576</a></span>
+<span class="normal"><a href="#__codelineno-0-577">577</a></span>
+<span class="normal"><a href="#__codelineno-0-578">578</a></span>
+<span class="normal"><a href="#__codelineno-0-579">579</a></span>
+<span class="normal"><a href="#__codelineno-0-580">580</a></span>
+<span class="normal"><a href="#__codelineno-0-581">581</a></span>
+<span class="normal"><a href="#__codelineno-0-582">582</a></span>
+<span class="normal"><a href="#__codelineno-0-583">583</a></span>
+<span class="normal"><a href="#__codelineno-0-584">584</a></span>
+<span class="normal"><a href="#__codelineno-0-585">585</a></span>
+<span class="normal"><a href="#__codelineno-0-586">586</a></span>
+<span class="normal"><a href="#__codelineno-0-587">587</a></span>
+<span class="normal"><a href="#__codelineno-0-588">588</a></span>
+<span class="normal"><a href="#__codelineno-0-589">589</a></span>
+<span class="normal"><a href="#__codelineno-0-590">590</a></span>
+<span class="normal"><a href="#__codelineno-0-591">591</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">Composer</span><span class="p">(</span><span class="n">NebulaBase</span><span class="p">):</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="w">    </span><span class="sd">"""</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12"></a><span class="sd">    Creates, updates, and deletes user-deployed apps and device groups via the Nebula API.</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13"></a>
@@ -3023,17 +3115,17 @@ for an exception.</p>
 <a id="__codelineno-0-364" name="__codelineno-0-364"></a><span class="sd">        Parameters</span>
 <a id="__codelineno-0-365" name="__codelineno-0-365"></a><span class="sd">        ----------</span>
 <a id="__codelineno-0-366" name="__codelineno-0-366"></a><span class="sd">        asset_type : str</span>
-<a id="__codelineno-0-367" name="__codelineno-0-367"></a><span class="sd">            `"app"` or `"device_group"`.</span>
+<a id="__codelineno-0-367" name="__codelineno-0-367"></a><span class="sd">            `"app"`, `"device_group"`, or `"cron_job"`.</span>
 <a id="__codelineno-0-368" name="__codelineno-0-368"></a><span class="sd">        asset_name : str</span>
 <a id="__codelineno-0-369" name="__codelineno-0-369"></a><span class="sd">            The asset's name.</span>
 <a id="__codelineno-0-370" name="__codelineno-0-370"></a><span class="sd">        mode : str</span>
 <a id="__codelineno-0-371" name="__codelineno-0-371"></a><span class="sd">            `"create"`, `"update"`, or `"delete"` (case-insensitive).</span>
 <a id="__codelineno-0-372" name="__codelineno-0-372"></a><span class="sd">        config : dict or None, optional</span>
 <a id="__codelineno-0-373" name="__codelineno-0-373"></a><span class="sd">            The asset's configuration. Required for `"create"`/</span>
-<a id="__codelineno-0-374" name="__codelineno-0-374"></a><span class="sd">            `"update"`; ignored for `"delete"`. For `asset_type="app"`,</span>
-<a id="__codelineno-0-375" name="__codelineno-0-375"></a><span class="sd">            must contain `"docker_image"` - it's checked against the</span>
-<a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="sd">            local registry (`checkImageExists`) before the Nebula</span>
-<a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="sd">            call is made.</span>
+<a id="__codelineno-0-374" name="__codelineno-0-374"></a><span class="sd">            `"update"`; ignored for `"delete"`. For `asset_type="app"`</span>
+<a id="__codelineno-0-375" name="__codelineno-0-375"></a><span class="sd">            or `asset_type="cron_job"`, must contain `"docker_image"` -</span>
+<a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="sd">            it's checked against the local registry (`checkImageExists`)</span>
+<a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="sd">            before the Nebula call is made.</span>
 <a id="__codelineno-0-378" name="__codelineno-0-378"></a>
 <a id="__codelineno-0-379" name="__codelineno-0-379"></a><span class="sd">        Returns</span>
 <a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">        -------</span>
@@ -3062,111 +3154,192 @@ for an exception.</p>
 <a id="__codelineno-0-403" name="__codelineno-0-403"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
 <a id="__codelineno-0-404" name="__codelineno-0-404"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">create_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-0-405" name="__codelineno-0-405"></a>
-<a id="__codelineno-0-406" name="__codelineno-0-406"></a>            <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-407" name="__codelineno-0-407"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-408" name="__codelineno-0-408"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
-<a id="__codelineno-0-409" name="__codelineno-0-409"></a>            <span class="n">moding</span> <span class="o">=</span> <span class="s2">"creat"</span>
-<a id="__codelineno-0-410" name="__codelineno-0-410"></a>
-<a id="__codelineno-0-411" name="__codelineno-0-411"></a>        <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"update"</span><span class="p">:</span>
-<a id="__codelineno-0-412" name="__codelineno-0-412"></a>            <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">202</span>
-<a id="__codelineno-0-413" name="__codelineno-0-413"></a>            <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
-<a id="__codelineno-0-414" name="__codelineno-0-414"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
-<a id="__codelineno-0-415" name="__codelineno-0-415"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-0-416" name="__codelineno-0-416"></a>
-<a id="__codelineno-0-417" name="__codelineno-0-417"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
-<a id="__codelineno-0-418" name="__codelineno-0-418"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-0-419" name="__codelineno-0-419"></a>
-<a id="__codelineno-0-420" name="__codelineno-0-420"></a>            <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-421" name="__codelineno-0-421"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-422" name="__codelineno-0-422"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
-<a id="__codelineno-0-423" name="__codelineno-0-423"></a>            <span class="n">moding</span> <span class="o">=</span> <span class="s2">"updat"</span>
-<a id="__codelineno-0-424" name="__codelineno-0-424"></a>
-<a id="__codelineno-0-425" name="__codelineno-0-425"></a>        <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"delete"</span><span class="p">:</span>
-<a id="__codelineno-0-426" name="__codelineno-0-426"></a>            <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">200</span>
-<a id="__codelineno-0-427" name="__codelineno-0-427"></a>            <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
-<a id="__codelineno-0-428" name="__codelineno-0-428"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
-<a id="__codelineno-0-429" name="__codelineno-0-429"></a>
-<a id="__codelineno-0-430" name="__codelineno-0-430"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
-<a id="__codelineno-0-431" name="__codelineno-0-431"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
+<a id="__codelineno-0-406" name="__codelineno-0-406"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"cron_job"</span><span class="p">:</span>
+<a id="__codelineno-0-407" name="__codelineno-0-407"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
+<a id="__codelineno-0-408" name="__codelineno-0-408"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">create_cron_job</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-409" name="__codelineno-0-409"></a>
+<a id="__codelineno-0-410" name="__codelineno-0-410"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-411" name="__codelineno-0-411"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-412" name="__codelineno-0-412"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
+<a id="__codelineno-0-413" name="__codelineno-0-413"></a>            <span class="n">moding</span> <span class="o">=</span> <span class="s2">"creat"</span>
+<a id="__codelineno-0-414" name="__codelineno-0-414"></a>
+<a id="__codelineno-0-415" name="__codelineno-0-415"></a>        <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"update"</span><span class="p">:</span>
+<a id="__codelineno-0-416" name="__codelineno-0-416"></a>            <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">202</span>
+<a id="__codelineno-0-417" name="__codelineno-0-417"></a>            <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
+<a id="__codelineno-0-418" name="__codelineno-0-418"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
+<a id="__codelineno-0-419" name="__codelineno-0-419"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-420" name="__codelineno-0-420"></a>
+<a id="__codelineno-0-421" name="__codelineno-0-421"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
+<a id="__codelineno-0-422" name="__codelineno-0-422"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-423" name="__codelineno-0-423"></a>
+<a id="__codelineno-0-424" name="__codelineno-0-424"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"cron_job"</span><span class="p">:</span>
+<a id="__codelineno-0-425" name="__codelineno-0-425"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
+<a id="__codelineno-0-426" name="__codelineno-0-426"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_cron_job</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-427" name="__codelineno-0-427"></a>
+<a id="__codelineno-0-428" name="__codelineno-0-428"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-429" name="__codelineno-0-429"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-430" name="__codelineno-0-430"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
+<a id="__codelineno-0-431" name="__codelineno-0-431"></a>            <span class="n">moding</span> <span class="o">=</span> <span class="s2">"updat"</span>
 <a id="__codelineno-0-432" name="__codelineno-0-432"></a>
-<a id="__codelineno-0-433" name="__codelineno-0-433"></a>            <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-434" name="__codelineno-0-434"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-435" name="__codelineno-0-435"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
-<a id="__codelineno-0-436" name="__codelineno-0-436"></a>            <span class="n">moding</span> <span class="o">=</span> <span class="s2">"delet"</span>
-<a id="__codelineno-0-437" name="__codelineno-0-437"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-438" name="__codelineno-0-438"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown command </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-439" name="__codelineno-0-439"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown command "</span> <span class="o">+</span> <span class="n">mode</span><span class="p">}</span>
+<a id="__codelineno-0-433" name="__codelineno-0-433"></a>        <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"delete"</span><span class="p">:</span>
+<a id="__codelineno-0-434" name="__codelineno-0-434"></a>            <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">200</span>
+<a id="__codelineno-0-435" name="__codelineno-0-435"></a>            <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
+<a id="__codelineno-0-436" name="__codelineno-0-436"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
+<a id="__codelineno-0-437" name="__codelineno-0-437"></a>
+<a id="__codelineno-0-438" name="__codelineno-0-438"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
+<a id="__codelineno-0-439" name="__codelineno-0-439"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
 <a id="__codelineno-0-440" name="__codelineno-0-440"></a>
-<a id="__codelineno-0-441" name="__codelineno-0-441"></a>        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
-<a id="__codelineno-0-442" name="__codelineno-0-442"></a>            <span class="n">reply</span><span class="p">,</span> <span class="n">accept_code</span><span class="p">,</span> <span class="n">moding</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_name</span>
-<a id="__codelineno-0-443" name="__codelineno-0-443"></a>        <span class="p">)</span>
-<a id="__codelineno-0-444" name="__codelineno-0-444"></a>
-<a id="__codelineno-0-445" name="__codelineno-0-445"></a>        <span class="k">return</span> <span class="n">retval</span>
-<a id="__codelineno-0-446" name="__codelineno-0-446"></a>
-<a id="__codelineno-0-447" name="__codelineno-0-447"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">handleDeviceGroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s2">"bca"</span><span class="p">):</span>
-<a id="__codelineno-0-448" name="__codelineno-0-448"></a><span class="w">        </span><span class="sd">"""</span>
-<a id="__codelineno-0-449" name="__codelineno-0-449"></a><span class="sd">        Add or remove apps from a device group's app list.</span>
-<a id="__codelineno-0-450" name="__codelineno-0-450"></a>
-<a id="__codelineno-0-451" name="__codelineno-0-451"></a><span class="sd">        Fetches the device group's current app list, computes the new</span>
-<a id="__codelineno-0-452" name="__codelineno-0-452"></a><span class="sd">        list by adding (`mode="update"`) or removing (`mode="delete"`)</span>
-<a id="__codelineno-0-453" name="__codelineno-0-453"></a><span class="sd">        the apps named in `app_list`, then calls `handleAsset` to push</span>
-<a id="__codelineno-0-454" name="__codelineno-0-454"></a><span class="sd">        the updated list.</span>
+<a id="__codelineno-0-441" name="__codelineno-0-441"></a>            <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"cron_job"</span><span class="p">:</span>
+<a id="__codelineno-0-442" name="__codelineno-0-442"></a>                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_cron_job</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
+<a id="__codelineno-0-443" name="__codelineno-0-443"></a>
+<a id="__codelineno-0-444" name="__codelineno-0-444"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-445" name="__codelineno-0-445"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-446" name="__codelineno-0-446"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
+<a id="__codelineno-0-447" name="__codelineno-0-447"></a>            <span class="n">moding</span> <span class="o">=</span> <span class="s2">"delet"</span>
+<a id="__codelineno-0-448" name="__codelineno-0-448"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-449" name="__codelineno-0-449"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown command </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-450" name="__codelineno-0-450"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown command "</span> <span class="o">+</span> <span class="n">mode</span><span class="p">}</span>
+<a id="__codelineno-0-451" name="__codelineno-0-451"></a>
+<a id="__codelineno-0-452" name="__codelineno-0-452"></a>        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-453" name="__codelineno-0-453"></a>            <span class="n">reply</span><span class="p">,</span> <span class="n">accept_code</span><span class="p">,</span> <span class="n">moding</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_name</span>
+<a id="__codelineno-0-454" name="__codelineno-0-454"></a>        <span class="p">)</span>
 <a id="__codelineno-0-455" name="__codelineno-0-455"></a>
-<a id="__codelineno-0-456" name="__codelineno-0-456"></a><span class="sd">        Parameters</span>
-<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="sd">        ----------</span>
-<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="sd">        app_list : str</span>
-<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="sd">            Comma-separated app names to add or remove.</span>
-<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">        mode : str</span>
-<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">            `"update"` to add the named apps (skipping ones already</span>
-<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">            present), or `"delete"` to remove them.</span>
-<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        device_group : str, optional</span>
-<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">            The device group to modify. Defaults to `"bca"`.</span>
-<a id="__codelineno-0-465" name="__codelineno-0-465"></a>
-<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">        Returns</span>
-<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">        -------</span>
-<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">        dict</span>
-<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">            ``{"error": bool, "response": ...}``. On success,</span>
-<a id="__codelineno-0-470" name="__codelineno-0-470"></a><span class="sd">            `response` is the device group's resulting app list</span>
-<a id="__codelineno-0-471" name="__codelineno-0-471"></a><span class="sd">            (`list`). On failure, `response` is a message string -</span>
-<a id="__codelineno-0-472" name="__codelineno-0-472"></a><span class="sd">            from `mode` being unrecognized, `handleAsset` failing to</span>
-<a id="__codelineno-0-473" name="__codelineno-0-473"></a><span class="sd">            push the update, or the initial list-fetch failing.</span>
-<a id="__codelineno-0-474" name="__codelineno-0-474"></a><span class="sd">        """</span>
-<a id="__codelineno-0-475" name="__codelineno-0-475"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
-<a id="__codelineno-0-476" name="__codelineno-0-476"></a>        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
-<a id="__codelineno-0-477" name="__codelineno-0-477"></a>            <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
-<a id="__codelineno-0-478" name="__codelineno-0-478"></a>        <span class="p">)</span>
-<a id="__codelineno-0-479" name="__codelineno-0-479"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
-<a id="__codelineno-0-480" name="__codelineno-0-480"></a>            <span class="n">new_app_list</span> <span class="o">=</span> <span class="n">app_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
-<a id="__codelineno-0-481" name="__codelineno-0-481"></a>            <span class="n">existing_app_list</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]</span>
-<a id="__codelineno-0-482" name="__codelineno-0-482"></a>            <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">existing_app_list</span>
-<a id="__codelineno-0-483" name="__codelineno-0-483"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"delete"</span><span class="p">:</span>
-<a id="__codelineno-0-484" name="__codelineno-0-484"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-485" name="__codelineno-0-485"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unsupported mode"</span><span class="p">}</span>
-<a id="__codelineno-0-486" name="__codelineno-0-486"></a>            <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">new_app_list</span><span class="p">:</span>
-<a id="__codelineno-0-487" name="__codelineno-0-487"></a>                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
-<a id="__codelineno-0-488" name="__codelineno-0-488"></a>                    <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">apps_to_be_modified</span> <span class="o">+</span> <span class="p">[</span><span class="n">app</span><span class="p">]</span>
-<a id="__codelineno-0-489" name="__codelineno-0-489"></a>                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"delete"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
-<a id="__codelineno-0-490" name="__codelineno-0-490"></a>                    <span class="n">apps_to_be_modified</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
-<a id="__codelineno-0-491" name="__codelineno-0-491"></a>
-<a id="__codelineno-0-492" name="__codelineno-0-492"></a>            <span class="n">device_group_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">"apps"</span><span class="p">:</span> <span class="n">apps_to_be_modified</span><span class="p">})</span>
-<a id="__codelineno-0-493" name="__codelineno-0-493"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Device Group Config: </span><span class="si">{</span><span class="n">device_group_config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-494" name="__codelineno-0-494"></a>            <span class="n">responseDG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handleAsset</span><span class="p">(</span>
-<a id="__codelineno-0-495" name="__codelineno-0-495"></a>                <span class="s2">"device_group"</span><span class="p">,</span> <span class="n">device_group</span><span class="p">,</span> <span class="s2">"update"</span><span class="p">,</span> <span class="n">device_group_config</span>
-<a id="__codelineno-0-496" name="__codelineno-0-496"></a>            <span class="p">)</span>
-<a id="__codelineno-0-497" name="__codelineno-0-497"></a>
-<a id="__codelineno-0-498" name="__codelineno-0-498"></a>            <span class="k">if</span> <span class="n">responseDG</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
-<a id="__codelineno-0-499" name="__codelineno-0-499"></a>                <span class="k">return</span> <span class="n">responseDG</span>
-<a id="__codelineno-0-500" name="__codelineno-0-500"></a>
-<a id="__codelineno-0-501" name="__codelineno-0-501"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-456" name="__codelineno-0-456"></a>        <span class="k">return</span> <span class="n">retval</span>
+<a id="__codelineno-0-457" name="__codelineno-0-457"></a>
+<a id="__codelineno-0-458" name="__codelineno-0-458"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">handleDeviceGroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s2">"bca"</span><span class="p">):</span>
+<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="w">        </span><span class="sd">"""</span>
+<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">        Add or remove apps from a device group's app list.</span>
+<a id="__codelineno-0-461" name="__codelineno-0-461"></a>
+<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">        Fetches the device group's current app list, computes the new</span>
+<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">        list by adding (`mode="update"`) or removing (`mode="delete"`)</span>
+<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">        the apps named in `app_list`, then calls `handleAsset` to push</span>
+<a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">        the updated list.</span>
+<a id="__codelineno-0-466" name="__codelineno-0-466"></a>
+<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">        Parameters</span>
+<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">        ----------</span>
+<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">        app_list : str</span>
+<a id="__codelineno-0-470" name="__codelineno-0-470"></a><span class="sd">            Comma-separated app names to add or remove.</span>
+<a id="__codelineno-0-471" name="__codelineno-0-471"></a><span class="sd">        mode : str</span>
+<a id="__codelineno-0-472" name="__codelineno-0-472"></a><span class="sd">            `"update"` to add the named apps (skipping ones already</span>
+<a id="__codelineno-0-473" name="__codelineno-0-473"></a><span class="sd">            present), or `"delete"` to remove them.</span>
+<a id="__codelineno-0-474" name="__codelineno-0-474"></a><span class="sd">        device_group : str, optional</span>
+<a id="__codelineno-0-475" name="__codelineno-0-475"></a><span class="sd">            The device group to modify. Defaults to `"bca"`.</span>
+<a id="__codelineno-0-476" name="__codelineno-0-476"></a>
+<a id="__codelineno-0-477" name="__codelineno-0-477"></a><span class="sd">        Returns</span>
+<a id="__codelineno-0-478" name="__codelineno-0-478"></a><span class="sd">        -------</span>
+<a id="__codelineno-0-479" name="__codelineno-0-479"></a><span class="sd">        dict</span>
+<a id="__codelineno-0-480" name="__codelineno-0-480"></a><span class="sd">            ``{"error": bool, "response": ...}``. On success,</span>
+<a id="__codelineno-0-481" name="__codelineno-0-481"></a><span class="sd">            `response` is the device group's resulting app list</span>
+<a id="__codelineno-0-482" name="__codelineno-0-482"></a><span class="sd">            (`list`). On failure, `response` is a message string -</span>
+<a id="__codelineno-0-483" name="__codelineno-0-483"></a><span class="sd">            from `mode` being unrecognized, `handleAsset` failing to</span>
+<a id="__codelineno-0-484" name="__codelineno-0-484"></a><span class="sd">            push the update, or the initial list-fetch failing.</span>
+<a id="__codelineno-0-485" name="__codelineno-0-485"></a><span class="sd">        """</span>
+<a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-487" name="__codelineno-0-487"></a>        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-488" name="__codelineno-0-488"></a>            <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-489" name="__codelineno-0-489"></a>        <span class="p">)</span>
+<a id="__codelineno-0-490" name="__codelineno-0-490"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-491" name="__codelineno-0-491"></a>            <span class="n">new_app_list</span> <span class="o">=</span> <span class="n">app_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+<a id="__codelineno-0-492" name="__codelineno-0-492"></a>            <span class="n">existing_app_list</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]</span>
+<a id="__codelineno-0-493" name="__codelineno-0-493"></a>            <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">existing_app_list</span>
+<a id="__codelineno-0-494" name="__codelineno-0-494"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"delete"</span><span class="p">:</span>
+<a id="__codelineno-0-495" name="__codelineno-0-495"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-496" name="__codelineno-0-496"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unsupported mode"</span><span class="p">}</span>
+<a id="__codelineno-0-497" name="__codelineno-0-497"></a>            <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">new_app_list</span><span class="p">:</span>
+<a id="__codelineno-0-498" name="__codelineno-0-498"></a>                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
+<a id="__codelineno-0-499" name="__codelineno-0-499"></a>                    <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">apps_to_be_modified</span> <span class="o">+</span> <span class="p">[</span><span class="n">app</span><span class="p">]</span>
+<a id="__codelineno-0-500" name="__codelineno-0-500"></a>                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"delete"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
+<a id="__codelineno-0-501" name="__codelineno-0-501"></a>                    <span class="n">apps_to_be_modified</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 <a id="__codelineno-0-502" name="__codelineno-0-502"></a>
-<a id="__codelineno-0-503" name="__codelineno-0-503"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
-<a id="__codelineno-0-504" name="__codelineno-0-504"></a>                <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
-<a id="__codelineno-0-505" name="__codelineno-0-505"></a>            <span class="p">)</span>
-<a id="__codelineno-0-506" name="__codelineno-0-506"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Apps: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">'reply'</span><span class="p">][</span><span class="s1">'apps'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-507" name="__codelineno-0-507"></a>
-<a id="__codelineno-0-508" name="__codelineno-0-508"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]}</span>
-<a id="__codelineno-0-509" name="__codelineno-0-509"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-510" name="__codelineno-0-510"></a>            <span class="k">return</span> <span class="n">success</span>
+<a id="__codelineno-0-503" name="__codelineno-0-503"></a>            <span class="n">device_group_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">"apps"</span><span class="p">:</span> <span class="n">apps_to_be_modified</span><span class="p">})</span>
+<a id="__codelineno-0-504" name="__codelineno-0-504"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Device Group Config: </span><span class="si">{</span><span class="n">device_group_config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-505" name="__codelineno-0-505"></a>            <span class="n">responseDG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handleAsset</span><span class="p">(</span>
+<a id="__codelineno-0-506" name="__codelineno-0-506"></a>                <span class="s2">"device_group"</span><span class="p">,</span> <span class="n">device_group</span><span class="p">,</span> <span class="s2">"update"</span><span class="p">,</span> <span class="n">device_group_config</span>
+<a id="__codelineno-0-507" name="__codelineno-0-507"></a>            <span class="p">)</span>
+<a id="__codelineno-0-508" name="__codelineno-0-508"></a>
+<a id="__codelineno-0-509" name="__codelineno-0-509"></a>            <span class="k">if</span> <span class="n">responseDG</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-510" name="__codelineno-0-510"></a>                <span class="k">return</span> <span class="n">responseDG</span>
+<a id="__codelineno-0-511" name="__codelineno-0-511"></a>
+<a id="__codelineno-0-512" name="__codelineno-0-512"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-513" name="__codelineno-0-513"></a>
+<a id="__codelineno-0-514" name="__codelineno-0-514"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-515" name="__codelineno-0-515"></a>                <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-516" name="__codelineno-0-516"></a>            <span class="p">)</span>
+<a id="__codelineno-0-517" name="__codelineno-0-517"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Apps: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">'reply'</span><span class="p">][</span><span class="s1">'apps'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-518" name="__codelineno-0-518"></a>
+<a id="__codelineno-0-519" name="__codelineno-0-519"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]}</span>
+<a id="__codelineno-0-520" name="__codelineno-0-520"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-521" name="__codelineno-0-521"></a>            <span class="k">return</span> <span class="n">success</span>
+<a id="__codelineno-0-522" name="__codelineno-0-522"></a>
+<a id="__codelineno-0-523" name="__codelineno-0-523"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">handleDeviceGroupCronJobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cron_job_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s2">"bca"</span><span class="p">):</span>
+<a id="__codelineno-0-524" name="__codelineno-0-524"></a><span class="w">        </span><span class="sd">"""</span>
+<a id="__codelineno-0-525" name="__codelineno-0-525"></a><span class="sd">        Add or remove cron jobs from a device group's cron_jobs list.</span>
+<a id="__codelineno-0-526" name="__codelineno-0-526"></a>
+<a id="__codelineno-0-527" name="__codelineno-0-527"></a><span class="sd">        Parallel to `handleDeviceGroup`, operating on the device group's</span>
+<a id="__codelineno-0-528" name="__codelineno-0-528"></a><span class="sd">        `cron_jobs` list field instead of `apps` - kept as a separate</span>
+<a id="__codelineno-0-529" name="__codelineno-0-529"></a><span class="sd">        method rather than generalizing `handleDeviceGroup` itself, so</span>
+<a id="__codelineno-0-530" name="__codelineno-0-530"></a><span class="sd">        existing app-attachment behavior can't be affected by this change.</span>
+<a id="__codelineno-0-531" name="__codelineno-0-531"></a>
+<a id="__codelineno-0-532" name="__codelineno-0-532"></a><span class="sd">        Fetches the device group's current cron_jobs list, computes the</span>
+<a id="__codelineno-0-533" name="__codelineno-0-533"></a><span class="sd">        new list by adding (`mode="update"`) or removing (`mode="delete"`)</span>
+<a id="__codelineno-0-534" name="__codelineno-0-534"></a><span class="sd">        the cron jobs named in `cron_job_list`, then calls `handleAsset`</span>
+<a id="__codelineno-0-535" name="__codelineno-0-535"></a><span class="sd">        to push the updated list.</span>
+<a id="__codelineno-0-536" name="__codelineno-0-536"></a>
+<a id="__codelineno-0-537" name="__codelineno-0-537"></a><span class="sd">        Parameters</span>
+<a id="__codelineno-0-538" name="__codelineno-0-538"></a><span class="sd">        ----------</span>
+<a id="__codelineno-0-539" name="__codelineno-0-539"></a><span class="sd">        cron_job_list : str</span>
+<a id="__codelineno-0-540" name="__codelineno-0-540"></a><span class="sd">            Comma-separated cron job names to add or remove.</span>
+<a id="__codelineno-0-541" name="__codelineno-0-541"></a><span class="sd">        mode : str</span>
+<a id="__codelineno-0-542" name="__codelineno-0-542"></a><span class="sd">            `"update"` to add the named cron jobs (skipping ones already</span>
+<a id="__codelineno-0-543" name="__codelineno-0-543"></a><span class="sd">            present), or `"delete"` to remove them.</span>
+<a id="__codelineno-0-544" name="__codelineno-0-544"></a><span class="sd">        device_group : str, optional</span>
+<a id="__codelineno-0-545" name="__codelineno-0-545"></a><span class="sd">            The device group to modify. Defaults to `"bca"`.</span>
+<a id="__codelineno-0-546" name="__codelineno-0-546"></a>
+<a id="__codelineno-0-547" name="__codelineno-0-547"></a><span class="sd">        Returns</span>
+<a id="__codelineno-0-548" name="__codelineno-0-548"></a><span class="sd">        -------</span>
+<a id="__codelineno-0-549" name="__codelineno-0-549"></a><span class="sd">        dict</span>
+<a id="__codelineno-0-550" name="__codelineno-0-550"></a><span class="sd">            ``{"error": bool, "response": ...}``. On success,</span>
+<a id="__codelineno-0-551" name="__codelineno-0-551"></a><span class="sd">            `response` is the device group's resulting cron_jobs list</span>
+<a id="__codelineno-0-552" name="__codelineno-0-552"></a><span class="sd">            (`list`). On failure, `response` is a message string -</span>
+<a id="__codelineno-0-553" name="__codelineno-0-553"></a><span class="sd">            from `mode` being unrecognized, `handleAsset` failing to</span>
+<a id="__codelineno-0-554" name="__codelineno-0-554"></a><span class="sd">            push the update, or the initial list-fetch failing.</span>
+<a id="__codelineno-0-555" name="__codelineno-0-555"></a><span class="sd">        """</span>
+<a id="__codelineno-0-556" name="__codelineno-0-556"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-557" name="__codelineno-0-557"></a>        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-558" name="__codelineno-0-558"></a>            <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"cron_jobs list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-559" name="__codelineno-0-559"></a>        <span class="p">)</span>
+<a id="__codelineno-0-560" name="__codelineno-0-560"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-561" name="__codelineno-0-561"></a>            <span class="n">new_cron_job_list</span> <span class="o">=</span> <span class="n">cron_job_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+<a id="__codelineno-0-562" name="__codelineno-0-562"></a>            <span class="n">existing_cron_job_list</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"cron_jobs"</span><span class="p">]</span>
+<a id="__codelineno-0-563" name="__codelineno-0-563"></a>            <span class="n">cron_jobs_to_be_modified</span> <span class="o">=</span> <span class="n">existing_cron_job_list</span>
+<a id="__codelineno-0-564" name="__codelineno-0-564"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"delete"</span><span class="p">:</span>
+<a id="__codelineno-0-565" name="__codelineno-0-565"></a>                <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-566" name="__codelineno-0-566"></a>                <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unsupported mode"</span><span class="p">}</span>
+<a id="__codelineno-0-567" name="__codelineno-0-567"></a>            <span class="k">for</span> <span class="n">cron_job</span> <span class="ow">in</span> <span class="n">new_cron_job_list</span><span class="p">:</span>
+<a id="__codelineno-0-568" name="__codelineno-0-568"></a>                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">cron_job</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_cron_job_list</span><span class="p">:</span>
+<a id="__codelineno-0-569" name="__codelineno-0-569"></a>                    <span class="n">cron_jobs_to_be_modified</span> <span class="o">=</span> <span class="n">cron_jobs_to_be_modified</span> <span class="o">+</span> <span class="p">[</span><span class="n">cron_job</span><span class="p">]</span>
+<a id="__codelineno-0-570" name="__codelineno-0-570"></a>                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"delete"</span> <span class="ow">and</span> <span class="n">cron_job</span> <span class="ow">in</span> <span class="n">existing_cron_job_list</span><span class="p">:</span>
+<a id="__codelineno-0-571" name="__codelineno-0-571"></a>                    <span class="n">cron_jobs_to_be_modified</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cron_job</span><span class="p">)</span>
+<a id="__codelineno-0-572" name="__codelineno-0-572"></a>
+<a id="__codelineno-0-573" name="__codelineno-0-573"></a>            <span class="n">device_group_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">"cron_jobs"</span><span class="p">:</span> <span class="n">cron_jobs_to_be_modified</span><span class="p">})</span>
+<a id="__codelineno-0-574" name="__codelineno-0-574"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Device Group Config: </span><span class="si">{</span><span class="n">device_group_config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-575" name="__codelineno-0-575"></a>            <span class="n">responseDG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handleAsset</span><span class="p">(</span>
+<a id="__codelineno-0-576" name="__codelineno-0-576"></a>                <span class="s2">"device_group"</span><span class="p">,</span> <span class="n">device_group</span><span class="p">,</span> <span class="s2">"update"</span><span class="p">,</span> <span class="n">device_group_config</span>
+<a id="__codelineno-0-577" name="__codelineno-0-577"></a>            <span class="p">)</span>
+<a id="__codelineno-0-578" name="__codelineno-0-578"></a>
+<a id="__codelineno-0-579" name="__codelineno-0-579"></a>            <span class="k">if</span> <span class="n">responseDG</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-580" name="__codelineno-0-580"></a>                <span class="k">return</span> <span class="n">responseDG</span>
+<a id="__codelineno-0-581" name="__codelineno-0-581"></a>
+<a id="__codelineno-0-582" name="__codelineno-0-582"></a>            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-583" name="__codelineno-0-583"></a>
+<a id="__codelineno-0-584" name="__codelineno-0-584"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-585" name="__codelineno-0-585"></a>                <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"cron_jobs list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-586" name="__codelineno-0-586"></a>            <span class="p">)</span>
+<a id="__codelineno-0-587" name="__codelineno-0-587"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cron Jobs: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">'reply'</span><span class="p">][</span><span class="s1">'cron_jobs'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-588" name="__codelineno-0-588"></a>
+<a id="__codelineno-0-589" name="__codelineno-0-589"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"cron_jobs"</span><span class="p">]}</span>
+<a id="__codelineno-0-590" name="__codelineno-0-590"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-591" name="__codelineno-0-591"></a>            <span class="k">return</span> <span class="n">success</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4356,7 +4529,7 @@ pruned.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p><code>"app"</code> or <code>"device_group"</code>.</p>
+                <p><code>"app"</code>, <code>"device_group"</code>, or <code>"cron_job"</code>.</p>
               </div>
             </td>
             <td>
@@ -4405,10 +4578,10 @@ pruned.</p>
             <td>
               <div class="doc-md-description">
                 <p>The asset's configuration. Required for <code>"create"</code>/
-<code>"update"</code>; ignored for <code>"delete"</code>. For <code>asset_type="app"</code>,
-must contain <code>"docker_image"</code> - it's checked against the
-local registry (<code>checkImageExists</code>) before the Nebula
-call is made.</p>
+<code>"update"</code>; ignored for <code>"delete"</code>. For <code>asset_type="app"</code>
+or <code>asset_type="cron_job"</code>, must contain <code>"docker_image"</code> -
+it's checked against the local registry (<code>checkImageExists</code>)
+before the Nebula call is made.</p>
               </div>
             </td>
             <td>
@@ -4534,7 +4707,18 @@ unrecognized.</p>
 <span class="normal"><a href="#__codelineno-0-442">442</a></span>
 <span class="normal"><a href="#__codelineno-0-443">443</a></span>
 <span class="normal"><a href="#__codelineno-0-444">444</a></span>
-<span class="normal"><a href="#__codelineno-0-445">445</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-359" name="__codelineno-0-359"></a><span class="k">def</span><span class="w"> </span><span class="nf">handleAsset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_name</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-445">445</a></span>
+<span class="normal"><a href="#__codelineno-0-446">446</a></span>
+<span class="normal"><a href="#__codelineno-0-447">447</a></span>
+<span class="normal"><a href="#__codelineno-0-448">448</a></span>
+<span class="normal"><a href="#__codelineno-0-449">449</a></span>
+<span class="normal"><a href="#__codelineno-0-450">450</a></span>
+<span class="normal"><a href="#__codelineno-0-451">451</a></span>
+<span class="normal"><a href="#__codelineno-0-452">452</a></span>
+<span class="normal"><a href="#__codelineno-0-453">453</a></span>
+<span class="normal"><a href="#__codelineno-0-454">454</a></span>
+<span class="normal"><a href="#__codelineno-0-455">455</a></span>
+<span class="normal"><a href="#__codelineno-0-456">456</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-359" name="__codelineno-0-359"></a><span class="k">def</span><span class="w"> </span><span class="nf">handleAsset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_name</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <a id="__codelineno-0-360" name="__codelineno-0-360"></a>
 <a id="__codelineno-0-361" name="__codelineno-0-361"></a><span class="w">    </span><span class="sd">"""</span>
 <a id="__codelineno-0-362" name="__codelineno-0-362"></a><span class="sd">    Create, update, or delete an app or device group via the Nebula API.</span>
@@ -4542,17 +4726,17 @@ unrecognized.</p>
 <a id="__codelineno-0-364" name="__codelineno-0-364"></a><span class="sd">    Parameters</span>
 <a id="__codelineno-0-365" name="__codelineno-0-365"></a><span class="sd">    ----------</span>
 <a id="__codelineno-0-366" name="__codelineno-0-366"></a><span class="sd">    asset_type : str</span>
-<a id="__codelineno-0-367" name="__codelineno-0-367"></a><span class="sd">        `"app"` or `"device_group"`.</span>
+<a id="__codelineno-0-367" name="__codelineno-0-367"></a><span class="sd">        `"app"`, `"device_group"`, or `"cron_job"`.</span>
 <a id="__codelineno-0-368" name="__codelineno-0-368"></a><span class="sd">    asset_name : str</span>
 <a id="__codelineno-0-369" name="__codelineno-0-369"></a><span class="sd">        The asset's name.</span>
 <a id="__codelineno-0-370" name="__codelineno-0-370"></a><span class="sd">    mode : str</span>
 <a id="__codelineno-0-371" name="__codelineno-0-371"></a><span class="sd">        `"create"`, `"update"`, or `"delete"` (case-insensitive).</span>
 <a id="__codelineno-0-372" name="__codelineno-0-372"></a><span class="sd">    config : dict or None, optional</span>
 <a id="__codelineno-0-373" name="__codelineno-0-373"></a><span class="sd">        The asset's configuration. Required for `"create"`/</span>
-<a id="__codelineno-0-374" name="__codelineno-0-374"></a><span class="sd">        `"update"`; ignored for `"delete"`. For `asset_type="app"`,</span>
-<a id="__codelineno-0-375" name="__codelineno-0-375"></a><span class="sd">        must contain `"docker_image"` - it's checked against the</span>
-<a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="sd">        local registry (`checkImageExists`) before the Nebula</span>
-<a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="sd">        call is made.</span>
+<a id="__codelineno-0-374" name="__codelineno-0-374"></a><span class="sd">        `"update"`; ignored for `"delete"`. For `asset_type="app"`</span>
+<a id="__codelineno-0-375" name="__codelineno-0-375"></a><span class="sd">        or `asset_type="cron_job"`, must contain `"docker_image"` -</span>
+<a id="__codelineno-0-376" name="__codelineno-0-376"></a><span class="sd">        it's checked against the local registry (`checkImageExists`)</span>
+<a id="__codelineno-0-377" name="__codelineno-0-377"></a><span class="sd">        before the Nebula call is made.</span>
 <a id="__codelineno-0-378" name="__codelineno-0-378"></a>
 <a id="__codelineno-0-379" name="__codelineno-0-379"></a><span class="sd">    Returns</span>
 <a id="__codelineno-0-380" name="__codelineno-0-380"></a><span class="sd">    -------</span>
@@ -4581,46 +4765,57 @@ unrecognized.</p>
 <a id="__codelineno-0-403" name="__codelineno-0-403"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
 <a id="__codelineno-0-404" name="__codelineno-0-404"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">create_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
 <a id="__codelineno-0-405" name="__codelineno-0-405"></a>
-<a id="__codelineno-0-406" name="__codelineno-0-406"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-407" name="__codelineno-0-407"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-408" name="__codelineno-0-408"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
-<a id="__codelineno-0-409" name="__codelineno-0-409"></a>        <span class="n">moding</span> <span class="o">=</span> <span class="s2">"creat"</span>
-<a id="__codelineno-0-410" name="__codelineno-0-410"></a>
-<a id="__codelineno-0-411" name="__codelineno-0-411"></a>    <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"update"</span><span class="p">:</span>
-<a id="__codelineno-0-412" name="__codelineno-0-412"></a>        <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">202</span>
-<a id="__codelineno-0-413" name="__codelineno-0-413"></a>        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
-<a id="__codelineno-0-414" name="__codelineno-0-414"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
-<a id="__codelineno-0-415" name="__codelineno-0-415"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-0-416" name="__codelineno-0-416"></a>
-<a id="__codelineno-0-417" name="__codelineno-0-417"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
-<a id="__codelineno-0-418" name="__codelineno-0-418"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-0-419" name="__codelineno-0-419"></a>
-<a id="__codelineno-0-420" name="__codelineno-0-420"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-421" name="__codelineno-0-421"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-422" name="__codelineno-0-422"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
-<a id="__codelineno-0-423" name="__codelineno-0-423"></a>        <span class="n">moding</span> <span class="o">=</span> <span class="s2">"updat"</span>
-<a id="__codelineno-0-424" name="__codelineno-0-424"></a>
-<a id="__codelineno-0-425" name="__codelineno-0-425"></a>    <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"delete"</span><span class="p">:</span>
-<a id="__codelineno-0-426" name="__codelineno-0-426"></a>        <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">200</span>
-<a id="__codelineno-0-427" name="__codelineno-0-427"></a>        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
-<a id="__codelineno-0-428" name="__codelineno-0-428"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
-<a id="__codelineno-0-429" name="__codelineno-0-429"></a>
-<a id="__codelineno-0-430" name="__codelineno-0-430"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
-<a id="__codelineno-0-431" name="__codelineno-0-431"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
+<a id="__codelineno-0-406" name="__codelineno-0-406"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"cron_job"</span><span class="p">:</span>
+<a id="__codelineno-0-407" name="__codelineno-0-407"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
+<a id="__codelineno-0-408" name="__codelineno-0-408"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">create_cron_job</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-409" name="__codelineno-0-409"></a>
+<a id="__codelineno-0-410" name="__codelineno-0-410"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-411" name="__codelineno-0-411"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-412" name="__codelineno-0-412"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
+<a id="__codelineno-0-413" name="__codelineno-0-413"></a>        <span class="n">moding</span> <span class="o">=</span> <span class="s2">"creat"</span>
+<a id="__codelineno-0-414" name="__codelineno-0-414"></a>
+<a id="__codelineno-0-415" name="__codelineno-0-415"></a>    <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"update"</span><span class="p">:</span>
+<a id="__codelineno-0-416" name="__codelineno-0-416"></a>        <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">202</span>
+<a id="__codelineno-0-417" name="__codelineno-0-417"></a>        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
+<a id="__codelineno-0-418" name="__codelineno-0-418"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
+<a id="__codelineno-0-419" name="__codelineno-0-419"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-420" name="__codelineno-0-420"></a>
+<a id="__codelineno-0-421" name="__codelineno-0-421"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
+<a id="__codelineno-0-422" name="__codelineno-0-422"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-423" name="__codelineno-0-423"></a>
+<a id="__codelineno-0-424" name="__codelineno-0-424"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"cron_job"</span><span class="p">:</span>
+<a id="__codelineno-0-425" name="__codelineno-0-425"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">checkImageExists</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"docker_image"</span><span class="p">])</span>
+<a id="__codelineno-0-426" name="__codelineno-0-426"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">update_cron_job</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-0-427" name="__codelineno-0-427"></a>
+<a id="__codelineno-0-428" name="__codelineno-0-428"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-429" name="__codelineno-0-429"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-430" name="__codelineno-0-430"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
+<a id="__codelineno-0-431" name="__codelineno-0-431"></a>        <span class="n">moding</span> <span class="o">=</span> <span class="s2">"updat"</span>
 <a id="__codelineno-0-432" name="__codelineno-0-432"></a>
-<a id="__codelineno-0-433" name="__codelineno-0-433"></a>        <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-434" name="__codelineno-0-434"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-435" name="__codelineno-0-435"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
-<a id="__codelineno-0-436" name="__codelineno-0-436"></a>        <span class="n">moding</span> <span class="o">=</span> <span class="s2">"delet"</span>
-<a id="__codelineno-0-437" name="__codelineno-0-437"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-438" name="__codelineno-0-438"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown command </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-439" name="__codelineno-0-439"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown command "</span> <span class="o">+</span> <span class="n">mode</span><span class="p">}</span>
+<a id="__codelineno-0-433" name="__codelineno-0-433"></a>    <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"delete"</span><span class="p">:</span>
+<a id="__codelineno-0-434" name="__codelineno-0-434"></a>        <span class="n">accept_code</span> <span class="o">=</span> <span class="mi">200</span>
+<a id="__codelineno-0-435" name="__codelineno-0-435"></a>        <span class="k">if</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"app"</span><span class="p">:</span>
+<a id="__codelineno-0-436" name="__codelineno-0-436"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_app</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
+<a id="__codelineno-0-437" name="__codelineno-0-437"></a>
+<a id="__codelineno-0-438" name="__codelineno-0-438"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"device_group"</span><span class="p">:</span>
+<a id="__codelineno-0-439" name="__codelineno-0-439"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_device_group</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
 <a id="__codelineno-0-440" name="__codelineno-0-440"></a>
-<a id="__codelineno-0-441" name="__codelineno-0-441"></a>    <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
-<a id="__codelineno-0-442" name="__codelineno-0-442"></a>        <span class="n">reply</span><span class="p">,</span> <span class="n">accept_code</span><span class="p">,</span> <span class="n">moding</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_name</span>
-<a id="__codelineno-0-443" name="__codelineno-0-443"></a>    <span class="p">)</span>
-<a id="__codelineno-0-444" name="__codelineno-0-444"></a>
-<a id="__codelineno-0-445" name="__codelineno-0-445"></a>    <span class="k">return</span> <span class="n">retval</span>
+<a id="__codelineno-0-441" name="__codelineno-0-441"></a>        <span class="k">elif</span> <span class="n">asset_type</span> <span class="o">==</span> <span class="s2">"cron_job"</span><span class="p">:</span>
+<a id="__codelineno-0-442" name="__codelineno-0-442"></a>            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">delete_cron_job</span><span class="p">(</span><span class="n">asset_name</span><span class="p">)</span>
+<a id="__codelineno-0-443" name="__codelineno-0-443"></a>
+<a id="__codelineno-0-444" name="__codelineno-0-444"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-445" name="__codelineno-0-445"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown asset type: </span><span class="si">{</span><span class="n">asset_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-446" name="__codelineno-0-446"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown asset type "</span> <span class="o">+</span> <span class="n">asset_type</span><span class="p">}</span>
+<a id="__codelineno-0-447" name="__codelineno-0-447"></a>        <span class="n">moding</span> <span class="o">=</span> <span class="s2">"delet"</span>
+<a id="__codelineno-0-448" name="__codelineno-0-448"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-449" name="__codelineno-0-449"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown command </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-450" name="__codelineno-0-450"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unknown command "</span> <span class="o">+</span> <span class="n">mode</span><span class="p">}</span>
+<a id="__codelineno-0-451" name="__codelineno-0-451"></a>
+<a id="__codelineno-0-452" name="__codelineno-0-452"></a>    <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-453" name="__codelineno-0-453"></a>        <span class="n">reply</span><span class="p">,</span> <span class="n">accept_code</span><span class="p">,</span> <span class="n">moding</span><span class="p">,</span> <span class="n">asset_type</span><span class="p">,</span> <span class="n">asset_name</span>
+<a id="__codelineno-0-454" name="__codelineno-0-454"></a>    <span class="p">)</span>
+<a id="__codelineno-0-455" name="__codelineno-0-455"></a>
+<a id="__codelineno-0-456" name="__codelineno-0-456"></a>    <span class="k">return</span> <span class="n">retval</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4738,18 +4933,7 @@ push the update, or the initial list-fetch failing.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/src/Composer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-447">447</a></span>
-<span class="normal"><a href="#__codelineno-0-448">448</a></span>
-<span class="normal"><a href="#__codelineno-0-449">449</a></span>
-<span class="normal"><a href="#__codelineno-0-450">450</a></span>
-<span class="normal"><a href="#__codelineno-0-451">451</a></span>
-<span class="normal"><a href="#__codelineno-0-452">452</a></span>
-<span class="normal"><a href="#__codelineno-0-453">453</a></span>
-<span class="normal"><a href="#__codelineno-0-454">454</a></span>
-<span class="normal"><a href="#__codelineno-0-455">455</a></span>
-<span class="normal"><a href="#__codelineno-0-456">456</a></span>
-<span class="normal"><a href="#__codelineno-0-457">457</a></span>
-<span class="normal"><a href="#__codelineno-0-458">458</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-458">458</a></span>
 <span class="normal"><a href="#__codelineno-0-459">459</a></span>
 <span class="normal"><a href="#__codelineno-0-460">460</a></span>
 <span class="normal"><a href="#__codelineno-0-461">461</a></span>
@@ -4801,70 +4985,339 @@ push the update, or the initial list-fetch failing.</p>
 <span class="normal"><a href="#__codelineno-0-507">507</a></span>
 <span class="normal"><a href="#__codelineno-0-508">508</a></span>
 <span class="normal"><a href="#__codelineno-0-509">509</a></span>
-<span class="normal"><a href="#__codelineno-0-510">510</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-447" name="__codelineno-0-447"></a><span class="k">def</span><span class="w"> </span><span class="nf">handleDeviceGroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s2">"bca"</span><span class="p">):</span>
-<a id="__codelineno-0-448" name="__codelineno-0-448"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-449" name="__codelineno-0-449"></a><span class="sd">    Add or remove apps from a device group's app list.</span>
-<a id="__codelineno-0-450" name="__codelineno-0-450"></a>
-<a id="__codelineno-0-451" name="__codelineno-0-451"></a><span class="sd">    Fetches the device group's current app list, computes the new</span>
-<a id="__codelineno-0-452" name="__codelineno-0-452"></a><span class="sd">    list by adding (`mode="update"`) or removing (`mode="delete"`)</span>
-<a id="__codelineno-0-453" name="__codelineno-0-453"></a><span class="sd">    the apps named in `app_list`, then calls `handleAsset` to push</span>
-<a id="__codelineno-0-454" name="__codelineno-0-454"></a><span class="sd">    the updated list.</span>
-<a id="__codelineno-0-455" name="__codelineno-0-455"></a>
-<a id="__codelineno-0-456" name="__codelineno-0-456"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-457" name="__codelineno-0-457"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="sd">    app_list : str</span>
-<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="sd">        Comma-separated app names to add or remove.</span>
-<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">    mode : str</span>
-<a id="__codelineno-0-461" name="__codelineno-0-461"></a><span class="sd">        `"update"` to add the named apps (skipping ones already</span>
-<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">        present), or `"delete"` to remove them.</span>
-<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">    device_group : str, optional</span>
-<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">        The device group to modify. Defaults to `"bca"`.</span>
-<a id="__codelineno-0-465" name="__codelineno-0-465"></a>
-<a id="__codelineno-0-466" name="__codelineno-0-466"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">    dict</span>
-<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">        ``{"error": bool, "response": ...}``. On success,</span>
-<a id="__codelineno-0-470" name="__codelineno-0-470"></a><span class="sd">        `response` is the device group's resulting app list</span>
-<a id="__codelineno-0-471" name="__codelineno-0-471"></a><span class="sd">        (`list`). On failure, `response` is a message string -</span>
-<a id="__codelineno-0-472" name="__codelineno-0-472"></a><span class="sd">        from `mode` being unrecognized, `handleAsset` failing to</span>
-<a id="__codelineno-0-473" name="__codelineno-0-473"></a><span class="sd">        push the update, or the initial list-fetch failing.</span>
-<a id="__codelineno-0-474" name="__codelineno-0-474"></a><span class="sd">    """</span>
-<a id="__codelineno-0-475" name="__codelineno-0-475"></a>    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
-<a id="__codelineno-0-476" name="__codelineno-0-476"></a>    <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
-<a id="__codelineno-0-477" name="__codelineno-0-477"></a>        <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
-<a id="__codelineno-0-478" name="__codelineno-0-478"></a>    <span class="p">)</span>
-<a id="__codelineno-0-479" name="__codelineno-0-479"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
-<a id="__codelineno-0-480" name="__codelineno-0-480"></a>        <span class="n">new_app_list</span> <span class="o">=</span> <span class="n">app_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
-<a id="__codelineno-0-481" name="__codelineno-0-481"></a>        <span class="n">existing_app_list</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]</span>
-<a id="__codelineno-0-482" name="__codelineno-0-482"></a>        <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">existing_app_list</span>
-<a id="__codelineno-0-483" name="__codelineno-0-483"></a>        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"delete"</span><span class="p">:</span>
-<a id="__codelineno-0-484" name="__codelineno-0-484"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-485" name="__codelineno-0-485"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unsupported mode"</span><span class="p">}</span>
-<a id="__codelineno-0-486" name="__codelineno-0-486"></a>        <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">new_app_list</span><span class="p">:</span>
-<a id="__codelineno-0-487" name="__codelineno-0-487"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
-<a id="__codelineno-0-488" name="__codelineno-0-488"></a>                <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">apps_to_be_modified</span> <span class="o">+</span> <span class="p">[</span><span class="n">app</span><span class="p">]</span>
-<a id="__codelineno-0-489" name="__codelineno-0-489"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"delete"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
-<a id="__codelineno-0-490" name="__codelineno-0-490"></a>                <span class="n">apps_to_be_modified</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
-<a id="__codelineno-0-491" name="__codelineno-0-491"></a>
-<a id="__codelineno-0-492" name="__codelineno-0-492"></a>        <span class="n">device_group_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">"apps"</span><span class="p">:</span> <span class="n">apps_to_be_modified</span><span class="p">})</span>
-<a id="__codelineno-0-493" name="__codelineno-0-493"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Device Group Config: </span><span class="si">{</span><span class="n">device_group_config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-494" name="__codelineno-0-494"></a>        <span class="n">responseDG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handleAsset</span><span class="p">(</span>
-<a id="__codelineno-0-495" name="__codelineno-0-495"></a>            <span class="s2">"device_group"</span><span class="p">,</span> <span class="n">device_group</span><span class="p">,</span> <span class="s2">"update"</span><span class="p">,</span> <span class="n">device_group_config</span>
-<a id="__codelineno-0-496" name="__codelineno-0-496"></a>        <span class="p">)</span>
-<a id="__codelineno-0-497" name="__codelineno-0-497"></a>
-<a id="__codelineno-0-498" name="__codelineno-0-498"></a>        <span class="k">if</span> <span class="n">responseDG</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
-<a id="__codelineno-0-499" name="__codelineno-0-499"></a>            <span class="k">return</span> <span class="n">responseDG</span>
-<a id="__codelineno-0-500" name="__codelineno-0-500"></a>
-<a id="__codelineno-0-501" name="__codelineno-0-501"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-510">510</a></span>
+<span class="normal"><a href="#__codelineno-0-511">511</a></span>
+<span class="normal"><a href="#__codelineno-0-512">512</a></span>
+<span class="normal"><a href="#__codelineno-0-513">513</a></span>
+<span class="normal"><a href="#__codelineno-0-514">514</a></span>
+<span class="normal"><a href="#__codelineno-0-515">515</a></span>
+<span class="normal"><a href="#__codelineno-0-516">516</a></span>
+<span class="normal"><a href="#__codelineno-0-517">517</a></span>
+<span class="normal"><a href="#__codelineno-0-518">518</a></span>
+<span class="normal"><a href="#__codelineno-0-519">519</a></span>
+<span class="normal"><a href="#__codelineno-0-520">520</a></span>
+<span class="normal"><a href="#__codelineno-0-521">521</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-458" name="__codelineno-0-458"></a><span class="k">def</span><span class="w"> </span><span class="nf">handleDeviceGroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s2">"bca"</span><span class="p">):</span>
+<a id="__codelineno-0-459" name="__codelineno-0-459"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-460" name="__codelineno-0-460"></a><span class="sd">    Add or remove apps from a device group's app list.</span>
+<a id="__codelineno-0-461" name="__codelineno-0-461"></a>
+<a id="__codelineno-0-462" name="__codelineno-0-462"></a><span class="sd">    Fetches the device group's current app list, computes the new</span>
+<a id="__codelineno-0-463" name="__codelineno-0-463"></a><span class="sd">    list by adding (`mode="update"`) or removing (`mode="delete"`)</span>
+<a id="__codelineno-0-464" name="__codelineno-0-464"></a><span class="sd">    the apps named in `app_list`, then calls `handleAsset` to push</span>
+<a id="__codelineno-0-465" name="__codelineno-0-465"></a><span class="sd">    the updated list.</span>
+<a id="__codelineno-0-466" name="__codelineno-0-466"></a>
+<a id="__codelineno-0-467" name="__codelineno-0-467"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-468" name="__codelineno-0-468"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-469" name="__codelineno-0-469"></a><span class="sd">    app_list : str</span>
+<a id="__codelineno-0-470" name="__codelineno-0-470"></a><span class="sd">        Comma-separated app names to add or remove.</span>
+<a id="__codelineno-0-471" name="__codelineno-0-471"></a><span class="sd">    mode : str</span>
+<a id="__codelineno-0-472" name="__codelineno-0-472"></a><span class="sd">        `"update"` to add the named apps (skipping ones already</span>
+<a id="__codelineno-0-473" name="__codelineno-0-473"></a><span class="sd">        present), or `"delete"` to remove them.</span>
+<a id="__codelineno-0-474" name="__codelineno-0-474"></a><span class="sd">    device_group : str, optional</span>
+<a id="__codelineno-0-475" name="__codelineno-0-475"></a><span class="sd">        The device group to modify. Defaults to `"bca"`.</span>
+<a id="__codelineno-0-476" name="__codelineno-0-476"></a>
+<a id="__codelineno-0-477" name="__codelineno-0-477"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-478" name="__codelineno-0-478"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-479" name="__codelineno-0-479"></a><span class="sd">    dict</span>
+<a id="__codelineno-0-480" name="__codelineno-0-480"></a><span class="sd">        ``{"error": bool, "response": ...}``. On success,</span>
+<a id="__codelineno-0-481" name="__codelineno-0-481"></a><span class="sd">        `response` is the device group's resulting app list</span>
+<a id="__codelineno-0-482" name="__codelineno-0-482"></a><span class="sd">        (`list`). On failure, `response` is a message string -</span>
+<a id="__codelineno-0-483" name="__codelineno-0-483"></a><span class="sd">        from `mode` being unrecognized, `handleAsset` failing to</span>
+<a id="__codelineno-0-484" name="__codelineno-0-484"></a><span class="sd">        push the update, or the initial list-fetch failing.</span>
+<a id="__codelineno-0-485" name="__codelineno-0-485"></a><span class="sd">    """</span>
+<a id="__codelineno-0-486" name="__codelineno-0-486"></a>    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-487" name="__codelineno-0-487"></a>    <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-488" name="__codelineno-0-488"></a>        <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-489" name="__codelineno-0-489"></a>    <span class="p">)</span>
+<a id="__codelineno-0-490" name="__codelineno-0-490"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-491" name="__codelineno-0-491"></a>        <span class="n">new_app_list</span> <span class="o">=</span> <span class="n">app_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+<a id="__codelineno-0-492" name="__codelineno-0-492"></a>        <span class="n">existing_app_list</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]</span>
+<a id="__codelineno-0-493" name="__codelineno-0-493"></a>        <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">existing_app_list</span>
+<a id="__codelineno-0-494" name="__codelineno-0-494"></a>        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"delete"</span><span class="p">:</span>
+<a id="__codelineno-0-495" name="__codelineno-0-495"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-496" name="__codelineno-0-496"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unsupported mode"</span><span class="p">}</span>
+<a id="__codelineno-0-497" name="__codelineno-0-497"></a>        <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">new_app_list</span><span class="p">:</span>
+<a id="__codelineno-0-498" name="__codelineno-0-498"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
+<a id="__codelineno-0-499" name="__codelineno-0-499"></a>                <span class="n">apps_to_be_modified</span> <span class="o">=</span> <span class="n">apps_to_be_modified</span> <span class="o">+</span> <span class="p">[</span><span class="n">app</span><span class="p">]</span>
+<a id="__codelineno-0-500" name="__codelineno-0-500"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"delete"</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">existing_app_list</span><span class="p">:</span>
+<a id="__codelineno-0-501" name="__codelineno-0-501"></a>                <span class="n">apps_to_be_modified</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 <a id="__codelineno-0-502" name="__codelineno-0-502"></a>
-<a id="__codelineno-0-503" name="__codelineno-0-503"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
-<a id="__codelineno-0-504" name="__codelineno-0-504"></a>            <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
-<a id="__codelineno-0-505" name="__codelineno-0-505"></a>        <span class="p">)</span>
-<a id="__codelineno-0-506" name="__codelineno-0-506"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Apps: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">'reply'</span><span class="p">][</span><span class="s1">'apps'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-507" name="__codelineno-0-507"></a>
-<a id="__codelineno-0-508" name="__codelineno-0-508"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]}</span>
-<a id="__codelineno-0-509" name="__codelineno-0-509"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-510" name="__codelineno-0-510"></a>        <span class="k">return</span> <span class="n">success</span>
+<a id="__codelineno-0-503" name="__codelineno-0-503"></a>        <span class="n">device_group_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">"apps"</span><span class="p">:</span> <span class="n">apps_to_be_modified</span><span class="p">})</span>
+<a id="__codelineno-0-504" name="__codelineno-0-504"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Device Group Config: </span><span class="si">{</span><span class="n">device_group_config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-505" name="__codelineno-0-505"></a>        <span class="n">responseDG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handleAsset</span><span class="p">(</span>
+<a id="__codelineno-0-506" name="__codelineno-0-506"></a>            <span class="s2">"device_group"</span><span class="p">,</span> <span class="n">device_group</span><span class="p">,</span> <span class="s2">"update"</span><span class="p">,</span> <span class="n">device_group_config</span>
+<a id="__codelineno-0-507" name="__codelineno-0-507"></a>        <span class="p">)</span>
+<a id="__codelineno-0-508" name="__codelineno-0-508"></a>
+<a id="__codelineno-0-509" name="__codelineno-0-509"></a>        <span class="k">if</span> <span class="n">responseDG</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-510" name="__codelineno-0-510"></a>            <span class="k">return</span> <span class="n">responseDG</span>
+<a id="__codelineno-0-511" name="__codelineno-0-511"></a>
+<a id="__codelineno-0-512" name="__codelineno-0-512"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-513" name="__codelineno-0-513"></a>
+<a id="__codelineno-0-514" name="__codelineno-0-514"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-515" name="__codelineno-0-515"></a>            <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"app list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-516" name="__codelineno-0-516"></a>        <span class="p">)</span>
+<a id="__codelineno-0-517" name="__codelineno-0-517"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Apps: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">'reply'</span><span class="p">][</span><span class="s1">'apps'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-518" name="__codelineno-0-518"></a>
+<a id="__codelineno-0-519" name="__codelineno-0-519"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"apps"</span><span class="p">]}</span>
+<a id="__codelineno-0-520" name="__codelineno-0-520"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-521" name="__codelineno-0-521"></a>        <span class="k">return</span> <span class="n">success</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="gustavo.src.Composer.Composer.handleDeviceGroupCronJobs" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">handleDeviceGroupCronJobs</span><span class="p">(</span><span class="n">cron_job_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s1">'bca'</span><span class="p">)</span></code>
+
+</h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add or remove cron jobs from a device group's cron_jobs list.</p>
+<p>Parallel to <code>handleDeviceGroup</code>, operating on the device group's
+<code>cron_jobs</code> list field instead of <code>apps</code> - kept as a separate
+method rather than generalizing <code>handleDeviceGroup</code> itself, so
+existing app-attachment behavior can't be affected by this change.</p>
+<p>Fetches the device group's current cron_jobs list, computes the
+new list by adding (<code>mode="update"</code>) or removing (<code>mode="delete"</code>)
+the cron jobs named in <code>cron_job_list</code>, then calls <code>handleAsset</code>
+to push the updated list.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>cron_job_list</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Comma-separated cron job names to add or remove.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>mode</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>"update"</code> to add the named cron jobs (skipping ones already
+present), or <code>"delete"</code> to remove them.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>device_group</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The device group to modify. Defaults to <code>"bca"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;bca&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>{"error": bool, "response": ...}</code>. On success,
+<code>response</code> is the device group's resulting cron_jobs list
+(<code>list</code>). On failure, <code>response</code> is a message string -
+from <code>mode</code> being unrecognized, <code>handleAsset</code> failing to
+push the update, or the initial list-fetch failing.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>gustavo/src/Composer.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-523">523</a></span>
+<span class="normal"><a href="#__codelineno-0-524">524</a></span>
+<span class="normal"><a href="#__codelineno-0-525">525</a></span>
+<span class="normal"><a href="#__codelineno-0-526">526</a></span>
+<span class="normal"><a href="#__codelineno-0-527">527</a></span>
+<span class="normal"><a href="#__codelineno-0-528">528</a></span>
+<span class="normal"><a href="#__codelineno-0-529">529</a></span>
+<span class="normal"><a href="#__codelineno-0-530">530</a></span>
+<span class="normal"><a href="#__codelineno-0-531">531</a></span>
+<span class="normal"><a href="#__codelineno-0-532">532</a></span>
+<span class="normal"><a href="#__codelineno-0-533">533</a></span>
+<span class="normal"><a href="#__codelineno-0-534">534</a></span>
+<span class="normal"><a href="#__codelineno-0-535">535</a></span>
+<span class="normal"><a href="#__codelineno-0-536">536</a></span>
+<span class="normal"><a href="#__codelineno-0-537">537</a></span>
+<span class="normal"><a href="#__codelineno-0-538">538</a></span>
+<span class="normal"><a href="#__codelineno-0-539">539</a></span>
+<span class="normal"><a href="#__codelineno-0-540">540</a></span>
+<span class="normal"><a href="#__codelineno-0-541">541</a></span>
+<span class="normal"><a href="#__codelineno-0-542">542</a></span>
+<span class="normal"><a href="#__codelineno-0-543">543</a></span>
+<span class="normal"><a href="#__codelineno-0-544">544</a></span>
+<span class="normal"><a href="#__codelineno-0-545">545</a></span>
+<span class="normal"><a href="#__codelineno-0-546">546</a></span>
+<span class="normal"><a href="#__codelineno-0-547">547</a></span>
+<span class="normal"><a href="#__codelineno-0-548">548</a></span>
+<span class="normal"><a href="#__codelineno-0-549">549</a></span>
+<span class="normal"><a href="#__codelineno-0-550">550</a></span>
+<span class="normal"><a href="#__codelineno-0-551">551</a></span>
+<span class="normal"><a href="#__codelineno-0-552">552</a></span>
+<span class="normal"><a href="#__codelineno-0-553">553</a></span>
+<span class="normal"><a href="#__codelineno-0-554">554</a></span>
+<span class="normal"><a href="#__codelineno-0-555">555</a></span>
+<span class="normal"><a href="#__codelineno-0-556">556</a></span>
+<span class="normal"><a href="#__codelineno-0-557">557</a></span>
+<span class="normal"><a href="#__codelineno-0-558">558</a></span>
+<span class="normal"><a href="#__codelineno-0-559">559</a></span>
+<span class="normal"><a href="#__codelineno-0-560">560</a></span>
+<span class="normal"><a href="#__codelineno-0-561">561</a></span>
+<span class="normal"><a href="#__codelineno-0-562">562</a></span>
+<span class="normal"><a href="#__codelineno-0-563">563</a></span>
+<span class="normal"><a href="#__codelineno-0-564">564</a></span>
+<span class="normal"><a href="#__codelineno-0-565">565</a></span>
+<span class="normal"><a href="#__codelineno-0-566">566</a></span>
+<span class="normal"><a href="#__codelineno-0-567">567</a></span>
+<span class="normal"><a href="#__codelineno-0-568">568</a></span>
+<span class="normal"><a href="#__codelineno-0-569">569</a></span>
+<span class="normal"><a href="#__codelineno-0-570">570</a></span>
+<span class="normal"><a href="#__codelineno-0-571">571</a></span>
+<span class="normal"><a href="#__codelineno-0-572">572</a></span>
+<span class="normal"><a href="#__codelineno-0-573">573</a></span>
+<span class="normal"><a href="#__codelineno-0-574">574</a></span>
+<span class="normal"><a href="#__codelineno-0-575">575</a></span>
+<span class="normal"><a href="#__codelineno-0-576">576</a></span>
+<span class="normal"><a href="#__codelineno-0-577">577</a></span>
+<span class="normal"><a href="#__codelineno-0-578">578</a></span>
+<span class="normal"><a href="#__codelineno-0-579">579</a></span>
+<span class="normal"><a href="#__codelineno-0-580">580</a></span>
+<span class="normal"><a href="#__codelineno-0-581">581</a></span>
+<span class="normal"><a href="#__codelineno-0-582">582</a></span>
+<span class="normal"><a href="#__codelineno-0-583">583</a></span>
+<span class="normal"><a href="#__codelineno-0-584">584</a></span>
+<span class="normal"><a href="#__codelineno-0-585">585</a></span>
+<span class="normal"><a href="#__codelineno-0-586">586</a></span>
+<span class="normal"><a href="#__codelineno-0-587">587</a></span>
+<span class="normal"><a href="#__codelineno-0-588">588</a></span>
+<span class="normal"><a href="#__codelineno-0-589">589</a></span>
+<span class="normal"><a href="#__codelineno-0-590">590</a></span>
+<span class="normal"><a href="#__codelineno-0-591">591</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-523" name="__codelineno-0-523"></a><span class="k">def</span><span class="w"> </span><span class="nf">handleDeviceGroupCronJobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cron_job_list</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">device_group</span><span class="o">=</span><span class="s2">"bca"</span><span class="p">):</span>
+<a id="__codelineno-0-524" name="__codelineno-0-524"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-525" name="__codelineno-0-525"></a><span class="sd">    Add or remove cron jobs from a device group's cron_jobs list.</span>
+<a id="__codelineno-0-526" name="__codelineno-0-526"></a>
+<a id="__codelineno-0-527" name="__codelineno-0-527"></a><span class="sd">    Parallel to `handleDeviceGroup`, operating on the device group's</span>
+<a id="__codelineno-0-528" name="__codelineno-0-528"></a><span class="sd">    `cron_jobs` list field instead of `apps` - kept as a separate</span>
+<a id="__codelineno-0-529" name="__codelineno-0-529"></a><span class="sd">    method rather than generalizing `handleDeviceGroup` itself, so</span>
+<a id="__codelineno-0-530" name="__codelineno-0-530"></a><span class="sd">    existing app-attachment behavior can't be affected by this change.</span>
+<a id="__codelineno-0-531" name="__codelineno-0-531"></a>
+<a id="__codelineno-0-532" name="__codelineno-0-532"></a><span class="sd">    Fetches the device group's current cron_jobs list, computes the</span>
+<a id="__codelineno-0-533" name="__codelineno-0-533"></a><span class="sd">    new list by adding (`mode="update"`) or removing (`mode="delete"`)</span>
+<a id="__codelineno-0-534" name="__codelineno-0-534"></a><span class="sd">    the cron jobs named in `cron_job_list`, then calls `handleAsset`</span>
+<a id="__codelineno-0-535" name="__codelineno-0-535"></a><span class="sd">    to push the updated list.</span>
+<a id="__codelineno-0-536" name="__codelineno-0-536"></a>
+<a id="__codelineno-0-537" name="__codelineno-0-537"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-538" name="__codelineno-0-538"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-539" name="__codelineno-0-539"></a><span class="sd">    cron_job_list : str</span>
+<a id="__codelineno-0-540" name="__codelineno-0-540"></a><span class="sd">        Comma-separated cron job names to add or remove.</span>
+<a id="__codelineno-0-541" name="__codelineno-0-541"></a><span class="sd">    mode : str</span>
+<a id="__codelineno-0-542" name="__codelineno-0-542"></a><span class="sd">        `"update"` to add the named cron jobs (skipping ones already</span>
+<a id="__codelineno-0-543" name="__codelineno-0-543"></a><span class="sd">        present), or `"delete"` to remove them.</span>
+<a id="__codelineno-0-544" name="__codelineno-0-544"></a><span class="sd">    device_group : str, optional</span>
+<a id="__codelineno-0-545" name="__codelineno-0-545"></a><span class="sd">        The device group to modify. Defaults to `"bca"`.</span>
+<a id="__codelineno-0-546" name="__codelineno-0-546"></a>
+<a id="__codelineno-0-547" name="__codelineno-0-547"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-548" name="__codelineno-0-548"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-549" name="__codelineno-0-549"></a><span class="sd">    dict</span>
+<a id="__codelineno-0-550" name="__codelineno-0-550"></a><span class="sd">        ``{"error": bool, "response": ...}``. On success,</span>
+<a id="__codelineno-0-551" name="__codelineno-0-551"></a><span class="sd">        `response` is the device group's resulting cron_jobs list</span>
+<a id="__codelineno-0-552" name="__codelineno-0-552"></a><span class="sd">        (`list`). On failure, `response` is a message string -</span>
+<a id="__codelineno-0-553" name="__codelineno-0-553"></a><span class="sd">        from `mode` being unrecognized, `handleAsset` failing to</span>
+<a id="__codelineno-0-554" name="__codelineno-0-554"></a><span class="sd">        push the update, or the initial list-fetch failing.</span>
+<a id="__codelineno-0-555" name="__codelineno-0-555"></a><span class="sd">    """</span>
+<a id="__codelineno-0-556" name="__codelineno-0-556"></a>    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-557" name="__codelineno-0-557"></a>    <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-558" name="__codelineno-0-558"></a>        <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"cron_jobs list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-559" name="__codelineno-0-559"></a>    <span class="p">)</span>
+<a id="__codelineno-0-560" name="__codelineno-0-560"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-561" name="__codelineno-0-561"></a>        <span class="n">new_cron_job_list</span> <span class="o">=</span> <span class="n">cron_job_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+<a id="__codelineno-0-562" name="__codelineno-0-562"></a>        <span class="n">existing_cron_job_list</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"cron_jobs"</span><span class="p">]</span>
+<a id="__codelineno-0-563" name="__codelineno-0-563"></a>        <span class="n">cron_jobs_to_be_modified</span> <span class="o">=</span> <span class="n">existing_cron_job_list</span>
+<a id="__codelineno-0-564" name="__codelineno-0-564"></a>        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"delete"</span><span class="p">:</span>
+<a id="__codelineno-0-565" name="__codelineno-0-565"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-566" name="__codelineno-0-566"></a>            <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"unsupported mode"</span><span class="p">}</span>
+<a id="__codelineno-0-567" name="__codelineno-0-567"></a>        <span class="k">for</span> <span class="n">cron_job</span> <span class="ow">in</span> <span class="n">new_cron_job_list</span><span class="p">:</span>
+<a id="__codelineno-0-568" name="__codelineno-0-568"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"update"</span> <span class="ow">and</span> <span class="n">cron_job</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_cron_job_list</span><span class="p">:</span>
+<a id="__codelineno-0-569" name="__codelineno-0-569"></a>                <span class="n">cron_jobs_to_be_modified</span> <span class="o">=</span> <span class="n">cron_jobs_to_be_modified</span> <span class="o">+</span> <span class="p">[</span><span class="n">cron_job</span><span class="p">]</span>
+<a id="__codelineno-0-570" name="__codelineno-0-570"></a>            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"delete"</span> <span class="ow">and</span> <span class="n">cron_job</span> <span class="ow">in</span> <span class="n">existing_cron_job_list</span><span class="p">:</span>
+<a id="__codelineno-0-571" name="__codelineno-0-571"></a>                <span class="n">cron_jobs_to_be_modified</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cron_job</span><span class="p">)</span>
+<a id="__codelineno-0-572" name="__codelineno-0-572"></a>
+<a id="__codelineno-0-573" name="__codelineno-0-573"></a>        <span class="n">device_group_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">"cron_jobs"</span><span class="p">:</span> <span class="n">cron_jobs_to_be_modified</span><span class="p">})</span>
+<a id="__codelineno-0-574" name="__codelineno-0-574"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Device Group Config: </span><span class="si">{</span><span class="n">device_group_config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-575" name="__codelineno-0-575"></a>        <span class="n">responseDG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handleAsset</span><span class="p">(</span>
+<a id="__codelineno-0-576" name="__codelineno-0-576"></a>            <span class="s2">"device_group"</span><span class="p">,</span> <span class="n">device_group</span><span class="p">,</span> <span class="s2">"update"</span><span class="p">,</span> <span class="n">device_group_config</span>
+<a id="__codelineno-0-577" name="__codelineno-0-577"></a>        <span class="p">)</span>
+<a id="__codelineno-0-578" name="__codelineno-0-578"></a>
+<a id="__codelineno-0-579" name="__codelineno-0-579"></a>        <span class="k">if</span> <span class="n">responseDG</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]:</span>
+<a id="__codelineno-0-580" name="__codelineno-0-580"></a>            <span class="k">return</span> <span class="n">responseDG</span>
+<a id="__codelineno-0-581" name="__codelineno-0-581"></a>
+<a id="__codelineno-0-582" name="__codelineno-0-582"></a>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nebulaObj</span><span class="o">.</span><span class="n">list_device_group</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span>
+<a id="__codelineno-0-583" name="__codelineno-0-583"></a>
+<a id="__codelineno-0-584" name="__codelineno-0-584"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">printDiagnosticResponse</span><span class="p">(</span>
+<a id="__codelineno-0-585" name="__codelineno-0-585"></a>            <span class="n">response</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">"check"</span><span class="p">,</span> <span class="s2">"cron_jobs list for"</span><span class="p">,</span> <span class="n">device_group</span>
+<a id="__codelineno-0-586" name="__codelineno-0-586"></a>        <span class="p">)</span>
+<a id="__codelineno-0-587" name="__codelineno-0-587"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cron Jobs: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="s1">'reply'</span><span class="p">][</span><span class="s1">'cron_jobs'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-588" name="__codelineno-0-588"></a>
+<a id="__codelineno-0-589" name="__codelineno-0-589"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s2">"reply"</span><span class="p">][</span><span class="s2">"cron_jobs"</span><span class="p">]}</span>
+<a id="__codelineno-0-590" name="__codelineno-0-590"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-591" name="__codelineno-0-591"></a>        <span class="k">return</span> <span class="n">success</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
