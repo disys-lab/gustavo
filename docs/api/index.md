@@ -72,9 +72,12 @@ See [Authentication](auth.md) for the full login flow.
 | `/api/config` | `routers/config.py` | Platform configuration CRUD |
 | `/api/services` | `routers/services.py` | Service lifecycle (Redis, MongoDB, etc.) |
 | `/api/apps` | `routers/apps.py` | Nebula application CRUD + registry |
+| `/api/cron-jobs` | `routers/cron_jobs.py` | Nebula cron job CRUD |
 | `/api/device-groups` | `routers/device_groups.py` | Device group management |
 | `/api/monitoring` | `routers/monitoring.py` | Worker vitals, containers, SSE stream |
 | `/api/backups` | `routers/backups.py` | Redis and registry backup management |
+| `/api/users` | `routers/users.py` | Nebula user/group CRUD |
+| `/api/registry` | `routers/registry.py` | Registry proxy authorization (nginx `auth_request`) |
 | `/health` | `main.py` | Health check (no auth) |
 
 ---

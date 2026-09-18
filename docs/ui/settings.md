@@ -67,6 +67,55 @@ The Settings page uses an accordion layout with one section expanded by default 
 | Config File Path | `DREGSY_CONFIG_FILE_PATH` | Host path to `dregsy_conf.yml` |
 | Mappings File Path | `DREGSY_MAPPING_FILE_PATH` | Host path to `mappings_list.yml` |
 
+### Reporter
+
+| Field | Key | Description |
+|-------|-----|-------------|
+| Image | `REPORTER_IMAGE` | Reporter Docker image |
+| Host | `REPORTER_HOST` | Reporter IP or hostname |
+| Port | `REPORTER_PORT` | Reporter API port (default: 8090) |
+| Gustavo API Host | `GUSTAVO_API_HOST` | Host Reporter uses to reach Gustavo's own API |
+| Gustavo API Port | `GUSTAVO_API_PORT` | Gustavo's host-published port (see [Configuration](../configuration.md#reporter)) |
+
+Reporter is a lifecycle-managed platform service like Redis or the
+Registry — start/stop/restart it from the [Dashboard](dashboard.md#platform-services-card).
+These fields control where it runs and how it reaches back into Gustavo,
+not whether it's running.
+
+### Public Facing Endpoints
+
+| Field | Key | Description |
+|-------|-----|-------------|
+| Enabled | `PUBLIC_ENDPOINTS_ENABLED` | Master switch for public Manager/Reporter/Gustavo addresses |
+| Manager Host / Port | `PUBLIC_MANAGER_HOST` / `PUBLIC_MANAGER_PORT` | Public Manager address |
+| Reporter Host / Port | `PUBLIC_REPORTER_HOST` / `PUBLIC_REPORTER_PORT` | Public Reporter address |
+| Gustavo Host / Port | `PUBLIC_GUSTAVO_HOST` / `PUBLIC_GUSTAVO_PORT` | Public Gustavo address (reserved — no current consumer) |
+
+These addresses are used instead of the internal ones when a worker config
+download opts into public access (the **Public Facing Access** checkbox on
+[Device Groups](device-groups.md#get-worker-config)), or unconditionally
+for [external users](#external-user-groups). Disabled by default.
+
+### Public Registry Access
+
+| Field | Key | Description |
+|-------|-----|-------------|
+| Enabled | `PUBLIC_REGISTRY_ENABLED` | Serve the public registry address to every caller, not just external users |
+| Host / Port | `PUBLIC_REGISTRY_HOST` / `PUBLIC_REGISTRY_PORT` | Public registry address |
+
+See [Registry](registry.md) for the full internal/external access policy
+this drives.
+
+### External User Groups
+
+| Field | Key | Description |
+|-------|-----|-------------|
+| Groups | `EXTERNAL_USER_GROUPS` | Nebula user groups whose members are treated as external |
+
+Members of a listed group get Manager and Reporter forced to their public
+endpoints and Reporter forced on, on every worker config download —
+server-enforced, not a UI convenience. See [Users: External Users](users.md#external-user-groups).
+
 ---
 
 ## Apply to all

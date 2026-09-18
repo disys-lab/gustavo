@@ -31,12 +31,16 @@ The Gustavo web interface is built with **Next.js 14** (App Router), **Tailwind 
 /dashboard                → Overview: services, vitals, stats, activity
 /apps                     → App list + create
 /apps/[name]              → Edit single app
+/cron-jobs                → Cron job list + create
+/cron-jobs/[name]         → Edit single cron job
 /registry                 → Registry image browser
 /device-groups            → Device group management
 /monitoring               → Real-time CPU/memory charts
 /backups                  → Redis + registry backup management
 /settings                 → Platform configuration
 /settings/syncer          → DREGSY YAML editor
+/users                    → User account management (admin-only)
+/users/groups             → Group roles and grants (admin-only)
 /manager                  → Service control table (also embedded in Dashboard)
 ```
 
@@ -227,10 +231,13 @@ All HTTP calls go through `lib/api/client.ts` — an Axios instance that:
 |------|-------------|
 | [Dashboard](dashboard.md) | Platform overview with services, vitals, activity |
 | [Apps](apps.md) | Application CRUD with YAML import/export |
-| [Device Groups](device-groups.md) | Group management and app assignment |
+| [Cron Jobs](cron-jobs.md) | Scheduled one-shot container CRUD |
+| [Device Groups](device-groups.md) | Group management, app/cron-job assignment, worker config downloads |
+| [Registry](registry.md) | Registry image browser, internal/external access policy |
 | [Monitoring](monitoring.md) | Live CPU/memory charts and container stats |
 | [Backups](backups.md) | Redis and registry backup management |
 | [Settings](settings.md) | Platform configuration editor |
+| [Users](users.md) | User and group management, external user groups |
 
 ---
 
