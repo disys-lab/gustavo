@@ -53,7 +53,7 @@ Create a new application.
   "volumes": [{"host": "/data", "container": "/data"}],
   "running": true,
   "privileged": false,
-  "network_mode": "bridge",
+  "networks": ["nebula"],
   "device_groups": ["production"]
 }
 ```

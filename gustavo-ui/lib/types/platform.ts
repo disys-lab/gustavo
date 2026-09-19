@@ -69,7 +69,7 @@ export interface AppConfig {
   starting_ports?: Array<{ [key: string]: number }>;
   env_vars?: Record<string, string>;
   volumes?: string[];
-  network_mode?: string;
+  networks?: string[];
   devices?: string[];
   privileged?: boolean;
   running?: boolean;
@@ -78,7 +78,7 @@ export interface AppConfig {
   [key: string]: unknown;
 }
 
-// Near-identical to AppConfig, minus starting_ports/network_mode (cron
+// Near-identical to AppConfig, minus starting_ports (cron
 // jobs are one-shot batch containers, not traffic-serving services) plus
 // `schedule` (a cron expression, e.g. "*/15 * * * *" - fed straight into
 // croniter on the worker side). `command`/`shm_size` were silently

@@ -25,7 +25,7 @@ const appFormSchema = z.object({
   env_vars: z.array(envVarSchema),
   ports: z.array(portSchema),
   volumes: z.array(volumeSchema),
-  network_mode: z.string().optional(),
+  networks: z.string().optional(),
   running: z.boolean(),
   privileged: z.boolean(),
   device_groups: z.array(z.string()),
@@ -111,7 +111,7 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
       env_vars: [],
       ports: [],
       volumes: [] as { host: string; container: string }[],
-      network_mode: "bridge",
+      networks: "nebula",
       running: true,
       privileged: false,
       device_groups: [],
@@ -204,8 +204,8 @@ export function AppForm({ defaultValues, onSubmit, submitLabel = "Create App", i
             </label>
           </div>
           <div>
-            <Label htmlFor="network_mode">Network Mode</Label>
-            <Input id="network_mode" {...register("network_mode")} className="mt-1" placeholder="bridge" />
+            <Label htmlFor="networks">Networks (comma-separated)</Label>
+            <Input id="networks" {...register("networks")} className="mt-1" placeholder="nebula" />
           </div>
         </CardContent>
       </Card>

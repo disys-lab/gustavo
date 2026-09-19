@@ -30,7 +30,7 @@ Opens the `AppForm` with blank fields and server-side defaults pre-populated.
 | Docker Image | Select from the registry dropdown or type a full image reference. |
 | Running | Whether containers should be started immediately on deployment. |
 | Privileged | Run with extended Docker privileges. |
-| Network Mode | Optional Docker network mode override. |
+| Networks | Comma-separated Docker network names. Defaults to `nebula`. |
 
 **Environment Variables**
 
