@@ -18,7 +18,7 @@ export function parseAppConfig(config: Record<string, unknown>): Partial<AppForm
       const [host, container] = v.split(":") as [string, string?];
       return { host, container: container ?? "" };
     }),
-    network_mode: (config.network_mode as string) ?? "bridge",
+    networks: ((config.networks as string[]) ?? ["nebula"]).join(","),
     running: (config.running as boolean) ?? true,
     privileged: (config.privileged as boolean) ?? false,
     command: ((config.command as string[]) ?? []).map((value) => ({ value })),

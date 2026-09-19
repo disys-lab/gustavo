@@ -80,7 +80,7 @@ command:
 shm_size: "16g"                          # see the note below on sizing this
 ```
 
-Everything else (`running`, `privileged`, `network_mode`, `starting_ports`, `env_vars`) can usually be left as-is unless you have a specific reason to change it.
+Everything else (`running`, `privileged`, `networks`, `starting_ports`, `env_vars`) can usually be left as-is unless you have a specific reason to change it.
 
 ---
 

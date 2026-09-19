@@ -84,7 +84,7 @@ Full create/edit form for a Nebula application. Used on both `/apps` (create) an
   env_vars: z.array(z.object({ key: z.string(), value: z.string() })),
   ports: z.array(z.object({ host: z.number(), container: z.number() })),
   volumes: z.array(z.object({ host: z.string(), container: z.string() })),
-  network_mode: z.string().optional(),
+  networks: z.string().optional(),
   running: z.boolean(),
   privileged: z.boolean(),
   device_groups: z.array(z.string()),

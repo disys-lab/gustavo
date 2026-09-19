@@ -33,12 +33,13 @@ export default function AppsPage() {
       const envVars = Object.fromEntries(values.env_vars.map((e) => [e.key, e.value]));
       envVars["APP_ID"] = values.name;
       const command = values.command.map((c) => c.value).filter((v) => v !== "");
+      const networks = (values.networks || "nebula").split(",").map((n) => n.trim()).filter((n) => n !== "");
       const config = {
         docker_image: values.docker_image,
         env_vars: envVars,
         starting_ports: values.ports.map((p) => ({ [p.host]: p.container })),
         volumes: values.volumes.map((v) => `${v.host}:${v.container}`),
-        network_mode: values.network_mode || "bridge",
+        networks,
         running: values.running,
         privileged: values.privileged,
         command,
