@@ -1195,6 +1195,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1411,6 +1439,34 @@
     
   
     Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
   
 
     
@@ -2381,6 +2437,11 @@
 <td>Gustavo API Port</td>
 <td><code>GUSTAVO_API_PORT</code></td>
 <td>Gustavo's host-published port (see <a href="../../configuration/#reporter">Configuration</a>)</td>
+</tr>
+<tr>
+<td>Worker Directory TTL (seconds)</td>
+<td><code>DIRECTORY_TTL_SECONDS</code></td>
+<td>Redis TTL for <a href="../worker-directory/">Worker Directory</a> entries. <code>-1</code> (default) means entries never expire. Injected into the Reporter container as an env var on every launch/restart</td>
 </tr>
 </tbody>
 </table>

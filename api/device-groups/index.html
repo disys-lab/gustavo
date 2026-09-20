@@ -1596,6 +1596,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1812,6 +1840,34 @@
     
   
     Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
   
 
     
@@ -4199,16 +4255,7 @@ external-group member, same as <code>nebula_auth.build_worker_env</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-581">581</a></span>
-<span class="normal"><a href="#__codelineno-0-582">582</a></span>
-<span class="normal"><a href="#__codelineno-0-583">583</a></span>
-<span class="normal"><a href="#__codelineno-0-584">584</a></span>
-<span class="normal"><a href="#__codelineno-0-585">585</a></span>
-<span class="normal"><a href="#__codelineno-0-586">586</a></span>
-<span class="normal"><a href="#__codelineno-0-587">587</a></span>
-<span class="normal"><a href="#__codelineno-0-588">588</a></span>
-<span class="normal"><a href="#__codelineno-0-589">589</a></span>
-<span class="normal"><a href="#__codelineno-0-590">590</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-590">590</a></span>
 <span class="normal"><a href="#__codelineno-0-591">591</a></span>
 <span class="normal"><a href="#__codelineno-0-592">592</a></span>
 <span class="normal"><a href="#__codelineno-0-593">593</a></span>
@@ -4319,127 +4366,136 @@ external-group member, same as <code>nebula_auth.build_worker_env</code>.</p>
 <span class="normal"><a href="#__codelineno-0-698">698</a></span>
 <span class="normal"><a href="#__codelineno-0-699">699</a></span>
 <span class="normal"><a href="#__codelineno-0-700">700</a></span>
-<span class="normal"><a href="#__codelineno-0-701">701</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-581" name="__codelineno-0-581"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-env"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-582" name="__codelineno-0-582"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_env</span><span class="p">(</span>
-<a id="__codelineno-0-583" name="__codelineno-0-583"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
-<a id="__codelineno-0-584" name="__codelineno-0-584"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-585" name="__codelineno-0-585"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
-<a id="__codelineno-0-586" name="__codelineno-0-586"></a><span class="p">):</span>
-<a id="__codelineno-0-587" name="__codelineno-0-587"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-588" name="__codelineno-0-588"></a><span class="sd">    Native `gustavo worker up` env file for this device group, scoped to the caller's own Nebula identity.</span>
-<a id="__codelineno-0-589" name="__codelineno-0-589"></a>
-<a id="__codelineno-0-590" name="__codelineno-0-590"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-591" name="__codelineno-0-591"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-592" name="__codelineno-0-592"></a><span class="sd">    name : str</span>
-<a id="__codelineno-0-593" name="__codelineno-0-593"></a><span class="sd">        Device group name.</span>
-<a id="__codelineno-0-594" name="__codelineno-0-594"></a><span class="sd">    gpu : bool, optional</span>
-<a id="__codelineno-0-595" name="__codelineno-0-595"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only set this for a</span>
-<a id="__codelineno-0-596" name="__codelineno-0-596"></a><span class="sd">        device group whose hardware actually has a GPU</span>
-<a id="__codelineno-0-597" name="__codelineno-0-597"></a><span class="sd">        `nvidia-container-toolkit` can grant access to; the worker</span>
-<a id="__codelineno-0-598" name="__codelineno-0-598"></a><span class="sd">        applies it to every container it launches on that device.</span>
-<a id="__codelineno-0-599" name="__codelineno-0-599"></a><span class="sd">    reporter : bool, optional</span>
-<a id="__codelineno-0-600" name="__codelineno-0-600"></a><span class="sd">        If `True`, emits `REPORTER_HOST`/`REPORTER_PORT`/</span>
-<a id="__codelineno-0-601" name="__codelineno-0-601"></a><span class="sd">        `REPORTER_PROTOCOL` instead of `REDIS_HOST`/`REDIS_PORT`/</span>
-<a id="__codelineno-0-602" name="__codelineno-0-602"></a><span class="sd">        `REDIS_AUTH_TOKEN`, switching worker status reporting to</span>
-<a id="__codelineno-0-603" name="__codelineno-0-603"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes.</span>
-<a id="__codelineno-0-604" name="__codelineno-0-604"></a><span class="sd">        Mutually exclusive with the Redis reporting fields - see</span>
-<a id="__codelineno-0-605" name="__codelineno-0-605"></a><span class="sd">        `nebula_auth.build_worker_env`. Forced `True` server-side if the</span>
-<a id="__codelineno-0-606" name="__codelineno-0-606"></a><span class="sd">        caller belongs to any `EXTERNAL_USER_GROUPS` group, regardless of</span>
-<a id="__codelineno-0-607" name="__codelineno-0-607"></a><span class="sd">        what's passed here - `REDIS_AUTH_TOKEN` is a single shared,</span>
-<a id="__codelineno-0-608" name="__codelineno-0-608"></a><span class="sd">        unscoped credential an external caller must never receive.</span>
-<a id="__codelineno-0-609" name="__codelineno-0-609"></a><span class="sd">    check_in_time : int, optional</span>
-<a id="__codelineno-0-610" name="__codelineno-0-610"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
-<a id="__codelineno-0-611" name="__codelineno-0-611"></a><span class="sd">        worker polls the Nebula manager and reports status; the same</span>
-<a id="__codelineno-0-612" name="__codelineno-0-612"></a><span class="sd">        loop tick drives both, there's no separate report-only timer.</span>
-<a id="__codelineno-0-613" name="__codelineno-0-613"></a><span class="sd">        Defaults to 60.</span>
-<a id="__codelineno-0-614" name="__codelineno-0-614"></a><span class="sd">    public_endpoints : bool, optional</span>
-<a id="__codelineno-0-615" name="__codelineno-0-615"></a><span class="sd">        If `True`, uses `PUBLIC_MANAGER_HOST`/`PORT` (and</span>
-<a id="__codelineno-0-616" name="__codelineno-0-616"></a><span class="sd">        `PUBLIC_REPORTER_HOST`/`PORT` if `reporter` is also set) instead</span>
-<a id="__codelineno-0-617" name="__codelineno-0-617"></a><span class="sd">        of the internal LAN addresses - for a worker reaching this</span>
-<a id="__codelineno-0-618" name="__codelineno-0-618"></a><span class="sd">        platform from outside (e.g. a Cloudflare Tunnel). See</span>
-<a id="__codelineno-0-619" name="__codelineno-0-619"></a><span class="sd">        `nebula_auth.build_worker_env`. Defaults to `False`. Forced</span>
-<a id="__codelineno-0-620" name="__codelineno-0-620"></a><span class="sd">        `True` server-side if the caller belongs to any</span>
-<a id="__codelineno-0-621" name="__codelineno-0-621"></a><span class="sd">        `EXTERNAL_USER_GROUPS` group, regardless of what's passed here.</span>
-<a id="__codelineno-0-622" name="__codelineno-0-622"></a><span class="sd">    session : Session</span>
-<a id="__codelineno-0-623" name="__codelineno-0-623"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
-<a id="__codelineno-0-624" name="__codelineno-0-624"></a>
-<a id="__codelineno-0-625" name="__codelineno-0-625"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-626" name="__codelineno-0-626"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-627" name="__codelineno-0-627"></a><span class="sd">    str</span>
-<a id="__codelineno-0-628" name="__codelineno-0-628"></a><span class="sd">        `key=value` lines, `text/plain`. Same shape as</span>
-<a id="__codelineno-0-629" name="__codelineno-0-629"></a><span class="sd">        `/api/config/worker-download`, plus `DEVICE_GROUP` so the CLI</span>
-<a id="__codelineno-0-630" name="__codelineno-0-630"></a><span class="sd">        invocation needs one less flag.</span>
-<a id="__codelineno-0-631" name="__codelineno-0-631"></a>
-<a id="__codelineno-0-632" name="__codelineno-0-632"></a><span class="sd">    Raises</span>
-<a id="__codelineno-0-633" name="__codelineno-0-633"></a><span class="sd">    ------</span>
-<a id="__codelineno-0-634" name="__codelineno-0-634"></a><span class="sd">    HTTPException</span>
-<a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
-<a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="sd">        group.</span>
-<a id="__codelineno-0-637" name="__codelineno-0-637"></a>
-<a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">    Notes</span>
-<a id="__codelineno-0-639" name="__codelineno-0-639"></a><span class="sd">    -----</span>
-<a id="__codelineno-0-640" name="__codelineno-0-640"></a><span class="sd">    Registry inclusion is not a caller-supplied choice - it's derived</span>
-<a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="sd">    entirely from `PUBLIC_REGISTRY_ENABLED` and whether the caller is an</span>
-<a id="__codelineno-0-642" name="__codelineno-0-642"></a><span class="sd">    external-group member, same as `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">    """</span>
-<a id="__codelineno-0-644" name="__codelineno-0-644"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-645" name="__codelineno-0-645"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-646" name="__codelineno-0-646"></a>    <span class="n">username</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span>
-<a id="__codelineno-0-647" name="__codelineno-0-647"></a>    <span class="n">password</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span>
-<a id="__codelineno-0-648" name="__codelineno-0-648"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
-<a id="__codelineno-0-649" name="__codelineno-0-649"></a>    <span class="n">public_endpoints</span> <span class="o">=</span> <span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span>
-<a id="__codelineno-0-650" name="__codelineno-0-650"></a>    <span class="c1"># REDIS_AUTH_TOKEN is a single shared, unscoped platform credential - an</span>
-<a id="__codelineno-0-651" name="__codelineno-0-651"></a>    <span class="c1"># external caller must never be able to reach the Redis branch below,</span>
-<a id="__codelineno-0-652" name="__codelineno-0-652"></a>    <span class="c1"># regardless of what they pass for `reporter`. See build_worker_env's</span>
-<a id="__codelineno-0-653" name="__codelineno-0-653"></a>    <span class="c1"># matching forced-reporter docstring.</span>
-<a id="__codelineno-0-654" name="__codelineno-0-654"></a>    <span class="n">reporter</span> <span class="o">=</span> <span class="n">reporter</span> <span class="ow">or</span> <span class="n">external</span>
-<a id="__codelineno-0-655" name="__codelineno-0-655"></a>    <span class="n">auth_token</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-<a id="__codelineno-0-656" name="__codelineno-0-656"></a>    <span class="n">manager_host</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_MANAGER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MANAGER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-<a id="__codelineno-0-657" name="__codelineno-0-657"></a>    <span class="n">manager_port</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_MANAGER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MANAGER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-<a id="__codelineno-0-658" name="__codelineno-0-658"></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-0-659" name="__codelineno-0-659"></a>        <span class="sa">f</span><span class="s2">"DEVICE_GROUP=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-660" name="__codelineno-0-660"></a>        <span class="sa">f</span><span class="s2">"MANAGER_HOST=</span><span class="si">{</span><span class="n">manager_host</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-661" name="__codelineno-0-661"></a>        <span class="sa">f</span><span class="s2">"MANAGER_PORT=</span><span class="si">{</span><span class="n">manager_port</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-662" name="__codelineno-0-662"></a>    <span class="p">]</span>
-<a id="__codelineno-0-663" name="__codelineno-0-663"></a>    <span class="k">if</span> <span class="n">reporter</span><span class="p">:</span>
-<a id="__codelineno-0-664" name="__codelineno-0-664"></a>        <span class="n">reporter_host</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_REPORTER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"REPORTER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-<a id="__codelineno-0-665" name="__codelineno-0-665"></a>        <span class="n">reporter_port</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_REPORTER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"REPORTER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-<a id="__codelineno-0-666" name="__codelineno-0-666"></a>        <span class="n">reporter_protocol</span> <span class="o">=</span> <span class="s2">"https"</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="s2">"http"</span>
-<a id="__codelineno-0-667" name="__codelineno-0-667"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
-<a id="__codelineno-0-668" name="__codelineno-0-668"></a>            <span class="sa">f</span><span class="s2">"REPORTER_HOST=</span><span class="si">{</span><span class="n">reporter_host</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-669" name="__codelineno-0-669"></a>            <span class="sa">f</span><span class="s2">"REPORTER_PORT=</span><span class="si">{</span><span class="n">reporter_port</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-670" name="__codelineno-0-670"></a>            <span class="sa">f</span><span class="s2">"REPORTER_PROTOCOL=</span><span class="si">{</span><span class="n">reporter_protocol</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-671" name="__codelineno-0-671"></a>        <span class="p">]</span>
-<a id="__codelineno-0-672" name="__codelineno-0-672"></a>    <span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-0-673" name="__codelineno-0-673"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
-<a id="__codelineno-0-674" name="__codelineno-0-674"></a>            <span class="sa">f</span><span class="s2">"REDIS_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-675" name="__codelineno-0-675"></a>            <span class="sa">f</span><span class="s2">"REDIS_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-676" name="__codelineno-0-676"></a>            <span class="sa">f</span><span class="s2">"REDIS_AUTH_TOKEN=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_AUTH_TOKEN'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-677" name="__codelineno-0-677"></a>        <span class="p">]</span>
-<a id="__codelineno-0-678" name="__codelineno-0-678"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_REGISTRY_ENABLED"</span><span class="p">):</span>
-<a id="__codelineno-0-679" name="__codelineno-0-679"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
-<a id="__codelineno-0-680" name="__codelineno-0-680"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PUBLIC_REGISTRY_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-681" name="__codelineno-0-681"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PUBLIC_REGISTRY_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-682" name="__codelineno-0-682"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_USER=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-683" name="__codelineno-0-683"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-684" name="__codelineno-0-684"></a>        <span class="p">]</span>
-<a id="__codelineno-0-685" name="__codelineno-0-685"></a>    <span class="k">elif</span> <span class="ow">not</span> <span class="n">external</span><span class="p">:</span>
-<a id="__codelineno-0-686" name="__codelineno-0-686"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
-<a id="__codelineno-0-687" name="__codelineno-0-687"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-688" name="__codelineno-0-688"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-689" name="__codelineno-0-689"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_USER=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-690" name="__codelineno-0-690"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-691" name="__codelineno-0-691"></a>        <span class="p">]</span>
-<a id="__codelineno-0-692" name="__codelineno-0-692"></a>    <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
-<a id="__codelineno-0-693" name="__codelineno-0-693"></a>        <span class="sa">f</span><span class="s2">"WORKER_NMODE=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'WORKER_NMODE'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-694" name="__codelineno-0-694"></a>        <span class="sa">f</span><span class="s2">"NEBULA_USERNAME=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-695" name="__codelineno-0-695"></a>        <span class="sa">f</span><span class="s2">"NEBULA_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-696" name="__codelineno-0-696"></a>        <span class="sa">f</span><span class="s2">"NEBULA_AUTH_TOKEN=</span><span class="si">{</span><span class="n">auth_token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-697" name="__codelineno-0-697"></a>        <span class="sa">f</span><span class="s2">"NEBULA_MANAGER_CHECK_IN_TIME=</span><span class="si">{</span><span class="n">check_in_time</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-698" name="__codelineno-0-698"></a>    <span class="p">]</span>
-<a id="__codelineno-0-699" name="__codelineno-0-699"></a>    <span class="k">if</span> <span class="n">gpu</span><span class="p">:</span>
-<a id="__codelineno-0-700" name="__codelineno-0-700"></a>        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"GPU_ENABLED=true"</span><span class="p">)</span>
-<a id="__codelineno-0-701" name="__codelineno-0-701"></a>    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+<span class="normal"><a href="#__codelineno-0-701">701</a></span>
+<span class="normal"><a href="#__codelineno-0-702">702</a></span>
+<span class="normal"><a href="#__codelineno-0-703">703</a></span>
+<span class="normal"><a href="#__codelineno-0-704">704</a></span>
+<span class="normal"><a href="#__codelineno-0-705">705</a></span>
+<span class="normal"><a href="#__codelineno-0-706">706</a></span>
+<span class="normal"><a href="#__codelineno-0-707">707</a></span>
+<span class="normal"><a href="#__codelineno-0-708">708</a></span>
+<span class="normal"><a href="#__codelineno-0-709">709</a></span>
+<span class="normal"><a href="#__codelineno-0-710">710</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-590" name="__codelineno-0-590"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-env"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-591" name="__codelineno-0-591"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_env</span><span class="p">(</span>
+<a id="__codelineno-0-592" name="__codelineno-0-592"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+<a id="__codelineno-0-593" name="__codelineno-0-593"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-594" name="__codelineno-0-594"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
+<a id="__codelineno-0-595" name="__codelineno-0-595"></a><span class="p">):</span>
+<a id="__codelineno-0-596" name="__codelineno-0-596"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-597" name="__codelineno-0-597"></a><span class="sd">    Native `gustavo worker up` env file for this device group, scoped to the caller's own Nebula identity.</span>
+<a id="__codelineno-0-598" name="__codelineno-0-598"></a>
+<a id="__codelineno-0-599" name="__codelineno-0-599"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-600" name="__codelineno-0-600"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-601" name="__codelineno-0-601"></a><span class="sd">    name : str</span>
+<a id="__codelineno-0-602" name="__codelineno-0-602"></a><span class="sd">        Device group name.</span>
+<a id="__codelineno-0-603" name="__codelineno-0-603"></a><span class="sd">    gpu : bool, optional</span>
+<a id="__codelineno-0-604" name="__codelineno-0-604"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only set this for a</span>
+<a id="__codelineno-0-605" name="__codelineno-0-605"></a><span class="sd">        device group whose hardware actually has a GPU</span>
+<a id="__codelineno-0-606" name="__codelineno-0-606"></a><span class="sd">        `nvidia-container-toolkit` can grant access to; the worker</span>
+<a id="__codelineno-0-607" name="__codelineno-0-607"></a><span class="sd">        applies it to every container it launches on that device.</span>
+<a id="__codelineno-0-608" name="__codelineno-0-608"></a><span class="sd">    reporter : bool, optional</span>
+<a id="__codelineno-0-609" name="__codelineno-0-609"></a><span class="sd">        If `True`, emits `REPORTER_HOST`/`REPORTER_PORT`/</span>
+<a id="__codelineno-0-610" name="__codelineno-0-610"></a><span class="sd">        `REPORTER_PROTOCOL` instead of `REDIS_HOST`/`REDIS_PORT`/</span>
+<a id="__codelineno-0-611" name="__codelineno-0-611"></a><span class="sd">        `REDIS_AUTH_TOKEN`, switching worker status reporting to</span>
+<a id="__codelineno-0-612" name="__codelineno-0-612"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes.</span>
+<a id="__codelineno-0-613" name="__codelineno-0-613"></a><span class="sd">        Mutually exclusive with the Redis reporting fields - see</span>
+<a id="__codelineno-0-614" name="__codelineno-0-614"></a><span class="sd">        `nebula_auth.build_worker_env`. Forced `True` server-side if the</span>
+<a id="__codelineno-0-615" name="__codelineno-0-615"></a><span class="sd">        caller belongs to any `EXTERNAL_USER_GROUPS` group, regardless of</span>
+<a id="__codelineno-0-616" name="__codelineno-0-616"></a><span class="sd">        what's passed here - `REDIS_AUTH_TOKEN` is a single shared,</span>
+<a id="__codelineno-0-617" name="__codelineno-0-617"></a><span class="sd">        unscoped credential an external caller must never receive.</span>
+<a id="__codelineno-0-618" name="__codelineno-0-618"></a><span class="sd">    check_in_time : int, optional</span>
+<a id="__codelineno-0-619" name="__codelineno-0-619"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
+<a id="__codelineno-0-620" name="__codelineno-0-620"></a><span class="sd">        worker polls the Nebula manager and reports status; the same</span>
+<a id="__codelineno-0-621" name="__codelineno-0-621"></a><span class="sd">        loop tick drives both, there's no separate report-only timer.</span>
+<a id="__codelineno-0-622" name="__codelineno-0-622"></a><span class="sd">        Defaults to 60.</span>
+<a id="__codelineno-0-623" name="__codelineno-0-623"></a><span class="sd">    public_endpoints : bool, optional</span>
+<a id="__codelineno-0-624" name="__codelineno-0-624"></a><span class="sd">        If `True`, uses `PUBLIC_MANAGER_HOST`/`PORT` (and</span>
+<a id="__codelineno-0-625" name="__codelineno-0-625"></a><span class="sd">        `PUBLIC_REPORTER_HOST`/`PORT` if `reporter` is also set) instead</span>
+<a id="__codelineno-0-626" name="__codelineno-0-626"></a><span class="sd">        of the internal LAN addresses - for a worker reaching this</span>
+<a id="__codelineno-0-627" name="__codelineno-0-627"></a><span class="sd">        platform from outside (e.g. a Cloudflare Tunnel). See</span>
+<a id="__codelineno-0-628" name="__codelineno-0-628"></a><span class="sd">        `nebula_auth.build_worker_env`. Defaults to `False`. Forced</span>
+<a id="__codelineno-0-629" name="__codelineno-0-629"></a><span class="sd">        `True` server-side if the caller belongs to any</span>
+<a id="__codelineno-0-630" name="__codelineno-0-630"></a><span class="sd">        `EXTERNAL_USER_GROUPS` group, regardless of what's passed here.</span>
+<a id="__codelineno-0-631" name="__codelineno-0-631"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-632" name="__codelineno-0-632"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
+<a id="__codelineno-0-633" name="__codelineno-0-633"></a>
+<a id="__codelineno-0-634" name="__codelineno-0-634"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="sd">    str</span>
+<a id="__codelineno-0-637" name="__codelineno-0-637"></a><span class="sd">        `key=value` lines, `text/plain`. Same shape as</span>
+<a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">        `/api/config/worker-download`, plus `DEVICE_GROUP` so the CLI</span>
+<a id="__codelineno-0-639" name="__codelineno-0-639"></a><span class="sd">        invocation needs one less flag.</span>
+<a id="__codelineno-0-640" name="__codelineno-0-640"></a>
+<a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="sd">    Raises</span>
+<a id="__codelineno-0-642" name="__codelineno-0-642"></a><span class="sd">    ------</span>
+<a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">    HTTPException</span>
+<a id="__codelineno-0-644" name="__codelineno-0-644"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
+<a id="__codelineno-0-645" name="__codelineno-0-645"></a><span class="sd">        group.</span>
+<a id="__codelineno-0-646" name="__codelineno-0-646"></a>
+<a id="__codelineno-0-647" name="__codelineno-0-647"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-648" name="__codelineno-0-648"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-649" name="__codelineno-0-649"></a><span class="sd">    Registry inclusion is not a caller-supplied choice - it's derived</span>
+<a id="__codelineno-0-650" name="__codelineno-0-650"></a><span class="sd">    entirely from `PUBLIC_REGISTRY_ENABLED` and whether the caller is an</span>
+<a id="__codelineno-0-651" name="__codelineno-0-651"></a><span class="sd">    external-group member, same as `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-652" name="__codelineno-0-652"></a><span class="sd">    """</span>
+<a id="__codelineno-0-653" name="__codelineno-0-653"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-654" name="__codelineno-0-654"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-655" name="__codelineno-0-655"></a>    <span class="n">username</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span>
+<a id="__codelineno-0-656" name="__codelineno-0-656"></a>    <span class="n">password</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span>
+<a id="__codelineno-0-657" name="__codelineno-0-657"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+<a id="__codelineno-0-658" name="__codelineno-0-658"></a>    <span class="n">public_endpoints</span> <span class="o">=</span> <span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span>
+<a id="__codelineno-0-659" name="__codelineno-0-659"></a>    <span class="c1"># REDIS_AUTH_TOKEN is a single shared, unscoped platform credential - an</span>
+<a id="__codelineno-0-660" name="__codelineno-0-660"></a>    <span class="c1"># external caller must never be able to reach the Redis branch below,</span>
+<a id="__codelineno-0-661" name="__codelineno-0-661"></a>    <span class="c1"># regardless of what they pass for `reporter`. See build_worker_env's</span>
+<a id="__codelineno-0-662" name="__codelineno-0-662"></a>    <span class="c1"># matching forced-reporter docstring.</span>
+<a id="__codelineno-0-663" name="__codelineno-0-663"></a>    <span class="n">reporter</span> <span class="o">=</span> <span class="n">reporter</span> <span class="ow">or</span> <span class="n">external</span>
+<a id="__codelineno-0-664" name="__codelineno-0-664"></a>    <span class="n">auth_token</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+<a id="__codelineno-0-665" name="__codelineno-0-665"></a>    <span class="n">manager_host</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_MANAGER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MANAGER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-0-666" name="__codelineno-0-666"></a>    <span class="n">manager_port</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_MANAGER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"MANAGER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-0-667" name="__codelineno-0-667"></a>    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-668" name="__codelineno-0-668"></a>        <span class="sa">f</span><span class="s2">"DEVICE_GROUP=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-669" name="__codelineno-0-669"></a>        <span class="sa">f</span><span class="s2">"MANAGER_HOST=</span><span class="si">{</span><span class="n">manager_host</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-670" name="__codelineno-0-670"></a>        <span class="sa">f</span><span class="s2">"MANAGER_PORT=</span><span class="si">{</span><span class="n">manager_port</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-671" name="__codelineno-0-671"></a>    <span class="p">]</span>
+<a id="__codelineno-0-672" name="__codelineno-0-672"></a>    <span class="k">if</span> <span class="n">reporter</span><span class="p">:</span>
+<a id="__codelineno-0-673" name="__codelineno-0-673"></a>        <span class="n">reporter_host</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_REPORTER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"REPORTER_HOST"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-0-674" name="__codelineno-0-674"></a>        <span class="n">reporter_port</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_REPORTER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"REPORTER_PORT"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-0-675" name="__codelineno-0-675"></a>        <span class="n">reporter_protocol</span> <span class="o">=</span> <span class="s2">"https"</span> <span class="k">if</span> <span class="n">public_endpoints</span> <span class="k">else</span> <span class="s2">"http"</span>
+<a id="__codelineno-0-676" name="__codelineno-0-676"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
+<a id="__codelineno-0-677" name="__codelineno-0-677"></a>            <span class="sa">f</span><span class="s2">"REPORTER_HOST=</span><span class="si">{</span><span class="n">reporter_host</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-678" name="__codelineno-0-678"></a>            <span class="sa">f</span><span class="s2">"REPORTER_PORT=</span><span class="si">{</span><span class="n">reporter_port</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-679" name="__codelineno-0-679"></a>            <span class="sa">f</span><span class="s2">"REPORTER_PROTOCOL=</span><span class="si">{</span><span class="n">reporter_protocol</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-680" name="__codelineno-0-680"></a>        <span class="p">]</span>
+<a id="__codelineno-0-681" name="__codelineno-0-681"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-682" name="__codelineno-0-682"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
+<a id="__codelineno-0-683" name="__codelineno-0-683"></a>            <span class="sa">f</span><span class="s2">"REDIS_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-684" name="__codelineno-0-684"></a>            <span class="sa">f</span><span class="s2">"REDIS_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-685" name="__codelineno-0-685"></a>            <span class="sa">f</span><span class="s2">"REDIS_AUTH_TOKEN=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REDIS_AUTH_TOKEN'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-686" name="__codelineno-0-686"></a>        <span class="p">]</span>
+<a id="__codelineno-0-687" name="__codelineno-0-687"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PUBLIC_REGISTRY_ENABLED"</span><span class="p">):</span>
+<a id="__codelineno-0-688" name="__codelineno-0-688"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
+<a id="__codelineno-0-689" name="__codelineno-0-689"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PUBLIC_REGISTRY_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-690" name="__codelineno-0-690"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'PUBLIC_REGISTRY_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-691" name="__codelineno-0-691"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_USER=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-692" name="__codelineno-0-692"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-693" name="__codelineno-0-693"></a>        <span class="p">]</span>
+<a id="__codelineno-0-694" name="__codelineno-0-694"></a>    <span class="k">elif</span> <span class="ow">not</span> <span class="n">external</span><span class="p">:</span>
+<a id="__codelineno-0-695" name="__codelineno-0-695"></a>        <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
+<a id="__codelineno-0-696" name="__codelineno-0-696"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_HOST=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_HOST'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-697" name="__codelineno-0-697"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_PORT=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'REGISTRY_PORT'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-698" name="__codelineno-0-698"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_USER=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-699" name="__codelineno-0-699"></a>            <span class="sa">f</span><span class="s2">"REGISTRY_AUTH_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-700" name="__codelineno-0-700"></a>        <span class="p">]</span>
+<a id="__codelineno-0-701" name="__codelineno-0-701"></a>    <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span>
+<a id="__codelineno-0-702" name="__codelineno-0-702"></a>        <span class="sa">f</span><span class="s2">"WORKER_NMODE=</span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'WORKER_NMODE'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-703" name="__codelineno-0-703"></a>        <span class="sa">f</span><span class="s2">"NEBULA_USERNAME=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-704" name="__codelineno-0-704"></a>        <span class="sa">f</span><span class="s2">"NEBULA_PASSWORD=</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-705" name="__codelineno-0-705"></a>        <span class="sa">f</span><span class="s2">"NEBULA_AUTH_TOKEN=</span><span class="si">{</span><span class="n">auth_token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-706" name="__codelineno-0-706"></a>        <span class="sa">f</span><span class="s2">"NEBULA_MANAGER_CHECK_IN_TIME=</span><span class="si">{</span><span class="n">check_in_time</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-707" name="__codelineno-0-707"></a>    <span class="p">]</span>
+<a id="__codelineno-0-708" name="__codelineno-0-708"></a>    <span class="k">if</span> <span class="n">gpu</span><span class="p">:</span>
+<a id="__codelineno-0-709" name="__codelineno-0-709"></a>        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"GPU_ENABLED=true"</span><span class="p">)</span>
+<a id="__codelineno-0-710" name="__codelineno-0-710"></a>    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4646,16 +4702,7 @@ caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-704">704</a></span>
-<span class="normal"><a href="#__codelineno-0-705">705</a></span>
-<span class="normal"><a href="#__codelineno-0-706">706</a></span>
-<span class="normal"><a href="#__codelineno-0-707">707</a></span>
-<span class="normal"><a href="#__codelineno-0-708">708</a></span>
-<span class="normal"><a href="#__codelineno-0-709">709</a></span>
-<span class="normal"><a href="#__codelineno-0-710">710</a></span>
-<span class="normal"><a href="#__codelineno-0-711">711</a></span>
-<span class="normal"><a href="#__codelineno-0-712">712</a></span>
-<span class="normal"><a href="#__codelineno-0-713">713</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-713">713</a></span>
 <span class="normal"><a href="#__codelineno-0-714">714</a></span>
 <span class="normal"><a href="#__codelineno-0-715">715</a></span>
 <span class="normal"><a href="#__codelineno-0-716">716</a></span>
@@ -4719,80 +4766,95 @@ caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p>
 <span class="normal"><a href="#__codelineno-0-774">774</a></span>
 <span class="normal"><a href="#__codelineno-0-775">775</a></span>
 <span class="normal"><a href="#__codelineno-0-776">776</a></span>
-<span class="normal"><a href="#__codelineno-0-777">777</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-704" name="__codelineno-0-704"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-compose"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-705" name="__codelineno-0-705"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_compose</span><span class="p">(</span>
-<a id="__codelineno-0-706" name="__codelineno-0-706"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
-<a id="__codelineno-0-707" name="__codelineno-0-707"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-708" name="__codelineno-0-708"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
-<a id="__codelineno-0-709" name="__codelineno-0-709"></a><span class="p">):</span>
-<a id="__codelineno-0-710" name="__codelineno-0-710"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-711" name="__codelineno-0-711"></a><span class="sd">    Self-contained `docker-compose.yml` for this device group's worker.</span>
-<a id="__codelineno-0-712" name="__codelineno-0-712"></a>
-<a id="__codelineno-0-713" name="__codelineno-0-713"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-714" name="__codelineno-0-714"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-715" name="__codelineno-0-715"></a><span class="sd">    name : str</span>
-<a id="__codelineno-0-716" name="__codelineno-0-716"></a><span class="sd">        Device group name.</span>
-<a id="__codelineno-0-717" name="__codelineno-0-717"></a><span class="sd">    gpu : bool, optional</span>
-<a id="__codelineno-0-718" name="__codelineno-0-718"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
-<a id="__codelineno-0-719" name="__codelineno-0-719"></a><span class="sd">        whose hardware actually has a GPU.</span>
-<a id="__codelineno-0-720" name="__codelineno-0-720"></a><span class="sd">    reporter : bool, optional</span>
-<a id="__codelineno-0-721" name="__codelineno-0-721"></a><span class="sd">        If `True`, switches worker status reporting to</span>
-<a id="__codelineno-0-722" name="__codelineno-0-722"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
-<a id="__codelineno-0-723" name="__codelineno-0-723"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-724" name="__codelineno-0-724"></a><span class="sd">    check_in_time : int, optional</span>
-<a id="__codelineno-0-725" name="__codelineno-0-725"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
-<a id="__codelineno-0-726" name="__codelineno-0-726"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
-<a id="__codelineno-0-727" name="__codelineno-0-727"></a><span class="sd">        to 60.</span>
-<a id="__codelineno-0-728" name="__codelineno-0-728"></a><span class="sd">    public_endpoints : bool, optional</span>
-<a id="__codelineno-0-729" name="__codelineno-0-729"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
-<a id="__codelineno-0-730" name="__codelineno-0-730"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
-<a id="__codelineno-0-731" name="__codelineno-0-731"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
-<a id="__codelineno-0-732" name="__codelineno-0-732"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
-<a id="__codelineno-0-733" name="__codelineno-0-733"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
-<a id="__codelineno-0-734" name="__codelineno-0-734"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
-<a id="__codelineno-0-735" name="__codelineno-0-735"></a><span class="sd">    session : Session</span>
-<a id="__codelineno-0-736" name="__codelineno-0-736"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
-<a id="__codelineno-0-737" name="__codelineno-0-737"></a>
-<a id="__codelineno-0-738" name="__codelineno-0-738"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-739" name="__codelineno-0-739"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-740" name="__codelineno-0-740"></a><span class="sd">    str</span>
-<a id="__codelineno-0-741" name="__codelineno-0-741"></a><span class="sd">        YAML `docker-compose.yml` text, every value baked in directly</span>
-<a id="__codelineno-0-742" name="__codelineno-0-742"></a><span class="sd">        - no companion `.env` file needed.</span>
-<a id="__codelineno-0-743" name="__codelineno-0-743"></a>
-<a id="__codelineno-0-744" name="__codelineno-0-744"></a><span class="sd">    Raises</span>
-<a id="__codelineno-0-745" name="__codelineno-0-745"></a><span class="sd">    ------</span>
-<a id="__codelineno-0-746" name="__codelineno-0-746"></a><span class="sd">    HTTPException</span>
-<a id="__codelineno-0-747" name="__codelineno-0-747"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
-<a id="__codelineno-0-748" name="__codelineno-0-748"></a><span class="sd">        group.</span>
-<a id="__codelineno-0-749" name="__codelineno-0-749"></a>
-<a id="__codelineno-0-750" name="__codelineno-0-750"></a><span class="sd">    Notes</span>
-<a id="__codelineno-0-751" name="__codelineno-0-751"></a><span class="sd">    -----</span>
-<a id="__codelineno-0-752" name="__codelineno-0-752"></a><span class="sd">    Independent of `worker-env`: changing/regenerating one has no</span>
-<a id="__codelineno-0-753" name="__codelineno-0-753"></a><span class="sd">    effect on the other. Registry inclusion is derived, not</span>
-<a id="__codelineno-0-754" name="__codelineno-0-754"></a><span class="sd">    caller-supplied - see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-755" name="__codelineno-0-755"></a><span class="sd">    """</span>
-<a id="__codelineno-0-756" name="__codelineno-0-756"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-757" name="__codelineno-0-757"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-758" name="__codelineno-0-758"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
-<a id="__codelineno-0-759" name="__codelineno-0-759"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
-<a id="__codelineno-0-760" name="__codelineno-0-760"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
-<a id="__codelineno-0-761" name="__codelineno-0-761"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
-<a id="__codelineno-0-762" name="__codelineno-0-762"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
-<a id="__codelineno-0-763" name="__codelineno-0-763"></a>    <span class="p">)</span>
-<a id="__codelineno-0-764" name="__codelineno-0-764"></a>    <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-0-765" name="__codelineno-0-765"></a>        <span class="s2">"image"</span><span class="p">:</span> <span class="n">_WORKER_IMAGE</span><span class="p">,</span>
-<a id="__codelineno-0-766" name="__codelineno-0-766"></a>        <span class="s2">"container_name"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-<a id="__codelineno-0-767" name="__codelineno-0-767"></a>        <span class="s2">"restart"</span><span class="p">:</span> <span class="s2">"unless-stopped"</span><span class="p">,</span>
-<a id="__codelineno-0-768" name="__codelineno-0-768"></a>    <span class="p">}</span>
-<a id="__codelineno-0-769" name="__codelineno-0-769"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
-<a id="__codelineno-0-770" name="__codelineno-0-770"></a>        <span class="n">service</span><span class="p">[</span><span class="s2">"network_mode"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"host"</span>
-<a id="__codelineno-0-771" name="__codelineno-0-771"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
-<a id="__codelineno-0-772" name="__codelineno-0-772"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"volumes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/var/run/docker.sock:/var/run/docker.sock"</span><span class="p">]</span>
-<a id="__codelineno-0-773" name="__codelineno-0-773"></a>    <span class="n">compose</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"services"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"gustavo-worker"</span><span class="p">:</span> <span class="n">service</span><span class="p">}}</span>
-<a id="__codelineno-0-774" name="__codelineno-0-774"></a>    <span class="c1"># default_flow_style=False for block style; yaml.safe_dump handles quoting/</span>
-<a id="__codelineno-0-775" name="__codelineno-0-775"></a>    <span class="c1"># escaping of any value (quotes, $, backticks, ...) correctly on its own -</span>
-<a id="__codelineno-0-776" name="__codelineno-0-776"></a>    <span class="c1"># values here include admin-set secrets, which can contain anything.</span>
-<a id="__codelineno-0-777" name="__codelineno-0-777"></a>    <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">compose</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-777">777</a></span>
+<span class="normal"><a href="#__codelineno-0-778">778</a></span>
+<span class="normal"><a href="#__codelineno-0-779">779</a></span>
+<span class="normal"><a href="#__codelineno-0-780">780</a></span>
+<span class="normal"><a href="#__codelineno-0-781">781</a></span>
+<span class="normal"><a href="#__codelineno-0-782">782</a></span>
+<span class="normal"><a href="#__codelineno-0-783">783</a></span>
+<span class="normal"><a href="#__codelineno-0-784">784</a></span>
+<span class="normal"><a href="#__codelineno-0-785">785</a></span>
+<span class="normal"><a href="#__codelineno-0-786">786</a></span>
+<span class="normal"><a href="#__codelineno-0-787">787</a></span>
+<span class="normal"><a href="#__codelineno-0-788">788</a></span>
+<span class="normal"><a href="#__codelineno-0-789">789</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-713" name="__codelineno-0-713"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-compose"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-714" name="__codelineno-0-714"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_compose</span><span class="p">(</span>
+<a id="__codelineno-0-715" name="__codelineno-0-715"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+<a id="__codelineno-0-716" name="__codelineno-0-716"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-717" name="__codelineno-0-717"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
+<a id="__codelineno-0-718" name="__codelineno-0-718"></a><span class="p">):</span>
+<a id="__codelineno-0-719" name="__codelineno-0-719"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-720" name="__codelineno-0-720"></a><span class="sd">    Self-contained `docker-compose.yml` for this device group's worker.</span>
+<a id="__codelineno-0-721" name="__codelineno-0-721"></a>
+<a id="__codelineno-0-722" name="__codelineno-0-722"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-723" name="__codelineno-0-723"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-724" name="__codelineno-0-724"></a><span class="sd">    name : str</span>
+<a id="__codelineno-0-725" name="__codelineno-0-725"></a><span class="sd">        Device group name.</span>
+<a id="__codelineno-0-726" name="__codelineno-0-726"></a><span class="sd">    gpu : bool, optional</span>
+<a id="__codelineno-0-727" name="__codelineno-0-727"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
+<a id="__codelineno-0-728" name="__codelineno-0-728"></a><span class="sd">        whose hardware actually has a GPU.</span>
+<a id="__codelineno-0-729" name="__codelineno-0-729"></a><span class="sd">    reporter : bool, optional</span>
+<a id="__codelineno-0-730" name="__codelineno-0-730"></a><span class="sd">        If `True`, switches worker status reporting to</span>
+<a id="__codelineno-0-731" name="__codelineno-0-731"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
+<a id="__codelineno-0-732" name="__codelineno-0-732"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-733" name="__codelineno-0-733"></a><span class="sd">    check_in_time : int, optional</span>
+<a id="__codelineno-0-734" name="__codelineno-0-734"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
+<a id="__codelineno-0-735" name="__codelineno-0-735"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
+<a id="__codelineno-0-736" name="__codelineno-0-736"></a><span class="sd">        to 60.</span>
+<a id="__codelineno-0-737" name="__codelineno-0-737"></a><span class="sd">    public_endpoints : bool, optional</span>
+<a id="__codelineno-0-738" name="__codelineno-0-738"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
+<a id="__codelineno-0-739" name="__codelineno-0-739"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
+<a id="__codelineno-0-740" name="__codelineno-0-740"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
+<a id="__codelineno-0-741" name="__codelineno-0-741"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
+<a id="__codelineno-0-742" name="__codelineno-0-742"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
+<a id="__codelineno-0-743" name="__codelineno-0-743"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
+<a id="__codelineno-0-744" name="__codelineno-0-744"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-745" name="__codelineno-0-745"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
+<a id="__codelineno-0-746" name="__codelineno-0-746"></a>
+<a id="__codelineno-0-747" name="__codelineno-0-747"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-748" name="__codelineno-0-748"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-749" name="__codelineno-0-749"></a><span class="sd">    str</span>
+<a id="__codelineno-0-750" name="__codelineno-0-750"></a><span class="sd">        YAML `docker-compose.yml` text, every value baked in directly</span>
+<a id="__codelineno-0-751" name="__codelineno-0-751"></a><span class="sd">        - no companion `.env` file needed.</span>
+<a id="__codelineno-0-752" name="__codelineno-0-752"></a>
+<a id="__codelineno-0-753" name="__codelineno-0-753"></a><span class="sd">    Raises</span>
+<a id="__codelineno-0-754" name="__codelineno-0-754"></a><span class="sd">    ------</span>
+<a id="__codelineno-0-755" name="__codelineno-0-755"></a><span class="sd">    HTTPException</span>
+<a id="__codelineno-0-756" name="__codelineno-0-756"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
+<a id="__codelineno-0-757" name="__codelineno-0-757"></a><span class="sd">        group.</span>
+<a id="__codelineno-0-758" name="__codelineno-0-758"></a>
+<a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-760" name="__codelineno-0-760"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-761" name="__codelineno-0-761"></a><span class="sd">    Independent of `worker-env`: changing/regenerating one has no</span>
+<a id="__codelineno-0-762" name="__codelineno-0-762"></a><span class="sd">    effect on the other. Registry inclusion is derived, not</span>
+<a id="__codelineno-0-763" name="__codelineno-0-763"></a><span class="sd">    caller-supplied - see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-764" name="__codelineno-0-764"></a><span class="sd">    """</span>
+<a id="__codelineno-0-765" name="__codelineno-0-765"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-766" name="__codelineno-0-766"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-767" name="__codelineno-0-767"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+<a id="__codelineno-0-768" name="__codelineno-0-768"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
+<a id="__codelineno-0-769" name="__codelineno-0-769"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-0-770" name="__codelineno-0-770"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
+<a id="__codelineno-0-771" name="__codelineno-0-771"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
+<a id="__codelineno-0-772" name="__codelineno-0-772"></a>    <span class="p">)</span>
+<a id="__codelineno-0-773" name="__codelineno-0-773"></a>    <span class="n">service</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-774" name="__codelineno-0-774"></a>        <span class="s2">"image"</span><span class="p">:</span> <span class="n">_WORKER_IMAGE</span><span class="p">,</span>
+<a id="__codelineno-0-775" name="__codelineno-0-775"></a>        <span class="s2">"container_name"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+<a id="__codelineno-0-776" name="__codelineno-0-776"></a>        <span class="s2">"restart"</span><span class="p">:</span> <span class="s2">"unless-stopped"</span><span class="p">,</span>
+<a id="__codelineno-0-777" name="__codelineno-0-777"></a>    <span class="p">}</span>
+<a id="__codelineno-0-778" name="__codelineno-0-778"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
+<a id="__codelineno-0-779" name="__codelineno-0-779"></a>        <span class="n">service</span><span class="p">[</span><span class="s2">"network_mode"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"host"</span>
+<a id="__codelineno-0-780" name="__codelineno-0-780"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
+<a id="__codelineno-0-781" name="__codelineno-0-781"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"volumes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-782" name="__codelineno-0-782"></a>        <span class="s2">"/var/run/docker.sock:/var/run/docker.sock"</span><span class="p">,</span>
+<a id="__codelineno-0-783" name="__codelineno-0-783"></a>        <span class="s2">"/etc/gustavo-worker:/etc/gustavo-worker"</span><span class="p">,</span>
+<a id="__codelineno-0-784" name="__codelineno-0-784"></a>    <span class="p">]</span>
+<a id="__codelineno-0-785" name="__codelineno-0-785"></a>    <span class="n">compose</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"services"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"gustavo-worker"</span><span class="p">:</span> <span class="n">service</span><span class="p">}}</span>
+<a id="__codelineno-0-786" name="__codelineno-0-786"></a>    <span class="c1"># default_flow_style=False for block style; yaml.safe_dump handles quoting/</span>
+<a id="__codelineno-0-787" name="__codelineno-0-787"></a>    <span class="c1"># escaping of any value (quotes, $, backticks, ...) correctly on its own -</span>
+<a id="__codelineno-0-788" name="__codelineno-0-788"></a>    <span class="c1"># values here include admin-set secrets, which can contain anything.</span>
+<a id="__codelineno-0-789" name="__codelineno-0-789"></a>    <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">compose</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5003,19 +5065,7 @@ derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-780">780</a></span>
-<span class="normal"><a href="#__codelineno-0-781">781</a></span>
-<span class="normal"><a href="#__codelineno-0-782">782</a></span>
-<span class="normal"><a href="#__codelineno-0-783">783</a></span>
-<span class="normal"><a href="#__codelineno-0-784">784</a></span>
-<span class="normal"><a href="#__codelineno-0-785">785</a></span>
-<span class="normal"><a href="#__codelineno-0-786">786</a></span>
-<span class="normal"><a href="#__codelineno-0-787">787</a></span>
-<span class="normal"><a href="#__codelineno-0-788">788</a></span>
-<span class="normal"><a href="#__codelineno-0-789">789</a></span>
-<span class="normal"><a href="#__codelineno-0-790">790</a></span>
-<span class="normal"><a href="#__codelineno-0-791">791</a></span>
-<span class="normal"><a href="#__codelineno-0-792">792</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-792">792</a></span>
 <span class="normal"><a href="#__codelineno-0-793">793</a></span>
 <span class="normal"><a href="#__codelineno-0-794">794</a></span>
 <span class="normal"><a href="#__codelineno-0-795">795</a></span>
@@ -5082,86 +5132,100 @@ derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p
 <span class="normal"><a href="#__codelineno-0-856">856</a></span>
 <span class="normal"><a href="#__codelineno-0-857">857</a></span>
 <span class="normal"><a href="#__codelineno-0-858">858</a></span>
-<span class="normal"><a href="#__codelineno-0-859">859</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-780" name="__codelineno-0-780"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-781" name="__codelineno-0-781"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script</span><span class="p">(</span>
-<a id="__codelineno-0-782" name="__codelineno-0-782"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
-<a id="__codelineno-0-783" name="__codelineno-0-783"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-784" name="__codelineno-0-784"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
-<a id="__codelineno-0-785" name="__codelineno-0-785"></a><span class="p">):</span>
-<a id="__codelineno-0-786" name="__codelineno-0-786"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-787" name="__codelineno-0-787"></a><span class="sd">    Self-contained `docker run` launcher script for this device group's worker (macOS/Linux).</span>
-<a id="__codelineno-0-788" name="__codelineno-0-788"></a>
-<a id="__codelineno-0-789" name="__codelineno-0-789"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-790" name="__codelineno-0-790"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-791" name="__codelineno-0-791"></a><span class="sd">    name : str</span>
-<a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="sd">        Device group name.</span>
-<a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="sd">    gpu : bool, optional</span>
-<a id="__codelineno-0-794" name="__codelineno-0-794"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
-<a id="__codelineno-0-795" name="__codelineno-0-795"></a><span class="sd">        whose hardware actually has a GPU.</span>
-<a id="__codelineno-0-796" name="__codelineno-0-796"></a><span class="sd">    reporter : bool, optional</span>
-<a id="__codelineno-0-797" name="__codelineno-0-797"></a><span class="sd">        If `True`, switches worker status reporting to</span>
-<a id="__codelineno-0-798" name="__codelineno-0-798"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
-<a id="__codelineno-0-799" name="__codelineno-0-799"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-800" name="__codelineno-0-800"></a><span class="sd">    check_in_time : int, optional</span>
-<a id="__codelineno-0-801" name="__codelineno-0-801"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
-<a id="__codelineno-0-802" name="__codelineno-0-802"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
-<a id="__codelineno-0-803" name="__codelineno-0-803"></a><span class="sd">        to 60.</span>
-<a id="__codelineno-0-804" name="__codelineno-0-804"></a><span class="sd">    public_endpoints : bool, optional</span>
-<a id="__codelineno-0-805" name="__codelineno-0-805"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
-<a id="__codelineno-0-806" name="__codelineno-0-806"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
-<a id="__codelineno-0-807" name="__codelineno-0-807"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
-<a id="__codelineno-0-808" name="__codelineno-0-808"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
-<a id="__codelineno-0-809" name="__codelineno-0-809"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
-<a id="__codelineno-0-810" name="__codelineno-0-810"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
-<a id="__codelineno-0-811" name="__codelineno-0-811"></a><span class="sd">    session : Session</span>
-<a id="__codelineno-0-812" name="__codelineno-0-812"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
-<a id="__codelineno-0-813" name="__codelineno-0-813"></a>
-<a id="__codelineno-0-814" name="__codelineno-0-814"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-815" name="__codelineno-0-815"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-816" name="__codelineno-0-816"></a><span class="sd">    str</span>
-<a id="__codelineno-0-817" name="__codelineno-0-817"></a><span class="sd">        A `#!/bin/bash` script, `text/plain`. Uses `shlex.quote` (not</span>
-<a id="__codelineno-0-818" name="__codelineno-0-818"></a><span class="sd">        naive f-string interpolation) since env values include</span>
-<a id="__codelineno-0-819" name="__codelineno-0-819"></a><span class="sd">        admin-set secrets that can contain anything (quotes, `$`,</span>
-<a id="__codelineno-0-820" name="__codelineno-0-820"></a><span class="sd">        backticks) - unescaped, that's a shell-injection risk in a</span>
-<a id="__codelineno-0-821" name="__codelineno-0-821"></a><span class="sd">        script meant to be double-clicked and run, not just a</span>
-<a id="__codelineno-0-822" name="__codelineno-0-822"></a><span class="sd">        formatting bug.</span>
-<a id="__codelineno-0-823" name="__codelineno-0-823"></a>
-<a id="__codelineno-0-824" name="__codelineno-0-824"></a><span class="sd">    Raises</span>
-<a id="__codelineno-0-825" name="__codelineno-0-825"></a><span class="sd">    ------</span>
-<a id="__codelineno-0-826" name="__codelineno-0-826"></a><span class="sd">    HTTPException</span>
-<a id="__codelineno-0-827" name="__codelineno-0-827"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
-<a id="__codelineno-0-828" name="__codelineno-0-828"></a><span class="sd">        group.</span>
-<a id="__codelineno-0-829" name="__codelineno-0-829"></a>
-<a id="__codelineno-0-830" name="__codelineno-0-830"></a><span class="sd">    Notes</span>
-<a id="__codelineno-0-831" name="__codelineno-0-831"></a><span class="sd">    -----</span>
-<a id="__codelineno-0-832" name="__codelineno-0-832"></a><span class="sd">    Independent of both `worker-env` and `worker-compose`;</span>
-<a id="__codelineno-0-833" name="__codelineno-0-833"></a><span class="sd">    downloading this needs nothing else. Registry inclusion is</span>
-<a id="__codelineno-0-834" name="__codelineno-0-834"></a><span class="sd">    derived, not caller-supplied - see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-835" name="__codelineno-0-835"></a><span class="sd">    """</span>
-<a id="__codelineno-0-836" name="__codelineno-0-836"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-837" name="__codelineno-0-837"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-838" name="__codelineno-0-838"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
-<a id="__codelineno-0-839" name="__codelineno-0-839"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
-<a id="__codelineno-0-840" name="__codelineno-0-840"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
-<a id="__codelineno-0-841" name="__codelineno-0-841"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
-<a id="__codelineno-0-842" name="__codelineno-0-842"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
-<a id="__codelineno-0-843" name="__codelineno-0-843"></a>    <span class="p">)</span>
-<a id="__codelineno-0-844" name="__codelineno-0-844"></a>    <span class="c1"># shlex.quote, not naive f-string interpolation: these values include</span>
-<a id="__codelineno-0-845" name="__codelineno-0-845"></a>    <span class="c1"># admin-set secrets that can contain anything (quotes, $, backticks) -</span>
-<a id="__codelineno-0-846" name="__codelineno-0-846"></a>    <span class="c1"># unescaped, that's a shell-injection risk in a script meant to be</span>
-<a id="__codelineno-0-847" name="__codelineno-0-847"></a>    <span class="c1"># double-clicked and run, not just a formatting bug.</span>
-<a id="__codelineno-0-848" name="__codelineno-0-848"></a>    <span class="n">env_flags</span> <span class="o">=</span> <span class="s2">" </span><span class="se">\\\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<a id="__codelineno-0-849" name="__codelineno-0-849"></a>    <span class="n">network_flag</span> <span class="o">=</span> <span class="s2">"--network host </span><span class="se">\\\n</span><span class="s2">  "</span> <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span> <span class="k">else</span> <span class="s2">""</span>
-<a id="__codelineno-0-850" name="__codelineno-0-850"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-851" name="__codelineno-0-851"></a>        <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-852" name="__codelineno-0-852"></a>        <span class="s2">"set -e</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-853" name="__codelineno-0-853"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> 2&gt;/dev/null || true</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-854" name="__codelineno-0-854"></a>        <span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> --restart unless-stopped </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-855" name="__codelineno-0-855"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">network_flag</span><span class="si">}{</span><span class="n">env_flags</span><span class="si">}</span><span class="s2"> </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-856" name="__codelineno-0-856"></a>        <span class="s2">"  -v /var/run/docker.sock:/var/run/docker.sock </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-857" name="__codelineno-0-857"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">_WORKER_IMAGE</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-858" name="__codelineno-0-858"></a>    <span class="p">)</span>
-<a id="__codelineno-0-859" name="__codelineno-0-859"></a>    <span class="k">return</span> <span class="n">script</span>
+<span class="normal"><a href="#__codelineno-0-859">859</a></span>
+<span class="normal"><a href="#__codelineno-0-860">860</a></span>
+<span class="normal"><a href="#__codelineno-0-861">861</a></span>
+<span class="normal"><a href="#__codelineno-0-862">862</a></span>
+<span class="normal"><a href="#__codelineno-0-863">863</a></span>
+<span class="normal"><a href="#__codelineno-0-864">864</a></span>
+<span class="normal"><a href="#__codelineno-0-865">865</a></span>
+<span class="normal"><a href="#__codelineno-0-866">866</a></span>
+<span class="normal"><a href="#__codelineno-0-867">867</a></span>
+<span class="normal"><a href="#__codelineno-0-868">868</a></span>
+<span class="normal"><a href="#__codelineno-0-869">869</a></span>
+<span class="normal"><a href="#__codelineno-0-870">870</a></span>
+<span class="normal"><a href="#__codelineno-0-871">871</a></span>
+<span class="normal"><a href="#__codelineno-0-872">872</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script</span><span class="p">(</span>
+<a id="__codelineno-0-794" name="__codelineno-0-794"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+<a id="__codelineno-0-795" name="__codelineno-0-795"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-796" name="__codelineno-0-796"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
+<a id="__codelineno-0-797" name="__codelineno-0-797"></a><span class="p">):</span>
+<a id="__codelineno-0-798" name="__codelineno-0-798"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-799" name="__codelineno-0-799"></a><span class="sd">    Self-contained `docker run` launcher script for this device group's worker (macOS/Linux).</span>
+<a id="__codelineno-0-800" name="__codelineno-0-800"></a>
+<a id="__codelineno-0-801" name="__codelineno-0-801"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-802" name="__codelineno-0-802"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-803" name="__codelineno-0-803"></a><span class="sd">    name : str</span>
+<a id="__codelineno-0-804" name="__codelineno-0-804"></a><span class="sd">        Device group name.</span>
+<a id="__codelineno-0-805" name="__codelineno-0-805"></a><span class="sd">    gpu : bool, optional</span>
+<a id="__codelineno-0-806" name="__codelineno-0-806"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
+<a id="__codelineno-0-807" name="__codelineno-0-807"></a><span class="sd">        whose hardware actually has a GPU.</span>
+<a id="__codelineno-0-808" name="__codelineno-0-808"></a><span class="sd">    reporter : bool, optional</span>
+<a id="__codelineno-0-809" name="__codelineno-0-809"></a><span class="sd">        If `True`, switches worker status reporting to</span>
+<a id="__codelineno-0-810" name="__codelineno-0-810"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
+<a id="__codelineno-0-811" name="__codelineno-0-811"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-812" name="__codelineno-0-812"></a><span class="sd">    check_in_time : int, optional</span>
+<a id="__codelineno-0-813" name="__codelineno-0-813"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
+<a id="__codelineno-0-814" name="__codelineno-0-814"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
+<a id="__codelineno-0-815" name="__codelineno-0-815"></a><span class="sd">        to 60.</span>
+<a id="__codelineno-0-816" name="__codelineno-0-816"></a><span class="sd">    public_endpoints : bool, optional</span>
+<a id="__codelineno-0-817" name="__codelineno-0-817"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
+<a id="__codelineno-0-818" name="__codelineno-0-818"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
+<a id="__codelineno-0-819" name="__codelineno-0-819"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
+<a id="__codelineno-0-820" name="__codelineno-0-820"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
+<a id="__codelineno-0-821" name="__codelineno-0-821"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
+<a id="__codelineno-0-822" name="__codelineno-0-822"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
+<a id="__codelineno-0-823" name="__codelineno-0-823"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-824" name="__codelineno-0-824"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
+<a id="__codelineno-0-825" name="__codelineno-0-825"></a>
+<a id="__codelineno-0-826" name="__codelineno-0-826"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-827" name="__codelineno-0-827"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-828" name="__codelineno-0-828"></a><span class="sd">    str</span>
+<a id="__codelineno-0-829" name="__codelineno-0-829"></a><span class="sd">        A `#!/bin/bash` script, `text/plain`. Uses `shlex.quote` (not</span>
+<a id="__codelineno-0-830" name="__codelineno-0-830"></a><span class="sd">        naive f-string interpolation) since env values include</span>
+<a id="__codelineno-0-831" name="__codelineno-0-831"></a><span class="sd">        admin-set secrets that can contain anything (quotes, `$`,</span>
+<a id="__codelineno-0-832" name="__codelineno-0-832"></a><span class="sd">        backticks) - unescaped, that's a shell-injection risk in a</span>
+<a id="__codelineno-0-833" name="__codelineno-0-833"></a><span class="sd">        script meant to be double-clicked and run, not just a</span>
+<a id="__codelineno-0-834" name="__codelineno-0-834"></a><span class="sd">        formatting bug.</span>
+<a id="__codelineno-0-835" name="__codelineno-0-835"></a>
+<a id="__codelineno-0-836" name="__codelineno-0-836"></a><span class="sd">    Raises</span>
+<a id="__codelineno-0-837" name="__codelineno-0-837"></a><span class="sd">    ------</span>
+<a id="__codelineno-0-838" name="__codelineno-0-838"></a><span class="sd">    HTTPException</span>
+<a id="__codelineno-0-839" name="__codelineno-0-839"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
+<a id="__codelineno-0-840" name="__codelineno-0-840"></a><span class="sd">        group.</span>
+<a id="__codelineno-0-841" name="__codelineno-0-841"></a>
+<a id="__codelineno-0-842" name="__codelineno-0-842"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-843" name="__codelineno-0-843"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-844" name="__codelineno-0-844"></a><span class="sd">    Independent of both `worker-env` and `worker-compose`;</span>
+<a id="__codelineno-0-845" name="__codelineno-0-845"></a><span class="sd">    downloading this needs nothing else. Registry inclusion is</span>
+<a id="__codelineno-0-846" name="__codelineno-0-846"></a><span class="sd">    derived, not caller-supplied - see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-847" name="__codelineno-0-847"></a><span class="sd">    """</span>
+<a id="__codelineno-0-848" name="__codelineno-0-848"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-849" name="__codelineno-0-849"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-850" name="__codelineno-0-850"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+<a id="__codelineno-0-851" name="__codelineno-0-851"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
+<a id="__codelineno-0-852" name="__codelineno-0-852"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-0-853" name="__codelineno-0-853"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
+<a id="__codelineno-0-854" name="__codelineno-0-854"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
+<a id="__codelineno-0-855" name="__codelineno-0-855"></a>    <span class="p">)</span>
+<a id="__codelineno-0-856" name="__codelineno-0-856"></a>    <span class="c1"># shlex.quote, not naive f-string interpolation: these values include</span>
+<a id="__codelineno-0-857" name="__codelineno-0-857"></a>    <span class="c1"># admin-set secrets that can contain anything (quotes, $, backticks) -</span>
+<a id="__codelineno-0-858" name="__codelineno-0-858"></a>    <span class="c1"># unescaped, that's a shell-injection risk in a script meant to be</span>
+<a id="__codelineno-0-859" name="__codelineno-0-859"></a>    <span class="c1"># double-clicked and run, not just a formatting bug.</span>
+<a id="__codelineno-0-860" name="__codelineno-0-860"></a>    <span class="n">env_flags</span> <span class="o">=</span> <span class="s2">" </span><span class="se">\\\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<a id="__codelineno-0-861" name="__codelineno-0-861"></a>    <span class="n">network_flag</span> <span class="o">=</span> <span class="s2">"--network host </span><span class="se">\\\n</span><span class="s2">  "</span> <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span> <span class="k">else</span> <span class="s2">""</span>
+<a id="__codelineno-0-862" name="__codelineno-0-862"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-863" name="__codelineno-0-863"></a>        <span class="s2">"#!/bin/bash</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-864" name="__codelineno-0-864"></a>        <span class="s2">"set -e</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-865" name="__codelineno-0-865"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> 2&gt;/dev/null || true</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-866" name="__codelineno-0-866"></a>        <span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> --restart unless-stopped </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-867" name="__codelineno-0-867"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">network_flag</span><span class="si">}{</span><span class="n">env_flags</span><span class="si">}</span><span class="s2"> </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-868" name="__codelineno-0-868"></a>        <span class="s2">"  -v /var/run/docker.sock:/var/run/docker.sock </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-869" name="__codelineno-0-869"></a>        <span class="s2">"  -v /etc/gustavo-worker:/etc/gustavo-worker </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-870" name="__codelineno-0-870"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">_WORKER_IMAGE</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-871" name="__codelineno-0-871"></a>    <span class="p">)</span>
+<a id="__codelineno-0-872" name="__codelineno-0-872"></a>    <span class="k">return</span> <span class="n">script</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5184,6 +5248,17 @@ derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p
     <div class="doc doc-contents ">
 
         <p>Same as <code>worker-script</code>, as a double-click-able Windows <code>.bat</code> instead of a bash script.</p>
+<p>Requires WSL2 specifically (not WSL1), with a default Linux distro
+registered, Docker Desktop set to the WSL2 backend, and WSL
+integration enabled for that distro - all four, not just "WSL
+installed". Every <code>docker</code> invocation in the generated script is
+prefixed <code>wsl</code>, which forces it to run inside that distro's own
+Linux filesystem rather than native Windows - otherwise a bind
+mount like <code>/etc/gustavo-worker</code> resolves against Windows' own
+path rules instead of a real Linux <code>/etc</code>, silently breaking it.
+The script checks <code>wsl docker version</code> first and prints an
+actionable message instead of failing deep in a Docker error if
+any of those four prerequisites are missing.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5369,20 +5444,7 @@ is derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>gustavo/api/routers/device_groups.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-862">862</a></span>
-<span class="normal"><a href="#__codelineno-0-863">863</a></span>
-<span class="normal"><a href="#__codelineno-0-864">864</a></span>
-<span class="normal"><a href="#__codelineno-0-865">865</a></span>
-<span class="normal"><a href="#__codelineno-0-866">866</a></span>
-<span class="normal"><a href="#__codelineno-0-867">867</a></span>
-<span class="normal"><a href="#__codelineno-0-868">868</a></span>
-<span class="normal"><a href="#__codelineno-0-869">869</a></span>
-<span class="normal"><a href="#__codelineno-0-870">870</a></span>
-<span class="normal"><a href="#__codelineno-0-871">871</a></span>
-<span class="normal"><a href="#__codelineno-0-872">872</a></span>
-<span class="normal"><a href="#__codelineno-0-873">873</a></span>
-<span class="normal"><a href="#__codelineno-0-874">874</a></span>
-<span class="normal"><a href="#__codelineno-0-875">875</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-875">875</a></span>
 <span class="normal"><a href="#__codelineno-0-876">876</a></span>
 <span class="normal"><a href="#__codelineno-0-877">877</a></span>
 <span class="normal"><a href="#__codelineno-0-878">878</a></span>
@@ -5443,81 +5505,134 @@ is derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.
 <span class="normal"><a href="#__codelineno-0-933">933</a></span>
 <span class="normal"><a href="#__codelineno-0-934">934</a></span>
 <span class="normal"><a href="#__codelineno-0-935">935</a></span>
-<span class="normal"><a href="#__codelineno-0-936">936</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-862" name="__codelineno-0-862"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script-windows"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
-<a id="__codelineno-0-863" name="__codelineno-0-863"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script_windows</span><span class="p">(</span>
-<a id="__codelineno-0-864" name="__codelineno-0-864"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
-<a id="__codelineno-0-865" name="__codelineno-0-865"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-866" name="__codelineno-0-866"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
-<a id="__codelineno-0-867" name="__codelineno-0-867"></a><span class="p">):</span>
-<a id="__codelineno-0-868" name="__codelineno-0-868"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-869" name="__codelineno-0-869"></a><span class="sd">    Same as `worker-script`, as a double-click-able Windows `.bat` instead of a bash script.</span>
-<a id="__codelineno-0-870" name="__codelineno-0-870"></a>
-<a id="__codelineno-0-871" name="__codelineno-0-871"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-872" name="__codelineno-0-872"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-873" name="__codelineno-0-873"></a><span class="sd">    name : str</span>
-<a id="__codelineno-0-874" name="__codelineno-0-874"></a><span class="sd">        Device group name.</span>
-<a id="__codelineno-0-875" name="__codelineno-0-875"></a><span class="sd">    gpu : bool, optional</span>
-<a id="__codelineno-0-876" name="__codelineno-0-876"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
-<a id="__codelineno-0-877" name="__codelineno-0-877"></a><span class="sd">        whose hardware actually has a GPU.</span>
-<a id="__codelineno-0-878" name="__codelineno-0-878"></a><span class="sd">    reporter : bool, optional</span>
-<a id="__codelineno-0-879" name="__codelineno-0-879"></a><span class="sd">        If `True`, switches worker status reporting to</span>
-<a id="__codelineno-0-880" name="__codelineno-0-880"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
-<a id="__codelineno-0-881" name="__codelineno-0-881"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="sd">    check_in_time : int, optional</span>
-<a id="__codelineno-0-883" name="__codelineno-0-883"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
-<a id="__codelineno-0-884" name="__codelineno-0-884"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
-<a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">        to 60.</span>
-<a id="__codelineno-0-886" name="__codelineno-0-886"></a><span class="sd">    public_endpoints : bool, optional</span>
-<a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
-<a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
-<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
-<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
-<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
-<a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
-<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">    session : Session</span>
-<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
+<span class="normal"><a href="#__codelineno-0-936">936</a></span>
+<span class="normal"><a href="#__codelineno-0-937">937</a></span>
+<span class="normal"><a href="#__codelineno-0-938">938</a></span>
+<span class="normal"><a href="#__codelineno-0-939">939</a></span>
+<span class="normal"><a href="#__codelineno-0-940">940</a></span>
+<span class="normal"><a href="#__codelineno-0-941">941</a></span>
+<span class="normal"><a href="#__codelineno-0-942">942</a></span>
+<span class="normal"><a href="#__codelineno-0-943">943</a></span>
+<span class="normal"><a href="#__codelineno-0-944">944</a></span>
+<span class="normal"><a href="#__codelineno-0-945">945</a></span>
+<span class="normal"><a href="#__codelineno-0-946">946</a></span>
+<span class="normal"><a href="#__codelineno-0-947">947</a></span>
+<span class="normal"><a href="#__codelineno-0-948">948</a></span>
+<span class="normal"><a href="#__codelineno-0-949">949</a></span>
+<span class="normal"><a href="#__codelineno-0-950">950</a></span>
+<span class="normal"><a href="#__codelineno-0-951">951</a></span>
+<span class="normal"><a href="#__codelineno-0-952">952</a></span>
+<span class="normal"><a href="#__codelineno-0-953">953</a></span>
+<span class="normal"><a href="#__codelineno-0-954">954</a></span>
+<span class="normal"><a href="#__codelineno-0-955">955</a></span>
+<span class="normal"><a href="#__codelineno-0-956">956</a></span>
+<span class="normal"><a href="#__codelineno-0-957">957</a></span>
+<span class="normal"><a href="#__codelineno-0-958">958</a></span>
+<span class="normal"><a href="#__codelineno-0-959">959</a></span>
+<span class="normal"><a href="#__codelineno-0-960">960</a></span>
+<span class="normal"><a href="#__codelineno-0-961">961</a></span>
+<span class="normal"><a href="#__codelineno-0-962">962</a></span>
+<span class="normal"><a href="#__codelineno-0-963">963</a></span>
+<span class="normal"><a href="#__codelineno-0-964">964</a></span>
+<span class="normal"><a href="#__codelineno-0-965">965</a></span>
+<span class="normal"><a href="#__codelineno-0-966">966</a></span>
+<span class="normal"><a href="#__codelineno-0-967">967</a></span>
+<span class="normal"><a href="#__codelineno-0-968">968</a></span>
+<span class="normal"><a href="#__codelineno-0-969">969</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-875" name="__codelineno-0-875"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script-windows"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<a id="__codelineno-0-876" name="__codelineno-0-876"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script_windows</span><span class="p">(</span>
+<a id="__codelineno-0-877" name="__codelineno-0-877"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+<a id="__codelineno-0-878" name="__codelineno-0-878"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-879" name="__codelineno-0-879"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">),</span>
+<a id="__codelineno-0-880" name="__codelineno-0-880"></a><span class="p">):</span>
+<a id="__codelineno-0-881" name="__codelineno-0-881"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="sd">    Same as `worker-script`, as a double-click-able Windows `.bat` instead of a bash script.</span>
+<a id="__codelineno-0-883" name="__codelineno-0-883"></a>
+<a id="__codelineno-0-884" name="__codelineno-0-884"></a><span class="sd">    Requires WSL2 specifically (not WSL1), with a default Linux distro</span>
+<a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">    registered, Docker Desktop set to the WSL2 backend, and WSL</span>
+<a id="__codelineno-0-886" name="__codelineno-0-886"></a><span class="sd">    integration enabled for that distro - all four, not just "WSL</span>
+<a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">    installed". Every `docker` invocation in the generated script is</span>
+<a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">    prefixed `wsl`, which forces it to run inside that distro's own</span>
+<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">    Linux filesystem rather than native Windows - otherwise a bind</span>
+<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">    mount like `/etc/gustavo-worker` resolves against Windows' own</span>
+<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">    path rules instead of a real Linux `/etc`, silently breaking it.</span>
+<a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">    The script checks `wsl docker version` first and prints an</span>
+<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">    actionable message instead of failing deep in a Docker error if</span>
+<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">    any of those four prerequisites are missing.</span>
 <a id="__codelineno-0-895" name="__codelineno-0-895"></a>
-<a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">    str</span>
-<a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">        A `@echo off` `.bat` script, `text/plain`.</span>
-<a id="__codelineno-0-900" name="__codelineno-0-900"></a>
-<a id="__codelineno-0-901" name="__codelineno-0-901"></a><span class="sd">    Raises</span>
-<a id="__codelineno-0-902" name="__codelineno-0-902"></a><span class="sd">    ------</span>
-<a id="__codelineno-0-903" name="__codelineno-0-903"></a><span class="sd">    HTTPException</span>
-<a id="__codelineno-0-904" name="__codelineno-0-904"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
-<a id="__codelineno-0-905" name="__codelineno-0-905"></a><span class="sd">        group.</span>
-<a id="__codelineno-0-906" name="__codelineno-0-906"></a>
-<a id="__codelineno-0-907" name="__codelineno-0-907"></a><span class="sd">    Notes</span>
-<a id="__codelineno-0-908" name="__codelineno-0-908"></a><span class="sd">    -----</span>
-<a id="__codelineno-0-909" name="__codelineno-0-909"></a><span class="sd">    cmd.exe's syntax and quoting are different enough from bash (no</span>
-<a id="__codelineno-0-910" name="__codelineno-0-910"></a><span class="sd">    `set -e`, `^` instead of `\\` for line continuation, its own</span>
-<a id="__codelineno-0-911" name="__codelineno-0-911"></a><span class="sd">    escaping rules via `_batch_quote`) that it needs its own generator</span>
-<a id="__codelineno-0-912" name="__codelineno-0-912"></a><span class="sd">    rather than reusing `download_worker_script`. Registry inclusion</span>
-<a id="__codelineno-0-913" name="__codelineno-0-913"></a><span class="sd">    is derived, not caller-supplied - see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-914" name="__codelineno-0-914"></a><span class="sd">    """</span>
-<a id="__codelineno-0-915" name="__codelineno-0-915"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-916" name="__codelineno-0-916"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-917" name="__codelineno-0-917"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
-<a id="__codelineno-0-918" name="__codelineno-0-918"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
-<a id="__codelineno-0-919" name="__codelineno-0-919"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
-<a id="__codelineno-0-920" name="__codelineno-0-920"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
-<a id="__codelineno-0-921" name="__codelineno-0-921"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
-<a id="__codelineno-0-922" name="__codelineno-0-922"></a>    <span class="p">)</span>
-<a id="__codelineno-0-923" name="__codelineno-0-923"></a>    <span class="n">container_name</span> <span class="o">=</span> <span class="n">_batch_quote</span><span class="p">(</span><span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-924" name="__codelineno-0-924"></a>    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> --restart unless-stopped"</span><span class="p">]</span>
-<a id="__codelineno-0-925" name="__codelineno-0-925"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
-<a id="__codelineno-0-926" name="__codelineno-0-926"></a>        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--network host"</span><span class="p">)</span>
-<a id="__codelineno-0-927" name="__codelineno-0-927"></a>    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_batch_quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
-<a id="__codelineno-0-928" name="__codelineno-0-928"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /var/run/docker.sock:/var/run/docker.sock"</span><span class="p">)</span>
-<a id="__codelineno-0-929" name="__codelineno-0-929"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_WORKER_IMAGE</span><span class="p">)</span>
-<a id="__codelineno-0-930" name="__codelineno-0-930"></a>    <span class="n">run_command</span> <span class="o">=</span> <span class="s2">" ^</span><span class="se">\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<a id="__codelineno-0-931" name="__codelineno-0-931"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-932" name="__codelineno-0-932"></a>        <span class="s2">"@echo off</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-933" name="__codelineno-0-933"></a>        <span class="sa">f</span><span class="s2">"docker rm -f </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-934" name="__codelineno-0-934"></a>        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">run_command</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-935" name="__codelineno-0-935"></a>    <span class="p">)</span>
-<a id="__codelineno-0-936" name="__codelineno-0-936"></a>    <span class="k">return</span> <span class="n">script</span>
+<a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">    name : str</span>
+<a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">        Device group name.</span>
+<a id="__codelineno-0-900" name="__codelineno-0-900"></a><span class="sd">    gpu : bool, optional</span>
+<a id="__codelineno-0-901" name="__codelineno-0-901"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
+<a id="__codelineno-0-902" name="__codelineno-0-902"></a><span class="sd">        whose hardware actually has a GPU.</span>
+<a id="__codelineno-0-903" name="__codelineno-0-903"></a><span class="sd">    reporter : bool, optional</span>
+<a id="__codelineno-0-904" name="__codelineno-0-904"></a><span class="sd">        If `True`, switches worker status reporting to</span>
+<a id="__codelineno-0-905" name="__codelineno-0-905"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
+<a id="__codelineno-0-906" name="__codelineno-0-906"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-907" name="__codelineno-0-907"></a><span class="sd">    check_in_time : int, optional</span>
+<a id="__codelineno-0-908" name="__codelineno-0-908"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
+<a id="__codelineno-0-909" name="__codelineno-0-909"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
+<a id="__codelineno-0-910" name="__codelineno-0-910"></a><span class="sd">        to 60.</span>
+<a id="__codelineno-0-911" name="__codelineno-0-911"></a><span class="sd">    public_endpoints : bool, optional</span>
+<a id="__codelineno-0-912" name="__codelineno-0-912"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
+<a id="__codelineno-0-913" name="__codelineno-0-913"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
+<a id="__codelineno-0-914" name="__codelineno-0-914"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
+<a id="__codelineno-0-915" name="__codelineno-0-915"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
+<a id="__codelineno-0-916" name="__codelineno-0-916"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
+<a id="__codelineno-0-917" name="__codelineno-0-917"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
+<a id="__codelineno-0-918" name="__codelineno-0-918"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-919" name="__codelineno-0-919"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
+<a id="__codelineno-0-920" name="__codelineno-0-920"></a>
+<a id="__codelineno-0-921" name="__codelineno-0-921"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-922" name="__codelineno-0-922"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-923" name="__codelineno-0-923"></a><span class="sd">    str</span>
+<a id="__codelineno-0-924" name="__codelineno-0-924"></a><span class="sd">        A `@echo off` `.bat` script, `text/plain`.</span>
+<a id="__codelineno-0-925" name="__codelineno-0-925"></a>
+<a id="__codelineno-0-926" name="__codelineno-0-926"></a><span class="sd">    Raises</span>
+<a id="__codelineno-0-927" name="__codelineno-0-927"></a><span class="sd">    ------</span>
+<a id="__codelineno-0-928" name="__codelineno-0-928"></a><span class="sd">    HTTPException</span>
+<a id="__codelineno-0-929" name="__codelineno-0-929"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
+<a id="__codelineno-0-930" name="__codelineno-0-930"></a><span class="sd">        group.</span>
+<a id="__codelineno-0-931" name="__codelineno-0-931"></a>
+<a id="__codelineno-0-932" name="__codelineno-0-932"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-933" name="__codelineno-0-933"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-934" name="__codelineno-0-934"></a><span class="sd">    cmd.exe's syntax and quoting are different enough from bash (no</span>
+<a id="__codelineno-0-935" name="__codelineno-0-935"></a><span class="sd">    `set -e`, `^` instead of `\\` for line continuation, its own</span>
+<a id="__codelineno-0-936" name="__codelineno-0-936"></a><span class="sd">    escaping rules via `_batch_quote`) that it needs its own generator</span>
+<a id="__codelineno-0-937" name="__codelineno-0-937"></a><span class="sd">    rather than reusing `download_worker_script`. Registry inclusion</span>
+<a id="__codelineno-0-938" name="__codelineno-0-938"></a><span class="sd">    is derived, not caller-supplied - see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-939" name="__codelineno-0-939"></a><span class="sd">    """</span>
+<a id="__codelineno-0-940" name="__codelineno-0-940"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-941" name="__codelineno-0-941"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-942" name="__codelineno-0-942"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+<a id="__codelineno-0-943" name="__codelineno-0-943"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
+<a id="__codelineno-0-944" name="__codelineno-0-944"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-0-945" name="__codelineno-0-945"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
+<a id="__codelineno-0-946" name="__codelineno-0-946"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
+<a id="__codelineno-0-947" name="__codelineno-0-947"></a>    <span class="p">)</span>
+<a id="__codelineno-0-948" name="__codelineno-0-948"></a>    <span class="n">container_name</span> <span class="o">=</span> <span class="n">_batch_quote</span><span class="p">(</span><span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-949" name="__codelineno-0-949"></a>    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"wsl docker run -d --name </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> --restart unless-stopped"</span><span class="p">]</span>
+<a id="__codelineno-0-950" name="__codelineno-0-950"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
+<a id="__codelineno-0-951" name="__codelineno-0-951"></a>        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--network host"</span><span class="p">)</span>
+<a id="__codelineno-0-952" name="__codelineno-0-952"></a>    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_batch_quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<a id="__codelineno-0-953" name="__codelineno-0-953"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /var/run/docker.sock:/var/run/docker.sock"</span><span class="p">)</span>
+<a id="__codelineno-0-954" name="__codelineno-0-954"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /etc/gustavo-worker:/etc/gustavo-worker"</span><span class="p">)</span>
+<a id="__codelineno-0-955" name="__codelineno-0-955"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_WORKER_IMAGE</span><span class="p">)</span>
+<a id="__codelineno-0-956" name="__codelineno-0-956"></a>    <span class="n">run_command</span> <span class="o">=</span> <span class="s2">" ^</span><span class="se">\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<a id="__codelineno-0-957" name="__codelineno-0-957"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-958" name="__codelineno-0-958"></a>        <span class="s2">"@echo off</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-959" name="__codelineno-0-959"></a>        <span class="s2">"wsl docker version &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-960" name="__codelineno-0-960"></a>        <span class="s2">"if errorlevel 1 (</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-961" name="__codelineno-0-961"></a>        <span class="s2">"    echo This worker requires WSL2, with a default Linux distro, Docker</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-962" name="__codelineno-0-962"></a>        <span class="s2">"    echo Desktop set to the WSL2 backend, and WSL integration enabled for</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-963" name="__codelineno-0-963"></a>        <span class="s2">"    echo that distro. See the docs for setup, then run this script again.</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-964" name="__codelineno-0-964"></a>        <span class="s2">"    exit /b 1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-965" name="__codelineno-0-965"></a>        <span class="s2">")</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-966" name="__codelineno-0-966"></a>        <span class="sa">f</span><span class="s2">"wsl docker rm -f </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-967" name="__codelineno-0-967"></a>        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">run_command</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-968" name="__codelineno-0-968"></a>    <span class="p">)</span>
+<a id="__codelineno-0-969" name="__codelineno-0-969"></a>    <span class="k">return</span> <span class="n">script</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5646,6 +5761,11 @@ or a member of a group it's granted to — otherwise <code>403</code>.</p>
 <p>Registry inclusion is never a caller-supplied param — it's derived
 entirely from <code>PUBLIC_REGISTRY_ENABLED</code> and whether the caller is an
 external-group member. See <a href="../../ui/registry/#internal-vs-external-access">Registry: internal vs. external access</a>.</p>
+<p>All three container-launching formats (<code>worker-compose</code>, <code>worker-script</code>,
+<code>worker-script-windows</code> — not <code>worker-env</code>, which has no container of
+its own to configure) also bind-mount <code>/etc/gustavo-worker</code> into the
+worker container, always, not a param. See <a href="../../ui/worker-directory/#where-the-data-comes-from">Worker Directory</a>
+for what the worker writes there.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span><span class="s2">"http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-env?reporter=true&amp;public_endpoints=true&amp;check_in_time=30"</span>
 </code></pre></div>
 <hr />
@@ -5682,6 +5802,13 @@ rules, so this is its own generator rather than a converted copy of
 <code>worker-script</code>. Double-clicking the downloaded <code>.bat</code> in Windows Explorer
 runs it directly with no setup — unlike a PowerShell <code>.ps1</code>, which Windows
 opens in a text editor rather than running on double-click by default.</p>
+<p>Requires <strong>WSL2</strong> (not WSL1), a default Linux distro, Docker Desktop's
+WSL2 backend, and WSL integration enabled for that distro. Every
+<code>docker</code> command in the script is prefixed <code>wsl</code>, so bind mounts like
+<code>/etc/gustavo-worker</code> resolve against a real Linux filesystem instead
+of Windows' own path rules — the script checks <code>wsl docker version</code>
+first and prints an actionable message if any of those prerequisites
+are missing, rather than failing deep inside a Docker error.</p>
 
 
 

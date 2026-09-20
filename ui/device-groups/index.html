@@ -1195,6 +1195,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1535,6 +1563,34 @@
     
   
     Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
   
 
     
@@ -2116,6 +2172,20 @@ the others, and none of them needs a second file alongside it.</p>
 <p>Every filename includes the device group's name, so downloads for
 different groups never collide or silently overwrite each other in your
 downloads folder.</p>
+<div class="admonition warning">
+<p class="admonition-title">Windows requires WSL2</p>
+<p>The <code>.bat</code> launcher requires <strong>WSL2</strong> specifically (not WSL1), with
+a default Linux distro registered, Docker Desktop set to the WSL2
+backend, and WSL integration enabled for that distro — all four,
+not just "WSL installed." Every command in the script runs via
+<code>wsl</code>, so a bind mount like <code>/etc/gustavo-worker</code> resolves against
+a real Linux filesystem instead of Windows' own path rules. The
+script checks for this on startup and prints a clear message if
+it's missing, rather than failing deep in a cryptic Docker error.
+<code>docker compose up</code> (the <strong>Docker Compose</strong> download above) has no
+such check — if you're on Windows, run <code>wsl docker compose up</code>
+yourself instead of plain <code>docker compose up</code>.</p>
+</div>
 <p>Four controls sit above the buttons and apply to whichever format you
 download next:</p>
 <table>
@@ -2147,7 +2217,12 @@ download next:</p>
 <p>If you belong to an <a href="../users/#external-user-groups">external user group</a>,
 <strong>Report via Reporter</strong> and <strong>Public Facing Access</strong> are locked on and
 can't be unchecked — an external caller is never handed the shared
-internal Redis credential or a LAN address it can't reach anyway.
+internal Redis credential or a LAN address it can't reach anyway.</p>
+<p>Every download also bind-mounts <code>/etc/gustavo-worker</code> into the worker
+container — not a toggle, always included. The worker writes its own
+identity (host IP, a self-generated id, device group) and Nebula
+credential there on first boot; see <a href="../worker-directory/">Worker Directory</a>
+for what reads it back.
 Registry inclusion is not a checkbox at all: it's decided automatically by
 <a href="../registry/#internal-vs-external-access">registry policy</a>.</p>
 <p>All four downloads require you to actually have access to the device

@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../users/">
+        <link rel="prev" href="../registry/">
       
       
-        <link rel="next" href="../worker-directory/">
+        <link rel="next" href="../../ui/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Registry Auth - Gustavo</title>
+        <title>Worker Directory - Gustavo</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#registry-auth-api" class="md-skip">
+        <a href="#worker-directory-api" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Registry Auth
+              Worker Directory
             
           </span>
         </div>
@@ -1171,6 +1171,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry Auth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1190,7 +1218,7 @@
   <span class="md-ellipsis">
     
   
-    Registry Auth
+    Worker Directory
   
 
     
@@ -1208,7 +1236,7 @@
   <span class="md-ellipsis">
     
   
-    Registry Auth
+    Worker Directory
   
 
     
@@ -1234,19 +1262,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#gustavo.api.routers.registry" class="md-nav__link">
+  <a href="#gustavo.api.routers.worker_directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        registry
+        worker_directory
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="registry">
+    <nav class="md-nav" aria-label="worker_directory">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#gustavo.api.routers.registry-functions" class="md-nav__link">
+  <a href="#gustavo.api.routers.worker_directory-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Functions:
@@ -1258,10 +1286,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#gustavo.api.routers.registry.authorize_registry" class="md-nav__link">
+  <a href="#gustavo.api.routers.worker_directory.list_worker_directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        authorize_registry
+        list_worker_directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gustavo.api.routers.worker_directory.remove_worker_directory_entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        remove_worker_directory_entry
       
     </span>
   </a>
@@ -1279,35 +1318,41 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#endpoints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Endpoints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-apiworker-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/worker-directory
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#getheadputpostpatchdelete-apiregistryauthorize" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#delete-apiworker-directorydevice_groupnode_id" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GET|HEAD|PUT|POST|PATCH|DELETE /api/registry/authorize
+        DELETE /api/worker-directory/{device_group}/{node_id}
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#design-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Design notes
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1315,34 +1360,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../worker-directory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Worker Directory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -2088,38 +2105,36 @@
   
 
 
-<h1 id="registry-auth-api">Registry Auth API</h1>
+<h1 id="worker-directory-api">Worker Directory API</h1>
+<p>Proxies onto <a href="../../configuration/#reporter">gustavo-reporter</a>'s own worker
+identity directory. Gustavo holds no direct Redis connection for this
+data — every call here is a synchronous HTTP round-trip to Reporter's
+<code>/api/directory/...</code> endpoints, authenticated with the caller's own
+Nebula credential (the same one used for every other write in Gustavo).</p>
 
 
 <div class="doc doc-object doc-module">
 
 
 
-<h2 id="gustavo.api.routers.registry" class="doc doc-heading">
-            <code>gustavo.api.routers.registry</code>
+<h2 id="gustavo.api.routers.worker_directory" class="doc doc-heading">
+            <code>gustavo.api.routers.worker_directory</code>
 
 
 </h2>
 
     <div class="doc doc-contents first">
 
-        <p>/api/registry — Docker registry access checks, for nginx's auth_request.</p>
-<p>GET|HEAD|PUT|POST|PATCH|DELETE /api/registry/authorize → 200 = allow, 401 = deny</p>
-<p>The registry-proxy nginx container (see cypress-ai:~/gustavo/registry-proxy)
-fires this as an auth_request sub-request for every /v2/... call it
-receives, forwarding the original Authorization header automatically. This
-replaces a static htpasswd file with a live check against Nebula's own
-users: any request carrying a valid Nebula username:secret (Basic auth) or
-a Gustavo session Bearer token is allowed through; anything else gets a
-401 before the real registry ever sees the request.</p>
-<p>All HTTP methods are accepted (not just GET) because auth_request forwards
-the <em>original</em> client method through - a docker push arrives as
-PUT/PATCH/POST/DELETE, not GET, and the response's body is irrelevant
-either way: nginx only looks at the status code.</p>
-<p>Tier 1 only (this endpoint): identity is enough, no per-repo check. A
-Tier 2 (per-repo, ro/rw-aware) version would additionally read the
-X-Original-URI/X-Original-Method headers nginx forwards and cross-check
-compute_permissions(cfg, session.username)["apps"] for the requested repo.</p>
+        <p>/api/worker-directory — proxy onto gustavo-reporter's worker identity directory.</p>
+<p>GET    /api/worker-directory                          → list all entries across every device group the caller can see
+DELETE /api/worker-directory/{device_group}/{node_id}  → remove one worker's entry</p>
+<p>Gustavo holds no Redis connection of its own for this data - reporter
+is the only thing that talks to Redis for the directory, same as it's
+the only thing that writes worker status reports. Every call here is a
+synchronous HTTP round-trip to reporter's own <code>/api/directory/...</code>
+endpoints, authenticated with the caller's own Nebula credential
+(session.nebula_secret) - the exact same Basic auth a worker itself
+uses, not a separate Gustavo-to-reporter credential.</p>
 
 
 
@@ -2139,13 +2154,13 @@ compute_permissions(cfg, session.username)["apps"] for the requested repo.</p>
 
 
 
-<h3 id="gustavo.api.routers.registry-functions">Functions:</h3>
+<h3 id="gustavo.api.routers.worker_directory-functions">Functions:</h3>
 
 <div class="doc doc-object doc-function">
 
 
-<h4 id="gustavo.api.routers.registry.authorize_registry" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">authorize_registry</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">))</span></code>
+<h4 id="gustavo.api.routers.worker_directory.list_worker_directory" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">list_worker_directory</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2156,7 +2171,7 @@ compute_permissions(cfg, session.username)["apps"] for the requested repo.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Return 200 if the request carries valid Nebula/Gustavo credentials, else 401 (raised inside the dependency).</p>
+        <p>List the worker directory for every device group the caller can see.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2179,18 +2194,11 @@ compute_permissions(cfg, session.username)["apps"] for the requested repo.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The authenticated caller, via <code>verify_session_or_basic</code>. Not
-otherwise inspected - reaching this line at all means auth
-succeeded (see module docstring: Tier 1 only, no per-repo
-check).</p>
+                <p>The authenticated caller.</p>
               </div>
             </td>
             <td>
-                  <code><span title="fastapi.Depends">Depends</span>(<a class="autorefs autorefs-internal" title="verify_session_or_basic(request, credentials=Security(_bearer))
-
-  
-      async
-   (gustavo.api.auth.verify_session_or_basic)" href="../auth/#gustavo.api.auth.verify_session_or_basic">verify_session_or_basic</a>)</code>
+                  <code><span title="fastapi.Depends">Depends</span>(<span title="gustavo.api.auth.verify_firebase_token">verify_firebase_token</span>)</code>
             </td>
           </tr>
       </tbody>
@@ -2212,8 +2220,11 @@ check).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p><code>{"error": False, "response": "ok"}</code>. The body is ignored
-by nginx; only the HTTP status code matters.</p>
+                <p><code>{"error": bool, "response": [{"device_group": ..., "node_id": ...,
+"host_ip": ..., "remote_ip": ..., "updated_at": ...}, ...]}</code>.
+Entries from device groups reporter itself refuses (e.g. a
+stale grant reporter no longer honors) are silently skipped
+rather than failing the whole request.</p>
               </div>
             </td>
           </tr>
@@ -2221,47 +2232,342 @@ by nginx; only the HTTP status code matters.</p>
     </table>
 
 
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>One HTTP call to reporter per visible device group - reporter has
+no "all groups at once" endpoint, since its own authorization is
+per-device-group. Acceptable at the scale this directory is meant
+for; would need reporter-side batching if that stops being true.</p>
+</details>
+
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>gustavo/api/routers/registry.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-32">32</a></span>
-<span class="normal"><a href="#__codelineno-0-33">33</a></span>
-<span class="normal"><a href="#__codelineno-0-34">34</a></span>
-<span class="normal"><a href="#__codelineno-0-35">35</a></span>
-<span class="normal"><a href="#__codelineno-0-36">36</a></span>
-<span class="normal"><a href="#__codelineno-0-37">37</a></span>
-<span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span>
-<span class="normal"><a href="#__codelineno-0-41">41</a></span>
-<span class="normal"><a href="#__codelineno-0-42">42</a></span>
-<span class="normal"><a href="#__codelineno-0-43">43</a></span>
-<span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span>
-<span class="normal"><a href="#__codelineno-0-47">47</a></span>
-<span class="normal"><a href="#__codelineno-0-48">48</a></span>
-<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+              <summary>Source code in <code>gustavo/api/routers/worker_directory.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-49">49</a></span>
 <span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="nd">@router</span><span class="o">.</span><span class="n">api_route</span><span class="p">(</span><span class="s2">"/authorize"</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"HEAD"</span><span class="p">,</span> <span class="s2">"PUT"</span><span class="p">,</span> <span class="s2">"POST"</span><span class="p">,</span> <span class="s2">"PATCH"</span><span class="p">,</span> <span class="s2">"DELETE"</span><span class="p">])</span>
-<a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">authorize_registry</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_session_or_basic</span><span class="p">)):</span>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="w">    </span><span class="sd">"""</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Return 200 if the request carries valid Nebula/Gustavo credentials, else 401 (raised inside the dependency).</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    session : Session</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`. Not</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        otherwise inspected - reaching this line at all means auth</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        succeeded (see module docstring: Tier 1 only, no per-repo</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        check).</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    dict</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        ``{"error": False, "response": "ok"}``. The body is ignored</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        by nginx; only the HTTP status code matters.</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    """</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">}</span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span>
+<span class="normal"><a href="#__codelineno-0-62">62</a></span>
+<span class="normal"><a href="#__codelineno-0-63">63</a></span>
+<span class="normal"><a href="#__codelineno-0-64">64</a></span>
+<span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span>
+<span class="normal"><a href="#__codelineno-0-78">78</a></span>
+<span class="normal"><a href="#__codelineno-0-79">79</a></span>
+<span class="normal"><a href="#__codelineno-0-80">80</a></span>
+<span class="normal"><a href="#__codelineno-0-81">81</a></span>
+<span class="normal"><a href="#__codelineno-0-82">82</a></span>
+<span class="normal"><a href="#__codelineno-0-83">83</a></span>
+<span class="normal"><a href="#__codelineno-0-84">84</a></span>
+<span class="normal"><a href="#__codelineno-0-85">85</a></span>
+<span class="normal"><a href="#__codelineno-0-86">86</a></span>
+<span class="normal"><a href="#__codelineno-0-87">87</a></span>
+<span class="normal"><a href="#__codelineno-0-88">88</a></span>
+<span class="normal"><a href="#__codelineno-0-89">89</a></span>
+<span class="normal"><a href="#__codelineno-0-90">90</a></span>
+<span class="normal"><a href="#__codelineno-0-91">91</a></span>
+<span class="normal"><a href="#__codelineno-0-92">92</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_worker_directory</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">)):</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    List the worker directory for every device group the caller can see.</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        The authenticated caller.</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    dict</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        ``{"error": bool, "response": [{"device_group": ..., "node_id": ...,</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        "host_ip": ..., "remote_ip": ..., "updated_at": ...}, ...]}``.</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">        Entries from device groups reporter itself refuses (e.g. a</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">        stale grant reporter no longer honors) are silently skipped</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">        rather than failing the whole request.</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    One HTTP call to reporter per visible device group - reporter has</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">    no "all groups at once" endpoint, since its own authorization is</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    per-device-group. Acceptable at the scale this directory is meant</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">    for; would need reporter-side batching if that stops being true.</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">    """</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="n">base_url</span> <span class="o">=</span> <span class="n">_reporter_base_url</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="n">auth</span> <span class="o">=</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">)</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="k">for</span> <span class="n">device_group</span> <span class="ow">in</span> <span class="n">_visible_device_groups</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a>            <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/api/directory/</span><span class="si">{</span><span class="n">device_group</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"list_worker_directory: reporter unreachable for '</span><span class="si">{</span><span class="n">device_group</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a>            <span class="k">continue</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a>        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>            <span class="k">continue</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a>        <span class="n">body</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="k">if</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"error"</span><span class="p">):</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a>            <span class="k">continue</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"response"</span><span class="p">,</span> <span class="p">[]):</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a>            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="o">**</span><span class="n">entry</span><span class="p">,</span> <span class="s2">"device_group"</span><span class="p">:</span> <span class="n">device_group</span><span class="p">})</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">entries</span><span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="gustavo.api.routers.worker_directory.remove_worker_directory_entry" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">remove_worker_directory_entry</span><span class="p">(</span><span class="n">device_group</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">))</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Remove one worker's entry from the directory.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>device_group</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The device group the entry belongs to.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>node_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The worker's own id.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>session</code>
+            </td>
+            <td>
+                  <code><span title="gustavo.api.session.Session">Session</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The authenticated caller.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="fastapi.Depends">Depends</span>(<span title="gustavo.api.auth.verify_firebase_token">verify_firebase_token</span>)</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>{"error": bool, "response": &lt;message str&gt;}</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="fastapi.HTTPException">HTTPException</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>403 if the caller isn't admin and isn't granted rw on <code>device_group</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>rw-gated like every other mutating action in this codebase - not
+admin-only. A non-admin can delete entries only for device groups
+they hold rw on.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>gustavo/api/routers/worker_directory.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span>
+<span class="normal"><a href="#__codelineno-0-131">131</a></span>
+<span class="normal"><a href="#__codelineno-0-132">132</a></span>
+<span class="normal"><a href="#__codelineno-0-133">133</a></span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span>
+<span class="normal"><a href="#__codelineno-0-137">137</a></span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="nd">@router</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">"/</span><span class="si">{device_group}</span><span class="s2">/</span><span class="si">{node_id}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">remove_worker_directory_entry</span><span class="p">(</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="n">device_group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>    <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">verify_firebase_token</span><span class="p">),</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="p">):</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a><span class="w">    </span><span class="sd">"""</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a><span class="sd">    Remove one worker's entry from the directory.</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">    device_group : str</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">        The device group the entry belongs to.</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">    node_id : str</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a><span class="sd">        The worker's own id.</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">        The authenticated caller.</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">    dict</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">        ``{"error": bool, "response": &lt;message str&gt;}``.</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="sd">    Raises</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    ------</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">    HTTPException</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">        403 if the caller isn't admin and isn't granted rw on `device_group`.</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122"></a>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">    rw-gated like every other mutating action in this codebase - not</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="sd">    admin-only. A non-admin can delete entries only for device groups</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127"></a><span class="sd">    they hold rw on.</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">    """</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">is_admin</span> <span class="ow">and</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">compute_permissions</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)[</span><span class="s2">"device_groups"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device_group</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"rw"</span><span class="p">:</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Not permitted to modify device group '</span><span class="si">{</span><span class="n">device_group</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132"></a>
+<a id="__codelineno-0-133" name="__codelineno-0-133"></a>    <span class="n">base_url</span> <span class="o">=</span> <span class="n">_reporter_base_url</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+<a id="__codelineno-0-134" name="__codelineno-0-134"></a>    <span class="n">auth</span> <span class="o">=</span> <span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">)</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136"></a>        <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/api/directory/</span><span class="si">{</span><span class="n">device_group</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"remove_worker_directory_entry failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140"></a>
+<a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"reporter returned </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">"error"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="s2">"deleted"</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2275,51 +2581,37 @@ by nginx; only the HTTP status code matters.</p>
     </div>
 
 </div><hr />
-<h2 id="overview">Overview</h2>
-<p>Backs the <a href="../../deployment/#registry-authentication-proxy-nginx">registry-proxy nginx setup</a>
-that fronts Gustavo's Docker registry — this is what replaced a static, shared htpasswd
-credential with a live check against Gustavo's own Nebula-backed users. It's not something a
-person or a docker client calls directly; nginx calls it on every <code>/v2/...</code> request via its
-<code>auth_request</code> directive, forwarding the client's <code>Authorization</code> header automatically.</p>
-<h2 id="getheadputpostpatchdelete-apiregistryauthorize"><code>GET|HEAD|PUT|POST|PATCH|DELETE /api/registry/authorize</code></h2>
-<p>Returns <code>200</code> to allow the request through, <code>401</code> to deny it. The body is irrelevant either
-way — <code>auth_request</code> only looks at the status code.</p>
-<p>All HTTP methods are accepted, not just <code>GET</code>: <code>auth_request</code> forwards the <em>original</em>
-client's method through unchanged, and a <code>docker push</code> arrives as <code>PUT</code>/<code>PATCH</code>/<code>POST</code>
-(chunked blob upload) or <code>DELETE</code>, not <code>GET</code>.</p>
-<p><strong>Auth:</strong> <code>verify_session_or_basic</code> — the same dependency
-<a href="../config/#get-apiconfigworker-download"><code>/config/worker-download</code></a> uses. Accepts either:</p>
-<ul>
-<li><strong>HTTP Basic</strong>, a Nebula <code>username:secret</code> pair, verified the identity-bound way <code>/login</code>
-  verifies it (<code>nebula_auth.resolve_basic_credentials</code>) — what a <code>docker login</code>/<code>docker pull</code>/
-  <code>docker push</code> client actually sends.</li>
-<li><strong>Bearer</strong>, a Gustavo session token — mostly relevant if something ever calls this
-  endpoint through Gustavo's own session flow rather than as a registry client.</li>
-</ul>
+<h2 id="endpoints">Endpoints</h2>
+<h3 id="get-apiworker-directory"><code>GET /api/worker-directory</code></h3>
+<p>List the worker directory across every device group the caller can see
+— every group for an admin, only granted ones (<code>ro</code> or <code>rw</code>) for
+anyone else.</p>
 <p><strong>Response:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ok"</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">"device_group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"production"</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">"node_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3f9a1c2e-..."</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">"host_ip"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.0.0.5"</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">"remote_ip"</span><span class="p">:</span><span class="w"> </span><span class="s2">"203.0.113.7"</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1741270000</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">}</span>
 </code></pre></div>
-<p><strong>Tier 1 only:</strong> identity is the entire check — any valid Nebula user, admin or not, gets a
-<code>200</code> for any repository and any operation. There's no per-repo <code>ro</code>/<code>rw</code> enforcement yet. A
-Tier 2 version would additionally read <code>X-Original-URI</code> (to extract the repository name from
-<code>/v2/{name}/...</code>) and <code>X-Original-Method</code> (pull vs. push) — both already forwarded by the
-nginx config — and cross-check <code>nebula_auth.compute_permissions(cfg, session.username)["apps"]</code>
-for that specific repository, the same way every other write in Gustavo is gated.</p>
-<h2 id="design-notes">Design notes</h2>
-<ul>
-<li><strong>Why not a per-repo check from the start?</strong> A Nebula app's name isn't guaranteed to match
-  its registry repository name — nothing enforces that correspondence today. Tier 2 needs
-  that decided first (treat it as a hard convention, or build an explicit mapping), so Tier 1
-  ships the identity-only version now rather than block on it.</li>
-<li><strong>Why this reuses <code>verify_session_or_basic</code> instead of a bespoke check:</strong> it's the exact
-  same dependency <code>/config/worker-download</code> added to let a script pull its own worker config
-  in one request. Reusing it here means registry auth and worker-config auth are verified by
-  the same code path, not two implementations that could drift apart.</li>
-<li><strong>A <code>docker login</code> success does not mean blanket access under Tier 2</strong> (when it exists) —
-  the login probe hits a generic path with no specific repo in it, so only identity gets
-  checked at login time; each individual pull/push afterward is what would actually enforce
-  the per-repo grant.</li>
-</ul>
+<p>Issues one HTTP call to Reporter per visible device group — Reporter
+has no "all groups at once" endpoint, since its own authorization is
+per-device-group. A device group Reporter itself rejects (e.g. a stale
+grant) is silently skipped rather than failing the whole request.</p>
+<hr />
+<h3 id="delete-apiworker-directorydevice_groupnode_id"><code>DELETE /api/worker-directory/{device_group}/{node_id}</code></h3>
+<p>Remove one worker's entry.</p>
+<p><strong>Response:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deleted"</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p><code>rw</code> required on <code>device_group</code> — not admin-only. Returns <code>403</code> if the
+caller isn't admin and doesn't hold <code>rw</code> on that group.</p>
 
 
 
@@ -2357,7 +2649,7 @@ for that specific repository, the same way every other write in Gustavo is gated
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../users/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Users">
+          <a href="../registry/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Registry Auth">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2367,20 +2659,20 @@ for that specific repository, the same way every other write in Gustavo is gated
                 Previous
               </span>
               <div class="md-ellipsis">
-                Users
+                Registry Auth
               </div>
             </div>
           </a>
         
         
           
-          <a href="../worker-directory/" class="md-footer__link md-footer__link--next" aria-label="Next: Worker Directory">
+          <a href="../../ui/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Worker Directory
+                Overview
               </div>
             </div>
             <div class="md-footer__button md-icon">

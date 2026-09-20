@@ -1396,6 +1396,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1612,6 +1640,34 @@
     
   
     Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
   
 
     
@@ -2380,6 +2436,11 @@ for how a worker is told to use it.</p>
 <td><code>GUSTAVO_API_PORT</code></td>
 <td><code>3002</code></td>
 <td>Gustavo's <strong>host-published</strong> port — not FastAPI's internal <code>8000</code> (bound to <code>127.0.0.1</code> inside Gustavo's own container, unreachable from Reporter's separate container)</td>
+</tr>
+<tr>
+<td><code>DIRECTORY_TTL_SECONDS</code></td>
+<td><code>-1</code></td>
+<td>Redis TTL, in seconds, for entries in Reporter's worker identity directory (see <a href="../ui/worker-directory/">Worker Directory</a>). <code>-1</code> means entries never expire. Injected as an env var whenever the Reporter container is launched or restarted — set from <a href="../ui/settings/#reporter">Settings: Reporter</a>, not the Reporter container directly</td>
 </tr>
 </tbody>
 </table>
