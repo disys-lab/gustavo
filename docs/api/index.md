@@ -78,6 +78,7 @@ See [Authentication](auth.md) for the full login flow.
 | `/api/backups` | `routers/backups.py` | Redis and registry backup management |
 | `/api/users` | `routers/users.py` | Nebula user/group CRUD |
 | `/api/registry` | `routers/registry.py` | Registry proxy authorization (nginx `auth_request`) |
+| `/api/worker-directory` | `routers/worker_directory.py` | Proxy onto reporter's worker identity directory |
 | `/health` | `main.py` | Health check (no auth) |
 
 ---

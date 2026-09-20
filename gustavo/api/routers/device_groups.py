@@ -574,6 +574,15 @@ def _batch_quote(value: str) -> str:
     Windows CLI tools) follows. `& | < > ^` are left alone since
     cmd.exe's own metacharacter splitting doesn't apply inside a
     quoted argument.
+
+    `download_worker_script_windows` now prefixes every invocation
+    with `wsl`, so cmd.exe's own argv parsing runs first, then `wsl`
+    hands the already-assembled string to the target distro's shell -
+    not independently verified on a real WSL2 host that a value
+    containing both cmd.exe- and shell-special characters (quotes,
+    `$`, backticks) survives that second hop unchanged. Worth testing
+    directly before relying on it for values that might contain any
+    of those.
     """
     return '"' + value.replace("%", "%%").replace('"', '\\"') + '"'
 
@@ -769,7 +778,10 @@ async def download_worker_compose(
     if cfg.get("WORKER_NMODE") == "host":
         service["network_mode"] = "host"
     service["environment"] = env
-    service["volumes"] = ["/var/run/docker.sock:/var/run/docker.sock"]
+    service["volumes"] = [
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "/etc/gustavo-worker:/etc/gustavo-worker",
+    ]
     compose = {"services": {"gustavo-worker": service}}
     # default_flow_style=False for block style; yaml.safe_dump handles quoting/
     # escaping of any value (quotes, $, backticks, ...) correctly on its own -
@@ -854,6 +866,7 @@ async def download_worker_script(
         f"docker run -d --name {shlex.quote(f'worker_{name}')} --restart unless-stopped \\\n"
         f"  {network_flag}{env_flags} \\\n"
         "  -v /var/run/docker.sock:/var/run/docker.sock \\\n"
+        "  -v /etc/gustavo-worker:/etc/gustavo-worker \\\n"
         f"  {_WORKER_IMAGE}\n"
     )
     return script
@@ -867,6 +880,18 @@ async def download_worker_script_windows(
 ):
     """
     Same as `worker-script`, as a double-click-able Windows `.bat` instead of a bash script.
+
+    Requires WSL2 specifically (not WSL1), with a default Linux distro
+    registered, Docker Desktop set to the WSL2 backend, and WSL
+    integration enabled for that distro - all four, not just "WSL
+    installed". Every `docker` invocation in the generated script is
+    prefixed `wsl`, which forces it to run inside that distro's own
+    Linux filesystem rather than native Windows - otherwise a bind
+    mount like `/etc/gustavo-worker` resolves against Windows' own
+    path rules instead of a real Linux `/etc`, silently breaking it.
+    The script checks `wsl docker version` first and prints an
+    actionable message instead of failing deep in a Docker error if
+    any of those four prerequisites are missing.
 
     Parameters
     ----------
@@ -921,16 +946,24 @@ async def download_worker_script_windows(
         use_public_endpoints=public_endpoints or external, external=external,
     )
     container_name = _batch_quote(f"worker_{name}")
-    args = [f"docker run -d --name {container_name} --restart unless-stopped"]
+    args = [f"wsl docker run -d --name {container_name} --restart unless-stopped"]
     if cfg.get("WORKER_NMODE") == "host":
         args.append("--network host")
     args += [f"-e {key}={_batch_quote(value)}" for key, value in env.items()]
     args.append("-v /var/run/docker.sock:/var/run/docker.sock")
+    args.append("-v /etc/gustavo-worker:/etc/gustavo-worker")
     args.append(_WORKER_IMAGE)
     run_command = " ^\n  ".join(args)
     script = (
         "@echo off\n"
-        f"docker rm -f {container_name} >nul 2>&1\n"
+        "wsl docker version >nul 2>&1\n"
+        "if errorlevel 1 (\n"
+        "    echo This worker requires WSL2, with a default Linux distro, Docker\n"
+        "    echo Desktop set to the WSL2 backend, and WSL integration enabled for\n"
+        "    echo that distro. See the docs for setup, then run this script again.\n"
+        "    exit /b 1\n"
+        ")\n"
+        f"wsl docker rm -f {container_name} >nul 2>&1\n"
         f"{run_command}\n"
     )
     return script

@@ -73,6 +73,19 @@ Every filename includes the device group's name, so downloads for
 different groups never collide or silently overwrite each other in your
 downloads folder.
 
+!!! warning "Windows requires WSL2"
+    The `.bat` launcher requires **WSL2** specifically (not WSL1), with
+    a default Linux distro registered, Docker Desktop set to the WSL2
+    backend, and WSL integration enabled for that distro — all four,
+    not just "WSL installed." Every command in the script runs via
+    `wsl`, so a bind mount like `/etc/gustavo-worker` resolves against
+    a real Linux filesystem instead of Windows' own path rules. The
+    script checks for this on startup and prints a clear message if
+    it's missing, rather than failing deep in a cryptic Docker error.
+    `docker compose up` (the **Docker Compose** download above) has no
+    such check — if you're on Windows, run `wsl docker compose up`
+    yourself instead of plain `docker compose up`.
+
 Four controls sit above the buttons and apply to whichever format you
 download next:
 
@@ -87,6 +100,12 @@ If you belong to an [external user group](users.md#external-user-groups),
 **Report via Reporter** and **Public Facing Access** are locked on and
 can't be unchecked — an external caller is never handed the shared
 internal Redis credential or a LAN address it can't reach anyway.
+
+Every download also bind-mounts `/etc/gustavo-worker` into the worker
+container — not a toggle, always included. The worker writes its own
+identity (host IP, a self-generated id, device group) and Nebula
+credential there on first boot; see [Worker Directory](worker-directory.md)
+for what reads it back.
 Registry inclusion is not a checkbox at all: it's decided automatically by
 [registry policy](registry.md#internal-vs-external-access).
 

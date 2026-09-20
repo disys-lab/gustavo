@@ -99,6 +99,7 @@ for how a worker is told to use it.
 | `REPORTER_PORT` | `8090` | Port the Reporter API listens on |
 | `GUSTAVO_API_HOST` | host IP | Host Reporter uses to reach Gustavo's own API to verify worker credentials |
 | `GUSTAVO_API_PORT` | `3002` | Gustavo's **host-published** port — not FastAPI's internal `8000` (bound to `127.0.0.1` inside Gustavo's own container, unreachable from Reporter's separate container) |
+| `DIRECTORY_TTL_SECONDS` | `-1` | Redis TTL, in seconds, for entries in Reporter's worker identity directory (see [Worker Directory](ui/worker-directory.md)). `-1` means entries never expire. Injected as an env var whenever the Reporter container is launched or restarted — set from [Settings: Reporter](ui/settings.md#reporter), not the Reporter container directly |
 
 !!! note
     `GUSTAVO_API_PORT` must match whatever port the `gustavo` container is

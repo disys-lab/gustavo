@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings, Clock,
+  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings, Clock, Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -22,6 +22,7 @@ const NAV = [
   { href: "/cron-jobs",     label: "Cron Jobs",     icon: Clock },
   { href: "/registry",      label: "Registry",      icon: Database },
   { href: "/device-groups", label: "Device Groups", icon: Users },
+  { href: "/worker-directory", label: "Worker Directory", icon: Network },
 ];
 
 // Every one of these hits an admin-only backend route (services/config,

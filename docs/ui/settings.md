@@ -76,6 +76,7 @@ The Settings page uses an accordion layout with one section expanded by default 
 | Port | `REPORTER_PORT` | Reporter API port (default: 8090) |
 | Gustavo API Host | `GUSTAVO_API_HOST` | Host Reporter uses to reach Gustavo's own API |
 | Gustavo API Port | `GUSTAVO_API_PORT` | Gustavo's host-published port (see [Configuration](../configuration.md#reporter)) |
+| Worker Directory TTL (seconds) | `DIRECTORY_TTL_SECONDS` | Redis TTL for [Worker Directory](worker-directory.md) entries. `-1` (default) means entries never expire. Injected into the Reporter container as an env var on every launch/restart |
 
 Reporter is a lifecycle-managed platform service like Redis or the
 Registry — start/stop/restart it from the [Dashboard](dashboard.md#platform-services-card).

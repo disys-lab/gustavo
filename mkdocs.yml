@@ -56,6 +56,7 @@ nav:
     - Backups: api/backups.md
     - Users: api/users.md
     - Registry Auth: api/registry.md
+    - Worker Directory: api/worker-directory.md
   - Web UI:
     - Overview: ui/index.md
     - Dashboard: ui/dashboard.md
@@ -63,6 +64,7 @@ nav:
     - Cron Jobs: ui/cron-jobs.md
     - Device Groups: ui/device-groups.md
     - Registry: ui/registry.md
+    - Worker Directory: ui/worker-directory.md
     - Monitoring: ui/monitoring.md
     - Backups: ui/backups.md
     - Settings: ui/settings.md

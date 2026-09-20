@@ -31,6 +31,7 @@ export interface PlatformConfig {
   REPORTER_PORT: string;
   GUSTAVO_API_HOST: string;
   GUSTAVO_API_PORT: string;
+  DIRECTORY_TTL_SECONDS: string;
   // Public Facing Endpoints
   PUBLIC_ENDPOINTS_ENABLED: boolean;
   PUBLIC_MANAGER_HOST: string;
