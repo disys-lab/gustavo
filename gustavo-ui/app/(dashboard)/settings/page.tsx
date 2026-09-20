@@ -89,6 +89,11 @@ const REPORTER_FIELDS: ConfigField[] = [
     label: "Gustavo API Port",
     hint: "Must be gustavo's Next.js port (3000 by default) — not FastAPI's 8000, which is bound to 127.0.0.1 inside gustavo's own container.",
   },
+  {
+    key: "DIRECTORY_TTL_SECONDS",
+    label: "Worker Directory TTL (seconds)",
+    hint: "-1 (default) means worker directory entries never expire. A positive number sets how long an entry survives without a refresh.",
+  },
 ];
 
 const PUBLIC_ENDPOINT_FIELDS: ConfigField[] = [

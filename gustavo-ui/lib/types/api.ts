@@ -34,6 +34,14 @@ export interface BackupEntry {
   timestamp: string;
 }
 
+export interface WorkerDirectoryEntry {
+  device_group: string;
+  node_id: string;
+  host_ip: string;
+  remote_ip: string;
+  updated_at: number;
+}
+
 export interface VitalsData {
   host?: string;
   timestamp?: number;

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
-  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings, Clock,
+  LayoutDashboard, LayoutGrid, Database, Users, UserCog, Activity, Archive, Settings, Clock, Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -22,13 +22,17 @@ const NAV = [
   { href: "/cron-jobs",     label: "Cron Jobs",     icon: Clock },
   { href: "/registry",      label: "Registry",      icon: Database },
   { href: "/device-groups", label: "Device Groups", icon: Users },
+  { href: "/worker-directory", label: "Worker Directory", icon: Network },
+  { href: "/monitoring",    label: "Monitoring",    icon: Activity },
 ];
 
 // Every one of these hits an admin-only backend route (services/config,
-// monitoring, backups) — a non-admin session gets a clean 403 on all of
-// them, so there's nothing useful to show; hide rather than dead-end.
+// backups) — a non-admin session gets a clean 403 on all of them, so
+// there's nothing useful to show; hide rather than dead-end. Monitoring
+// is NOT in this list — its backend routes are open to any authenticated
+// user, scoped to the caller's own device-group grants (see
+// gustavo/api/routers/monitoring.py's module docstring).
 const ADMIN_ONLY_NAV = [
-  { href: "/monitoring", label: "Monitoring", icon: Activity },
   { href: "/backups",    label: "Backups",    icon: Archive },
   { href: "/settings",   label: "Settings",   icon: Settings },
   { href: "/users",      label: "Users",      icon: UserCog },

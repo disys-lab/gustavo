@@ -73,6 +73,10 @@ DEFAULTS: dict[str, Any] = {
     # to match whatever the actual deployment maps.
     "GUSTAVO_API_HOST": _host_ip,
     "GUSTAVO_API_PORT": "3002",
+    # Redis TTL, in seconds, for entries in reporter's worker identity
+    # directory - injected as an env var whenever the reporter container
+    # is launched/restarted. -1 (the default) means entries never expire.
+    "DIRECTORY_TTL_SECONDS": "-1",
     # Public Facing Endpoints — the externally-reachable addresses for
     # Manager/Reporter/gustavo itself (e.g. behind a Cloudflare Tunnel),
     # separate from the internal LAN addresses above. Only used when a

@@ -234,6 +234,7 @@ All HTTP calls go through `lib/api/client.ts` — an Axios instance that:
 | [Cron Jobs](cron-jobs.md) | Scheduled one-shot container CRUD |
 | [Device Groups](device-groups.md) | Group management, app/cron-job assignment, worker config downloads |
 | [Registry](registry.md) | Registry image browser, internal/external access policy |
+| [Worker Directory](worker-directory.md) | Checked-in workers, scoped to your device groups |
 | [Monitoring](monitoring.md) | Live CPU/memory charts and container stats |
 | [Backups](backups.md) | Redis and registry backup management |
 | [Settings](settings.md) | Platform configuration editor |

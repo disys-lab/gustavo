@@ -91,6 +91,10 @@ class Manager(NebulaBase):
         API.
     GUSTAVO_API_PORT : str
         Port reporter uses to reach gustavo's own API.
+    DIRECTORY_TTL_SECONDS : int
+        Redis TTL, in seconds, for entries in reporter's worker
+        identity directory. `-1` (the default) means entries never
+        expire.
     service_list : str
         Comma-separated list of the service names this class manages.
 
@@ -147,6 +151,7 @@ class Manager(NebulaBase):
         self.REPORTER_PORT = None
         self.GUSTAVO_API_HOST = None
         self.GUSTAVO_API_PORT = None
+        self.DIRECTORY_TTL_SECONDS = -1
 
         self.service_list = "registry,redis,mongo,manager,syncer,reporter"
 
@@ -358,6 +363,11 @@ class Manager(NebulaBase):
         else:
             self.GUSTAVO_API_PORT = ""
             logging.error(f"GUSTAVO_API_PORT undefined in base_config file")
+
+        if "DIRECTORY_TTL_SECONDS" in os.environ.keys():
+            self.DIRECTORY_TTL_SECONDS = int(os.getenv("DIRECTORY_TTL_SECONDS"))
+        else:
+            self.DIRECTORY_TTL_SECONDS = -1
 
         return {"error": False, "response": "Manager Params set successfully"}
 
@@ -773,6 +783,7 @@ class Manager(NebulaBase):
                         "REDIS_PORT=" + str(self.REDIS_PORT),
                         "REDIS_AUTH_TOKEN=" + str(self.REDIS_AUTH_TOKEN),
                         "CACHE_PREFIX=" + str(self.CACHE_PREFIX),
+                        "DIRECTORY_TTL_SECONDS=" + str(self.DIRECTORY_TTL_SECONDS),
                     ],
                 )
             except docker.errors.ImageNotFound as e:
