@@ -2178,9 +2178,9 @@ downloads folder.</p>
 a default Linux distro registered, Docker Desktop set to the WSL2
 backend, and WSL integration enabled for that distro — all four,
 not just "WSL installed." Every command in the script runs via
-<code>wsl</code>, so a bind mount like <code>/etc/gustavo-worker</code> resolves against
-a real Linux filesystem instead of Windows' own path rules. The
-script checks for this on startup and prints a clear message if
+<code>wsl</code>, so a bind mount host path like <code>~/.gustavo-worker</code> resolves
+against the WSL user's own home directory instead of a Windows
+path. The script checks for this on startup and prints a clear message if
 it's missing, rather than failing deep in a cryptic Docker error.
 <code>docker compose up</code> (the <strong>Docker Compose</strong> download above) has no
 such check — if you're on Windows, run <code>wsl docker compose up</code>
@@ -2218,11 +2218,14 @@ download next:</p>
 <strong>Report via Reporter</strong> and <strong>Public Facing Access</strong> are locked on and
 can't be unchecked — an external caller is never handed the shared
 internal Redis credential or a LAN address it can't reach anyway.</p>
-<p>Every download also bind-mounts <code>/etc/gustavo-worker</code> into the worker
-container — not a toggle, always included. The worker writes its own
-identity (host IP, a self-generated id, device group) and Nebula
-credential there on first boot; see <a href="../worker-directory/">Worker Directory</a>
-for what reads it back.
+<p>Every download also bind-mounts <code>~/.gustavo-worker</code> (the host's home
+directory) to <code>/etc/gustavo-worker</code> inside the worker container — not a
+toggle, always included. Using a path under the host user's home
+directory rather than a system path like <code>/etc</code> avoids extra host
+permission setup (e.g. Docker Desktop's file-sharing allowlist on
+macOS). The worker writes its own identity (host IP, a self-generated
+id, device group) and Nebula credential there on first boot; see
+<a href="../worker-directory/">Worker Directory</a> for what reads it back.
 Registry inclusion is not a checkbox at all: it's decided automatically by
 <a href="../registry/#internal-vs-external-access">registry policy</a>.</p>
 <p>All four downloads require you to actually have access to the device

@@ -4848,7 +4848,7 @@ caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p>
 <a id="__codelineno-0-780" name="__codelineno-0-780"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
 <a id="__codelineno-0-781" name="__codelineno-0-781"></a>    <span class="n">service</span><span class="p">[</span><span class="s2">"volumes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
 <a id="__codelineno-0-782" name="__codelineno-0-782"></a>        <span class="s2">"/var/run/docker.sock:/var/run/docker.sock"</span><span class="p">,</span>
-<a id="__codelineno-0-783" name="__codelineno-0-783"></a>        <span class="s2">"/etc/gustavo-worker:/etc/gustavo-worker"</span><span class="p">,</span>
+<a id="__codelineno-0-783" name="__codelineno-0-783"></a>        <span class="s2">"~/.gustavo-worker:/etc/gustavo-worker"</span><span class="p">,</span>
 <a id="__codelineno-0-784" name="__codelineno-0-784"></a>    <span class="p">]</span>
 <a id="__codelineno-0-785" name="__codelineno-0-785"></a>    <span class="n">compose</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"services"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"gustavo-worker"</span><span class="p">:</span> <span class="n">service</span><span class="p">}}</span>
 <a id="__codelineno-0-786" name="__codelineno-0-786"></a>    <span class="c1"># default_flow_style=False for block style; yaml.safe_dump handles quoting/</span>
@@ -5222,7 +5222,7 @@ derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.</p
 <a id="__codelineno-0-866" name="__codelineno-0-866"></a>        <span class="sa">f</span><span class="s2">"docker run -d --name </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">'worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span><span class="si">}</span><span class="s2"> --restart unless-stopped </span><span class="se">\\\n</span><span class="s2">"</span>
 <a id="__codelineno-0-867" name="__codelineno-0-867"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">network_flag</span><span class="si">}{</span><span class="n">env_flags</span><span class="si">}</span><span class="s2"> </span><span class="se">\\\n</span><span class="s2">"</span>
 <a id="__codelineno-0-868" name="__codelineno-0-868"></a>        <span class="s2">"  -v /var/run/docker.sock:/var/run/docker.sock </span><span class="se">\\\n</span><span class="s2">"</span>
-<a id="__codelineno-0-869" name="__codelineno-0-869"></a>        <span class="s2">"  -v /etc/gustavo-worker:/etc/gustavo-worker </span><span class="se">\\\n</span><span class="s2">"</span>
+<a id="__codelineno-0-869" name="__codelineno-0-869"></a>        <span class="s2">"  -v ~/.gustavo-worker:/etc/gustavo-worker </span><span class="se">\\\n</span><span class="s2">"</span>
 <a id="__codelineno-0-870" name="__codelineno-0-870"></a>        <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">_WORKER_IMAGE</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
 <a id="__codelineno-0-871" name="__codelineno-0-871"></a>    <span class="p">)</span>
 <a id="__codelineno-0-872" name="__codelineno-0-872"></a>    <span class="k">return</span> <span class="n">script</span>
@@ -5253,9 +5253,10 @@ registered, Docker Desktop set to the WSL2 backend, and WSL
 integration enabled for that distro - all four, not just "WSL
 installed". Every <code>docker</code> invocation in the generated script is
 prefixed <code>wsl</code>, which forces it to run inside that distro's own
-Linux filesystem rather than native Windows - otherwise a bind
-mount like <code>/etc/gustavo-worker</code> resolves against Windows' own
-path rules instead of a real Linux <code>/etc</code>, silently breaking it.
+Linux filesystem and shell rather than native Windows - so a bind
+mount host path like <code>~/.gustavo-worker</code> resolves against the WSL
+user's own home directory (expanded by that shell), not against
+cmd.exe or a Windows path.
 The script checks <code>wsl docker version</code> first and prints an
 actionable message instead of failing deep in a Docker error if
 any of those four prerequisites are missing.</p>
@@ -5538,7 +5539,12 @@ is derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.
 <span class="normal"><a href="#__codelineno-0-966">966</a></span>
 <span class="normal"><a href="#__codelineno-0-967">967</a></span>
 <span class="normal"><a href="#__codelineno-0-968">968</a></span>
-<span class="normal"><a href="#__codelineno-0-969">969</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-875" name="__codelineno-0-875"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script-windows"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-969">969</a></span>
+<span class="normal"><a href="#__codelineno-0-970">970</a></span>
+<span class="normal"><a href="#__codelineno-0-971">971</a></span>
+<span class="normal"><a href="#__codelineno-0-972">972</a></span>
+<span class="normal"><a href="#__codelineno-0-973">973</a></span>
+<span class="normal"><a href="#__codelineno-0-974">974</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-875" name="__codelineno-0-875"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/</span><span class="si">{name}</span><span class="s2">/worker-script-windows"</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">PlainTextResponse</span><span class="p">)</span>
 <a id="__codelineno-0-876" name="__codelineno-0-876"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_worker_script_windows</span><span class="p">(</span>
 <a id="__codelineno-0-877" name="__codelineno-0-877"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">reporter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">check_in_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
 <a id="__codelineno-0-878" name="__codelineno-0-878"></a>    <span class="n">public_endpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -5552,87 +5558,92 @@ is derived, not caller-supplied - see <code>nebula_auth.build_worker_env</code>.
 <a id="__codelineno-0-886" name="__codelineno-0-886"></a><span class="sd">    integration enabled for that distro - all four, not just "WSL</span>
 <a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">    installed". Every `docker` invocation in the generated script is</span>
 <a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">    prefixed `wsl`, which forces it to run inside that distro's own</span>
-<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">    Linux filesystem rather than native Windows - otherwise a bind</span>
-<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">    mount like `/etc/gustavo-worker` resolves against Windows' own</span>
-<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">    path rules instead of a real Linux `/etc`, silently breaking it.</span>
-<a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">    The script checks `wsl docker version` first and prints an</span>
-<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">    actionable message instead of failing deep in a Docker error if</span>
-<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">    any of those four prerequisites are missing.</span>
-<a id="__codelineno-0-895" name="__codelineno-0-895"></a>
-<a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">    Parameters</span>
-<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">    ----------</span>
-<a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">    name : str</span>
-<a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">        Device group name.</span>
-<a id="__codelineno-0-900" name="__codelineno-0-900"></a><span class="sd">    gpu : bool, optional</span>
-<a id="__codelineno-0-901" name="__codelineno-0-901"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
-<a id="__codelineno-0-902" name="__codelineno-0-902"></a><span class="sd">        whose hardware actually has a GPU.</span>
-<a id="__codelineno-0-903" name="__codelineno-0-903"></a><span class="sd">    reporter : bool, optional</span>
-<a id="__codelineno-0-904" name="__codelineno-0-904"></a><span class="sd">        If `True`, switches worker status reporting to</span>
-<a id="__codelineno-0-905" name="__codelineno-0-905"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
-<a id="__codelineno-0-906" name="__codelineno-0-906"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-907" name="__codelineno-0-907"></a><span class="sd">    check_in_time : int, optional</span>
-<a id="__codelineno-0-908" name="__codelineno-0-908"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
-<a id="__codelineno-0-909" name="__codelineno-0-909"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
-<a id="__codelineno-0-910" name="__codelineno-0-910"></a><span class="sd">        to 60.</span>
-<a id="__codelineno-0-911" name="__codelineno-0-911"></a><span class="sd">    public_endpoints : bool, optional</span>
-<a id="__codelineno-0-912" name="__codelineno-0-912"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
-<a id="__codelineno-0-913" name="__codelineno-0-913"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
-<a id="__codelineno-0-914" name="__codelineno-0-914"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
-<a id="__codelineno-0-915" name="__codelineno-0-915"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
-<a id="__codelineno-0-916" name="__codelineno-0-916"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
-<a id="__codelineno-0-917" name="__codelineno-0-917"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
-<a id="__codelineno-0-918" name="__codelineno-0-918"></a><span class="sd">    session : Session</span>
-<a id="__codelineno-0-919" name="__codelineno-0-919"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
-<a id="__codelineno-0-920" name="__codelineno-0-920"></a>
-<a id="__codelineno-0-921" name="__codelineno-0-921"></a><span class="sd">    Returns</span>
-<a id="__codelineno-0-922" name="__codelineno-0-922"></a><span class="sd">    -------</span>
-<a id="__codelineno-0-923" name="__codelineno-0-923"></a><span class="sd">    str</span>
-<a id="__codelineno-0-924" name="__codelineno-0-924"></a><span class="sd">        A `@echo off` `.bat` script, `text/plain`.</span>
-<a id="__codelineno-0-925" name="__codelineno-0-925"></a>
-<a id="__codelineno-0-926" name="__codelineno-0-926"></a><span class="sd">    Raises</span>
-<a id="__codelineno-0-927" name="__codelineno-0-927"></a><span class="sd">    ------</span>
-<a id="__codelineno-0-928" name="__codelineno-0-928"></a><span class="sd">    HTTPException</span>
-<a id="__codelineno-0-929" name="__codelineno-0-929"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
-<a id="__codelineno-0-930" name="__codelineno-0-930"></a><span class="sd">        group.</span>
-<a id="__codelineno-0-931" name="__codelineno-0-931"></a>
-<a id="__codelineno-0-932" name="__codelineno-0-932"></a><span class="sd">    Notes</span>
-<a id="__codelineno-0-933" name="__codelineno-0-933"></a><span class="sd">    -----</span>
-<a id="__codelineno-0-934" name="__codelineno-0-934"></a><span class="sd">    cmd.exe's syntax and quoting are different enough from bash (no</span>
-<a id="__codelineno-0-935" name="__codelineno-0-935"></a><span class="sd">    `set -e`, `^` instead of `\\` for line continuation, its own</span>
-<a id="__codelineno-0-936" name="__codelineno-0-936"></a><span class="sd">    escaping rules via `_batch_quote`) that it needs its own generator</span>
-<a id="__codelineno-0-937" name="__codelineno-0-937"></a><span class="sd">    rather than reusing `download_worker_script`. Registry inclusion</span>
-<a id="__codelineno-0-938" name="__codelineno-0-938"></a><span class="sd">    is derived, not caller-supplied - see `nebula_auth.build_worker_env`.</span>
-<a id="__codelineno-0-939" name="__codelineno-0-939"></a><span class="sd">    """</span>
-<a id="__codelineno-0-940" name="__codelineno-0-940"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-941" name="__codelineno-0-941"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-<a id="__codelineno-0-942" name="__codelineno-0-942"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
-<a id="__codelineno-0-943" name="__codelineno-0-943"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
-<a id="__codelineno-0-944" name="__codelineno-0-944"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
-<a id="__codelineno-0-945" name="__codelineno-0-945"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
-<a id="__codelineno-0-946" name="__codelineno-0-946"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
-<a id="__codelineno-0-947" name="__codelineno-0-947"></a>    <span class="p">)</span>
-<a id="__codelineno-0-948" name="__codelineno-0-948"></a>    <span class="n">container_name</span> <span class="o">=</span> <span class="n">_batch_quote</span><span class="p">(</span><span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<a id="__codelineno-0-949" name="__codelineno-0-949"></a>    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"wsl docker run -d --name </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> --restart unless-stopped"</span><span class="p">]</span>
-<a id="__codelineno-0-950" name="__codelineno-0-950"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
-<a id="__codelineno-0-951" name="__codelineno-0-951"></a>        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--network host"</span><span class="p">)</span>
-<a id="__codelineno-0-952" name="__codelineno-0-952"></a>    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_batch_quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
-<a id="__codelineno-0-953" name="__codelineno-0-953"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /var/run/docker.sock:/var/run/docker.sock"</span><span class="p">)</span>
-<a id="__codelineno-0-954" name="__codelineno-0-954"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /etc/gustavo-worker:/etc/gustavo-worker"</span><span class="p">)</span>
-<a id="__codelineno-0-955" name="__codelineno-0-955"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_WORKER_IMAGE</span><span class="p">)</span>
-<a id="__codelineno-0-956" name="__codelineno-0-956"></a>    <span class="n">run_command</span> <span class="o">=</span> <span class="s2">" ^</span><span class="se">\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-<a id="__codelineno-0-957" name="__codelineno-0-957"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-958" name="__codelineno-0-958"></a>        <span class="s2">"@echo off</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-959" name="__codelineno-0-959"></a>        <span class="s2">"wsl docker version &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-960" name="__codelineno-0-960"></a>        <span class="s2">"if errorlevel 1 (</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-961" name="__codelineno-0-961"></a>        <span class="s2">"    echo This worker requires WSL2, with a default Linux distro, Docker</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-962" name="__codelineno-0-962"></a>        <span class="s2">"    echo Desktop set to the WSL2 backend, and WSL integration enabled for</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-963" name="__codelineno-0-963"></a>        <span class="s2">"    echo that distro. See the docs for setup, then run this script again.</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-964" name="__codelineno-0-964"></a>        <span class="s2">"    exit /b 1</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-965" name="__codelineno-0-965"></a>        <span class="s2">")</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-966" name="__codelineno-0-966"></a>        <span class="sa">f</span><span class="s2">"wsl docker rm -f </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-967" name="__codelineno-0-967"></a>        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">run_command</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
-<a id="__codelineno-0-968" name="__codelineno-0-968"></a>    <span class="p">)</span>
-<a id="__codelineno-0-969" name="__codelineno-0-969"></a>    <span class="k">return</span> <span class="n">script</span>
+<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">    Linux filesystem and shell rather than native Windows - so a bind</span>
+<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">    mount host path like `~/.gustavo-worker` resolves against the WSL</span>
+<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">    user's own home directory (expanded by that shell), not against</span>
+<a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">    cmd.exe or a Windows path.</span>
+<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">    The script checks `wsl docker version` first and prints an</span>
+<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">    actionable message instead of failing deep in a Docker error if</span>
+<a id="__codelineno-0-895" name="__codelineno-0-895"></a><span class="sd">    any of those four prerequisites are missing.</span>
+<a id="__codelineno-0-896" name="__codelineno-0-896"></a>
+<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">    Parameters</span>
+<a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">    ----------</span>
+<a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">    name : str</span>
+<a id="__codelineno-0-900" name="__codelineno-0-900"></a><span class="sd">        Device group name.</span>
+<a id="__codelineno-0-901" name="__codelineno-0-901"></a><span class="sd">    gpu : bool, optional</span>
+<a id="__codelineno-0-902" name="__codelineno-0-902"></a><span class="sd">        If `True`, adds `GPU_ENABLED=true` - only for a device group</span>
+<a id="__codelineno-0-903" name="__codelineno-0-903"></a><span class="sd">        whose hardware actually has a GPU.</span>
+<a id="__codelineno-0-904" name="__codelineno-0-904"></a><span class="sd">    reporter : bool, optional</span>
+<a id="__codelineno-0-905" name="__codelineno-0-905"></a><span class="sd">        If `True`, switches worker status reporting to</span>
+<a id="__codelineno-0-906" name="__codelineno-0-906"></a><span class="sd">        gustavo-reporter's REST API instead of direct Redis writes -</span>
+<a id="__codelineno-0-907" name="__codelineno-0-907"></a><span class="sd">        see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-908" name="__codelineno-0-908"></a><span class="sd">    check_in_time : int, optional</span>
+<a id="__codelineno-0-909" name="__codelineno-0-909"></a><span class="sd">        `NEBULA_MANAGER_CHECK_IN_TIME` - how often (seconds) the</span>
+<a id="__codelineno-0-910" name="__codelineno-0-910"></a><span class="sd">        worker polls the Nebula manager and reports status. Defaults</span>
+<a id="__codelineno-0-911" name="__codelineno-0-911"></a><span class="sd">        to 60.</span>
+<a id="__codelineno-0-912" name="__codelineno-0-912"></a><span class="sd">    public_endpoints : bool, optional</span>
+<a id="__codelineno-0-913" name="__codelineno-0-913"></a><span class="sd">        If `True`, uses this platform's public Manager/Reporter</span>
+<a id="__codelineno-0-914" name="__codelineno-0-914"></a><span class="sd">        addresses instead of the internal LAN ones - for a worker</span>
+<a id="__codelineno-0-915" name="__codelineno-0-915"></a><span class="sd">        reaching this platform from outside (e.g. a Cloudflare</span>
+<a id="__codelineno-0-916" name="__codelineno-0-916"></a><span class="sd">        Tunnel). See `nebula_auth.build_worker_env`. Defaults to</span>
+<a id="__codelineno-0-917" name="__codelineno-0-917"></a><span class="sd">        `False`. Forced `True` server-side if the caller belongs to</span>
+<a id="__codelineno-0-918" name="__codelineno-0-918"></a><span class="sd">        any `EXTERNAL_USER_GROUPS` group.</span>
+<a id="__codelineno-0-919" name="__codelineno-0-919"></a><span class="sd">    session : Session</span>
+<a id="__codelineno-0-920" name="__codelineno-0-920"></a><span class="sd">        The authenticated caller, via `verify_session_or_basic`.</span>
+<a id="__codelineno-0-921" name="__codelineno-0-921"></a>
+<a id="__codelineno-0-922" name="__codelineno-0-922"></a><span class="sd">    Returns</span>
+<a id="__codelineno-0-923" name="__codelineno-0-923"></a><span class="sd">    -------</span>
+<a id="__codelineno-0-924" name="__codelineno-0-924"></a><span class="sd">    str</span>
+<a id="__codelineno-0-925" name="__codelineno-0-925"></a><span class="sd">        A `@echo off` `.bat` script, `text/plain`.</span>
+<a id="__codelineno-0-926" name="__codelineno-0-926"></a>
+<a id="__codelineno-0-927" name="__codelineno-0-927"></a><span class="sd">    Raises</span>
+<a id="__codelineno-0-928" name="__codelineno-0-928"></a><span class="sd">    ------</span>
+<a id="__codelineno-0-929" name="__codelineno-0-929"></a><span class="sd">    HTTPException</span>
+<a id="__codelineno-0-930" name="__codelineno-0-930"></a><span class="sd">        403 if the caller isn't admin and isn't granted this device</span>
+<a id="__codelineno-0-931" name="__codelineno-0-931"></a><span class="sd">        group.</span>
+<a id="__codelineno-0-932" name="__codelineno-0-932"></a>
+<a id="__codelineno-0-933" name="__codelineno-0-933"></a><span class="sd">    Notes</span>
+<a id="__codelineno-0-934" name="__codelineno-0-934"></a><span class="sd">    -----</span>
+<a id="__codelineno-0-935" name="__codelineno-0-935"></a><span class="sd">    cmd.exe's syntax and quoting are different enough from bash (no</span>
+<a id="__codelineno-0-936" name="__codelineno-0-936"></a><span class="sd">    `set -e`, `^` instead of `\\` for line continuation, its own</span>
+<a id="__codelineno-0-937" name="__codelineno-0-937"></a><span class="sd">    escaping rules via `_batch_quote`) that it needs its own generator</span>
+<a id="__codelineno-0-938" name="__codelineno-0-938"></a><span class="sd">    rather than reusing `download_worker_script`. Registry inclusion</span>
+<a id="__codelineno-0-939" name="__codelineno-0-939"></a><span class="sd">    is derived, not caller-supplied - see `nebula_auth.build_worker_env`.</span>
+<a id="__codelineno-0-940" name="__codelineno-0-940"></a><span class="sd">    """</span>
+<a id="__codelineno-0-941" name="__codelineno-0-941"></a>    <span class="n">cfg</span> <span class="o">=</span> <span class="n">config_store</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-942" name="__codelineno-0-942"></a>    <span class="n">_require_dg_access</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<a id="__codelineno-0-943" name="__codelineno-0-943"></a>    <span class="n">external</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">is_external_user</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+<a id="__codelineno-0-944" name="__codelineno-0-944"></a>    <span class="n">env</span> <span class="o">=</span> <span class="n">nebula_auth</span><span class="o">.</span><span class="n">build_worker_env</span><span class="p">(</span>
+<a id="__codelineno-0-945" name="__codelineno-0-945"></a>        <span class="n">cfg</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">nebula_secret</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-0-946" name="__codelineno-0-946"></a>        <span class="n">gpu_enabled</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span> <span class="n">use_reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">,</span> <span class="n">check_in_time</span><span class="o">=</span><span class="n">check_in_time</span><span class="p">,</span>
+<a id="__codelineno-0-947" name="__codelineno-0-947"></a>        <span class="n">use_public_endpoints</span><span class="o">=</span><span class="n">public_endpoints</span> <span class="ow">or</span> <span class="n">external</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="n">external</span><span class="p">,</span>
+<a id="__codelineno-0-948" name="__codelineno-0-948"></a>    <span class="p">)</span>
+<a id="__codelineno-0-949" name="__codelineno-0-949"></a>    <span class="n">container_name</span> <span class="o">=</span> <span class="n">_batch_quote</span><span class="p">(</span><span class="sa">f</span><span class="s2">"worker_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-0-950" name="__codelineno-0-950"></a>    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"wsl docker run -d --name </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> --restart unless-stopped"</span><span class="p">]</span>
+<a id="__codelineno-0-951" name="__codelineno-0-951"></a>    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"WORKER_NMODE"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"host"</span><span class="p">:</span>
+<a id="__codelineno-0-952" name="__codelineno-0-952"></a>        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--network host"</span><span class="p">)</span>
+<a id="__codelineno-0-953" name="__codelineno-0-953"></a>    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"-e </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_batch_quote</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<a id="__codelineno-0-954" name="__codelineno-0-954"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v /var/run/docker.sock:/var/run/docker.sock"</span><span class="p">)</span>
+<a id="__codelineno-0-955" name="__codelineno-0-955"></a>    <span class="c1"># `wsl &lt;args&gt;` hands the whole command line to the default distro's</span>
+<a id="__codelineno-0-956" name="__codelineno-0-956"></a>    <span class="c1"># default shell (not a raw exec), so `~` here is expanded the same</span>
+<a id="__codelineno-0-957" name="__codelineno-0-957"></a>    <span class="c1"># way it is in worker-script - by that shell, against the WSL user's</span>
+<a id="__codelineno-0-958" name="__codelineno-0-958"></a>    <span class="c1"># own $HOME, not by cmd.exe (which wouldn't expand it at all).</span>
+<a id="__codelineno-0-959" name="__codelineno-0-959"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-v ~/.gustavo-worker:/etc/gustavo-worker"</span><span class="p">)</span>
+<a id="__codelineno-0-960" name="__codelineno-0-960"></a>    <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_WORKER_IMAGE</span><span class="p">)</span>
+<a id="__codelineno-0-961" name="__codelineno-0-961"></a>    <span class="n">run_command</span> <span class="o">=</span> <span class="s2">" ^</span><span class="se">\n</span><span class="s2">  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<a id="__codelineno-0-962" name="__codelineno-0-962"></a>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-963" name="__codelineno-0-963"></a>        <span class="s2">"@echo off</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-964" name="__codelineno-0-964"></a>        <span class="s2">"wsl docker version &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-965" name="__codelineno-0-965"></a>        <span class="s2">"if errorlevel 1 (</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-966" name="__codelineno-0-966"></a>        <span class="s2">"    echo This worker requires WSL2, with a default Linux distro, Docker</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-967" name="__codelineno-0-967"></a>        <span class="s2">"    echo Desktop set to the WSL2 backend, and WSL integration enabled for</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-968" name="__codelineno-0-968"></a>        <span class="s2">"    echo that distro. See the docs for setup, then run this script again.</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-969" name="__codelineno-0-969"></a>        <span class="s2">"    exit /b 1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-970" name="__codelineno-0-970"></a>        <span class="s2">")</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-971" name="__codelineno-0-971"></a>        <span class="sa">f</span><span class="s2">"wsl docker rm -f </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2"> &gt;nul 2&gt;&amp;1</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-972" name="__codelineno-0-972"></a>        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">run_command</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+<a id="__codelineno-0-973" name="__codelineno-0-973"></a>    <span class="p">)</span>
+<a id="__codelineno-0-974" name="__codelineno-0-974"></a>    <span class="k">return</span> <span class="n">script</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5763,8 +5774,11 @@ entirely from <code>PUBLIC_REGISTRY_ENABLED</code> and whether the caller is an
 external-group member. See <a href="../../ui/registry/#internal-vs-external-access">Registry: internal vs. external access</a>.</p>
 <p>All three container-launching formats (<code>worker-compose</code>, <code>worker-script</code>,
 <code>worker-script-windows</code> — not <code>worker-env</code>, which has no container of
-its own to configure) also bind-mount <code>/etc/gustavo-worker</code> into the
-worker container, always, not a param. See <a href="../../ui/worker-directory/#where-the-data-comes-from">Worker Directory</a>
+its own to configure) also bind-mount <code>~/.gustavo-worker</code> (the host's
+home directory) to <code>/etc/gustavo-worker</code> inside the worker container,
+always, not a param — a home-directory path needs no extra host
+permission setup (e.g. Docker Desktop's file-sharing allowlist on
+macOS), unlike a system path such as <code>/etc</code>. See <a href="../../ui/worker-directory/#where-the-data-comes-from">Worker Directory</a>
 for what the worker writes there.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span>-u<span class="w"> </span>alice:her_secret<span class="w"> </span><span class="s2">"http://&lt;gustavo-host&gt;:&lt;port&gt;/api/device-groups/production/worker-env?reporter=true&amp;public_endpoints=true&amp;check_in_time=30"</span>
 </code></pre></div>
@@ -5804,11 +5818,12 @@ runs it directly with no setup — unlike a PowerShell <code>.ps1</code>, which 
 opens in a text editor rather than running on double-click by default.</p>
 <p>Requires <strong>WSL2</strong> (not WSL1), a default Linux distro, Docker Desktop's
 WSL2 backend, and WSL integration enabled for that distro. Every
-<code>docker</code> command in the script is prefixed <code>wsl</code>, so bind mounts like
-<code>/etc/gustavo-worker</code> resolve against a real Linux filesystem instead
-of Windows' own path rules — the script checks <code>wsl docker version</code>
-first and prints an actionable message if any of those prerequisites
-are missing, rather than failing deep inside a Docker error.</p>
+<code>docker</code> command in the script is prefixed <code>wsl</code>, so a bind mount host
+path like <code>~/.gustavo-worker</code> resolves against the WSL user's own home
+directory instead of a Windows path — the script checks <code>wsl docker
+version</code> first and prints an actionable message if any of those
+prerequisites are missing, rather than failing deep inside a Docker
+error.</p>
 
 
 
