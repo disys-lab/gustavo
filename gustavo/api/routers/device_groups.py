@@ -780,7 +780,7 @@ async def download_worker_compose(
     service["environment"] = env
     service["volumes"] = [
         "/var/run/docker.sock:/var/run/docker.sock",
-        "/etc/gustavo-worker:/etc/gustavo-worker",
+        "~/.gustavo-worker:/etc/gustavo-worker",
     ]
     compose = {"services": {"gustavo-worker": service}}
     # default_flow_style=False for block style; yaml.safe_dump handles quoting/
@@ -866,7 +866,7 @@ async def download_worker_script(
         f"docker run -d --name {shlex.quote(f'worker_{name}')} --restart unless-stopped \\\n"
         f"  {network_flag}{env_flags} \\\n"
         "  -v /var/run/docker.sock:/var/run/docker.sock \\\n"
-        "  -v /etc/gustavo-worker:/etc/gustavo-worker \\\n"
+        "  -v ~/.gustavo-worker:/etc/gustavo-worker \\\n"
         f"  {_WORKER_IMAGE}\n"
     )
     return script
@@ -886,9 +886,10 @@ async def download_worker_script_windows(
     integration enabled for that distro - all four, not just "WSL
     installed". Every `docker` invocation in the generated script is
     prefixed `wsl`, which forces it to run inside that distro's own
-    Linux filesystem rather than native Windows - otherwise a bind
-    mount like `/etc/gustavo-worker` resolves against Windows' own
-    path rules instead of a real Linux `/etc`, silently breaking it.
+    Linux filesystem and shell rather than native Windows - so a bind
+    mount host path like `~/.gustavo-worker` resolves against the WSL
+    user's own home directory (expanded by that shell), not against
+    cmd.exe or a Windows path.
     The script checks `wsl docker version` first and prints an
     actionable message instead of failing deep in a Docker error if
     any of those four prerequisites are missing.
@@ -951,7 +952,11 @@ async def download_worker_script_windows(
         args.append("--network host")
     args += [f"-e {key}={_batch_quote(value)}" for key, value in env.items()]
     args.append("-v /var/run/docker.sock:/var/run/docker.sock")
-    args.append("-v /etc/gustavo-worker:/etc/gustavo-worker")
+    # `wsl <args>` hands the whole command line to the default distro's
+    # default shell (not a raw exec), so `~` here is expanded the same
+    # way it is in worker-script - by that shell, against the WSL user's
+    # own $HOME, not by cmd.exe (which wouldn't expand it at all).
+    args.append("-v ~/.gustavo-worker:/etc/gustavo-worker")
     args.append(_WORKER_IMAGE)
     run_command = " ^\n  ".join(args)
     script = (

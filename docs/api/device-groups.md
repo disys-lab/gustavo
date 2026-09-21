@@ -153,8 +153,11 @@ external-group member. See [Registry: internal vs. external access](../ui/regist
 
 All three container-launching formats (`worker-compose`, `worker-script`,
 `worker-script-windows` — not `worker-env`, which has no container of
-its own to configure) also bind-mount `/etc/gustavo-worker` into the
-worker container, always, not a param. See [Worker Directory](../ui/worker-directory.md#where-the-data-comes-from)
+its own to configure) also bind-mount `~/.gustavo-worker` (the host's
+home directory) to `/etc/gustavo-worker` inside the worker container,
+always, not a param — a home-directory path needs no extra host
+permission setup (e.g. Docker Desktop's file-sharing allowlist on
+macOS), unlike a system path such as `/etc`. See [Worker Directory](../ui/worker-directory.md#where-the-data-comes-from)
 for what the worker writes there.
 
 ```bash
@@ -215,8 +218,9 @@ opens in a text editor rather than running on double-click by default.
 
 Requires **WSL2** (not WSL1), a default Linux distro, Docker Desktop's
 WSL2 backend, and WSL integration enabled for that distro. Every
-`docker` command in the script is prefixed `wsl`, so bind mounts like
-`/etc/gustavo-worker` resolve against a real Linux filesystem instead
-of Windows' own path rules — the script checks `wsl docker version`
-first and prints an actionable message if any of those prerequisites
-are missing, rather than failing deep inside a Docker error.
+`docker` command in the script is prefixed `wsl`, so a bind mount host
+path like `~/.gustavo-worker` resolves against the WSL user's own home
+directory instead of a Windows path — the script checks `wsl docker
+version` first and prints an actionable message if any of those
+prerequisites are missing, rather than failing deep inside a Docker
+error.

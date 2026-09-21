@@ -78,9 +78,9 @@ downloads folder.
     a default Linux distro registered, Docker Desktop set to the WSL2
     backend, and WSL integration enabled for that distro — all four,
     not just "WSL installed." Every command in the script runs via
-    `wsl`, so a bind mount like `/etc/gustavo-worker` resolves against
-    a real Linux filesystem instead of Windows' own path rules. The
-    script checks for this on startup and prints a clear message if
+    `wsl`, so a bind mount host path like `~/.gustavo-worker` resolves
+    against the WSL user's own home directory instead of a Windows
+    path. The script checks for this on startup and prints a clear message if
     it's missing, rather than failing deep in a cryptic Docker error.
     `docker compose up` (the **Docker Compose** download above) has no
     such check — if you're on Windows, run `wsl docker compose up`
@@ -101,11 +101,14 @@ If you belong to an [external user group](users.md#external-user-groups),
 can't be unchecked — an external caller is never handed the shared
 internal Redis credential or a LAN address it can't reach anyway.
 
-Every download also bind-mounts `/etc/gustavo-worker` into the worker
-container — not a toggle, always included. The worker writes its own
-identity (host IP, a self-generated id, device group) and Nebula
-credential there on first boot; see [Worker Directory](worker-directory.md)
-for what reads it back.
+Every download also bind-mounts `~/.gustavo-worker` (the host's home
+directory) to `/etc/gustavo-worker` inside the worker container — not a
+toggle, always included. Using a path under the host user's home
+directory rather than a system path like `/etc` avoids extra host
+permission setup (e.g. Docker Desktop's file-sharing allowlist on
+macOS). The worker writes its own identity (host IP, a self-generated
+id, device group) and Nebula credential there on first boot; see
+[Worker Directory](worker-directory.md) for what reads it back.
 Registry inclusion is not a checkbox at all: it's decided automatically by
 [registry policy](registry.md#internal-vs-external-access).
 
