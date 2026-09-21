@@ -1,20 +1,31 @@
 """
-/api/worker-directory — proxy onto gustavo-reporter's worker identity directory.
+/api/worker-directory — reads the worker identity directory gustavo-reporter
+writes to Redis, directly.
 
 GET    /api/worker-directory                          → list all entries across every device group the caller can see
 DELETE /api/worker-directory/{device_group}/{node_id}  → remove one worker's entry
 
-Gustavo holds no Redis connection of its own for this data - reporter
-is the only thing that talks to Redis for the directory, same as it's
-the only thing that writes worker status reports. Every call here is a
-synchronous HTTP round-trip to reporter's own `/api/directory/...`
-endpoints, authenticated with the caller's own Nebula credential
-(session.nebula_secret) - the exact same Basic auth a worker itself
-uses, not a separate Gustavo-to-reporter credential.
+Gustavo already resolves the caller's own identity and device-group
+permissions before ever touching this data (verify_firebase_token +
+compute_permissions/_visible_device_groups below). Going back out over
+HTTP to reporter's own /api/directory endpoints only to have reporter
+re-verify that same credential a second time - its own full
+compute_permissions cascade against Nebula Manager, once per device
+group in the loop - added a slow, redundant round trip on top of an
+already-resolved auth decision, and was the actual cause of
+"reporter unreachable ... Read timed out" errors here even when every
+worker and reporter itself were perfectly healthy.
+
+Gustavo has held its own REDIS_HOST/PORT/AUTH_TOKEN config since the
+original vitals/container cache (Cache.py, via cache_shim.build_cache) -
+this reads the exact same Redis directly, in the exact key/value shape
+reporter's own redis_store.py writes it, with no reporter round trip
+(and no second auth cascade) at all.
 """
 import logging
+import pickle
 
-import requests
+import redis.asyncio as redis
 from fastapi import APIRouter, Depends, HTTPException
 
 from gustavo.api import config_store, nebula_auth
@@ -24,10 +35,20 @@ from gustavo.api.session import Session
 
 router = APIRouter()
 
+# Must match gustavo-reporter's own DIRECTORY_PREFIX default (reporter/config.py).
+# Gustavo never passes a DIRECTORY_PREFIX override when launching reporter (see
+# Manager.runReporter, which only forwards DIRECTORY_TTL_SECONDS) - so reporter
+# always runs on this default in practice, the same way CACHE_PREFIX's
+# "gustavo-reports" default is relied on rather than threaded through config.
+_DIRECTORY_PREFIX = "gustavo-directory"
 
-def _reporter_base_url(cfg: dict) -> str:
-    """Reporter is always reached internally over plain http - see runReporter (gustavo/src/Manager.py)."""
-    return f"http://{cfg.get('REPORTER_HOST', '')}:{cfg.get('REPORTER_PORT', '')}"
+
+def _redis_client(cfg: dict) -> redis.Redis:
+    """Fresh async Redis client from the current config - same host/port/auth Cache.py already uses."""
+    return redis.Redis(
+        host=cfg.get("REDIS_HOST", ""), port=int(cfg.get("REDIS_PORT", 6379) or 6379),
+        password=cfg.get("REDIS_AUTH_TOKEN", ""),
+    )
 
 
 def _visible_device_groups(cfg: dict, session: Session) -> list[str]:
@@ -61,34 +82,30 @@ async def list_worker_directory(session: Session = Depends(verify_firebase_token
     dict
         ``{"error": bool, "response": [{"device_group": ..., "node_id": ...,
         "host_ip": ..., "remote_ip": ..., "updated_at": ...}, ...]}``.
-        Entries from device groups reporter itself refuses (e.g. a
-        stale grant reporter no longer honors) are silently skipped
-        rather than failing the whole request.
 
     Notes
     -----
-    One HTTP call to reporter per visible device group - reporter has
-    no "all groups at once" endpoint, since its own authorization is
-    per-device-group. Acceptable at the scale this directory is meant
-    for; would need reporter-side batching if that stops being true.
+    Reads Redis directly - see module docstring for why this doesn't
+    go through reporter's HTTP API. A device group with a Redis error
+    mid-scan is silently skipped rather than failing the whole request,
+    same tolerance the old reporter-HTTP version had for a device group
+    reporter itself refused.
     """
     cfg = config_store.get()
-    base_url = _reporter_base_url(cfg)
-    auth = (session.username, session.nebula_secret)
+    client = _redis_client(cfg)
     entries = []
-    for device_group in _visible_device_groups(cfg, session):
-        try:
-            resp = requests.get(f"{base_url}/api/directory/{device_group}", auth=auth, timeout=10)
-        except requests.exceptions.RequestException as exc:
-            logging.error(f"list_worker_directory: reporter unreachable for '{device_group}': {exc}")
-            continue
-        if resp.status_code != 200:
-            continue
-        body = resp.json()
-        if body.get("error"):
-            continue
-        for entry in body.get("response", []):
-            entries.append({**entry, "device_group": device_group})
+    try:
+        for device_group in _visible_device_groups(cfg, session):
+            try:
+                async for key in client.scan_iter(match=f"{_DIRECTORY_PREFIX}_{device_group}@*"):
+                    value = await client.get(key)
+                    if value is not None:
+                        entries.append({**pickle.loads(value), "device_group": device_group})
+            except redis.RedisError as exc:
+                logging.error(f"list_worker_directory: redis error for '{device_group}': {exc}")
+                continue
+    finally:
+        await client.aclose()
     return {"error": False, "response": entries}
 
 
@@ -124,20 +141,19 @@ async def remove_worker_directory_entry(
     -----
     rw-gated like every other mutating action in this codebase - not
     admin-only. A non-admin can delete entries only for device groups
-    they hold rw on.
+    they hold rw on. Deletes the Redis key directly - see module
+    docstring.
     """
     cfg = config_store.get()
     if not session.is_admin and nebula_auth.compute_permissions(cfg, session.username)["device_groups"].get(device_group) != "rw":
         raise HTTPException(status_code=403, detail=f"Not permitted to modify device group '{device_group}'")
 
-    base_url = _reporter_base_url(cfg)
-    auth = (session.username, session.nebula_secret)
+    client = _redis_client(cfg)
     try:
-        resp = requests.delete(f"{base_url}/api/directory/{device_group}/{node_id}", auth=auth, timeout=10)
-    except requests.exceptions.RequestException as exc:
+        await client.delete(f"{_DIRECTORY_PREFIX}_{device_group}@{node_id}")
+    except redis.RedisError as exc:
         logging.error(f"remove_worker_directory_entry failed: {exc}")
         return {"error": True, "response": str(exc)}
-
-    if resp.status_code != 200:
-        return {"error": True, "response": f"reporter returned {resp.status_code}: {resp.text}"}
+    finally:
+        await client.aclose()
     return {"error": False, "response": "deleted"}
