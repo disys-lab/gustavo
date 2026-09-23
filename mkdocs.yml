@@ -65,6 +65,7 @@ nav:
     - Device Groups: ui/device-groups.md
     - Registry: ui/registry.md
     - Worker Directory: ui/worker-directory.md
+    - Worker Maintenance: ui/worker-maintenance.md
     - Monitoring: ui/monitoring.md
     - Backups: ui/backups.md
     - Settings: ui/settings.md

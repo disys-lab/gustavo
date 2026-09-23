@@ -91,3 +91,20 @@ docker_image: 192.168.1.100:5001/cleanup:latest
 schedule: 0 2 * * *
 running: true
 ```
+
+---
+
+## Worker volume inheritance
+
+Every cron job container a worker launches automatically has access to
+that worker's own mounted volumes — including its shared identity/
+credential directory — via Docker's `volumes_from`, referencing the
+worker's own container (`worker_<device_group>`). This is unconditional:
+no `volumes_from` field on the cron job's own `config`, no admin action,
+nothing in the UI. It's why [gustavo-worker-cron](../ui/worker-maintenance.md)
+is deployable as a Nebula cron job at all, not just via host crontab.
+
+Regular apps do **not** get this — only cron jobs. If a cron job's own
+`volumes` entries target a different container path, both mounts coexist
+fine; a `volumes` entry that also targets the worker's own mount path
+overrides the inherited one for that path.

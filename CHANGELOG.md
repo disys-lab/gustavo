@@ -11,6 +11,28 @@ auto-bump.
 
 ## [Unreleased]
 
+- Added the Worker Directory: a live table of every worker that's
+  checked in (host/remote IP, a stable self-generated id, device
+  group), backed by [gustavo-reporter](docs/configuration.md#reporter)'s
+  Redis-stored data. Gustavo reads that data directly from Redis
+  itself rather than over HTTP through Reporter — the earlier HTTP
+  round-trip design re-triggered Reporter's own full credential-
+  verification cascade against Nebula Manager on every listing, which
+  was the actual cause of a production incident that looked unrelated
+  at first. See [Worker Directory](docs/ui/worker-directory.md).
+- The worker's shared host directory (identity/credential files, and
+  where a worker's own launcher downloads bind-mount it from) moved
+  from `/etc/gustavo-worker` to `~/.gustavo-worker` — `/etc` isn't
+  reachable by default under Docker Desktop's file-sharing allowlist
+  (macOS/Windows) or under snap-confined Docker (Linux); a home-
+  directory path needs no such grant on either.
+- Added [gustavo-worker-cron](https://github.com/disys-lab/gustavo-worker-cron),
+  a separate companion image for ongoing worker upkeep (credential
+  resets, identity refresh, self-update, moving a worker to a
+  different device group) — and made every Nebula cron job a worker
+  launches automatically inherit that worker's own mounted volumes,
+  which is what makes the companion image usable as a cron job in the
+  first place. See [Worker Maintenance](docs/ui/worker-maintenance.md).
 - Added numpydoc-style docstrings across `gustavo/src/{NebulaBase,
   Manager,Composer,Cache}.py` and all nine `gustavo/api/routers/*.py`
   modules, rendered on the docs site via the existing `mkdocstrings`
