@@ -1,0 +1,21 @@
+services:
+  gustavo-worker:
+    image: ghcr.io/disys-lab/gustavo-worker:latest
+    container_name: worker_kazidg2
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      DEVICE_GROUP: kazidg2
+      REPORTER_HOST: reporter-gustavo.disyslab.dev
+      REPORTER_PORT: '443'
+      REPORTER_PROTOCOL: https
+      MAX_RESTART_WAIT_IN_SECONDS: '0'
+      NEBULA_MANAGER_AUTH_USER: kazi
+      NEBULA_MANAGER_AUTH_PASSWORD: x_vfvBgVUiG6cBQHi_995GexebIF64DbAJyvRJT2Ltg
+      NEBULA_MANAGER_HOST: manager-gustavo.disyslab.dev
+      NEBULA_MANAGER_PORT: '443'
+      NEBULA_MANAGER_PROTOCOL: https
+      NEBULA_MANAGER_CHECK_IN_TIME: '60'
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ~/.gustavo-worker:/etc/gustavo-worker
