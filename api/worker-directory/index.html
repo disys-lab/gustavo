@@ -1629,6 +1629,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../ui/worker-maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Maintenance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../ui/monitoring/" class="md-nav__link">
         
   
@@ -2106,11 +2134,18 @@
 
 
 <h1 id="worker-directory-api">Worker Directory API</h1>
-<p>Proxies onto <a href="../../configuration/#reporter">gustavo-reporter</a>'s own worker
-identity directory. Gustavo holds no direct Redis connection for this
-data — every call here is a synchronous HTTP round-trip to Reporter's
-<code>/api/directory/...</code> endpoints, authenticated with the caller's own
-Nebula credential (the same one used for every other write in Gustavo).</p>
+<p>Reads the worker identity directory directly from Redis — the same
+Redis, and the same <code>REDIS_HOST</code>/<code>REDIS_PORT</code>/<code>REDIS_AUTH_TOKEN</code> config,
+<a href="../monitoring/">Monitoring</a> already uses for cached vitals/container
+reports. <a href="../../configuration/#reporter">gustavo-reporter</a> is still what
+<em>writes</em> this data (workers register with it, not with Gustavo), but
+Gustavo no longer goes back out over HTTP to read it back — that
+round trip turned out to be the actual cause of a production incident
+where every directory listing re-triggered Reporter's own full
+credential-verification cascade against Nebula Manager, once per
+device group. Scoping to the caller's visible device groups happens
+the same way it always has (<code>compute_permissions</code>/admin check) before
+any Redis key is touched.</p>
 
 
 <div class="doc doc-object doc-module">
@@ -2598,10 +2633,9 @@ anyone else.</p>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="p">]</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">}</span>
 </code></pre></div>
-<p>Issues one HTTP call to Reporter per visible device group — Reporter
-has no "all groups at once" endpoint, since its own authorization is
-per-device-group. A device group Reporter itself rejects (e.g. a stale
-grant) is silently skipped rather than failing the whole request.</p>
+<p>Scans Redis once per visible device group (<code>gustavo-directory_{device_group}@*</code>
+keys) — a Redis error scanning any one group is logged and skipped
+rather than failing the whole request.</p>
 <hr />
 <h3 id="delete-apiworker-directorydevice_groupnode_id"><code>DELETE /api/worker-directory/{device_group}/{node_id}</code></h3>
 <p>Remove one worker's entry.</p>

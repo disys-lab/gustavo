@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../registry/">
+        <link rel="prev" href="../worker-directory/">
       
       
-        <link rel="next" href="../worker-maintenance/">
+        <link rel="next" href="../monitoring/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Worker Directory - Gustavo</title>
+        <title>Worker Maintenance - Gustavo</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#worker-directory" class="md-skip">
+        <a href="#worker-maintenance" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Worker Directory
+              Worker Maintenance
             
           </span>
         </div>
@@ -1456,6 +1456,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../worker-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1475,7 +1503,7 @@
   <span class="md-ellipsis">
     
   
-    Worker Directory
+    Worker Maintenance
   
 
     
@@ -1493,7 +1521,7 @@
   <span class="md-ellipsis">
     
   
-    Worker Directory
+    Worker Maintenance
   
 
     
@@ -1519,10 +1547,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-it-shows" class="md-nav__link">
+  <a href="#what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What it shows
+        What it does
       
     </span>
   </a>
@@ -1530,10 +1558,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#where-the-data-comes-from" class="md-nav__link">
+  <a href="#deploying-it-as-a-nebula-cron-job" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Where the data comes from
+        Deploying it as a Nebula cron job
       
     </span>
   </a>
@@ -1541,10 +1569,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deleting-an-entry" class="md-nav__link">
+  <a href="#exposing-a-workers-node-identity-to-a-regular-app" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deleting an entry
+        Exposing a worker's node identity to a regular app
       
     </span>
   </a>
@@ -1555,34 +1583,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../worker-maintenance/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Worker Maintenance
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -2071,72 +2071,102 @@
   
 
 
-<h1 id="worker-directory">Worker Directory</h1>
-<p>A live table of every worker that's checked in, scoped to the device
-groups you have access to (all of them, for an admin).</p>
+<h1 id="worker-maintenance">Worker Maintenance</h1>
+<p>Ongoing worker upkeep — credential resets, identity refresh, self-update,
+moving a worker to a different device group — is handled by
+<a href="https://github.com/disys-lab/gustavo-worker-cron">gustavo-worker-cron</a>, a
+separate companion image, not by Gustavo's own UI/API. It's built <code>FROM</code>
+gustavo-worker itself, so it reuses the worker's own identity/Docker-socket
+code directly rather than reimplementing it.</p>
 <hr />
-<h2 id="what-it-shows">What it shows</h2>
-<p>Each row is one worker's self-reported identity:</p>
+<h2 id="what-it-does">What it does</h2>
+<p>A one-shot dispatcher, not a persistent daemon — selected per run by an
+<code>ACTION</code> env var, meant to be scheduled (host crontab, or as a
+<a href="../../api/cron-jobs/">Nebula cron job</a>), not baked into the image itself.
+Five independent actions:</p>
 <table>
 <thead>
 <tr>
-<th>Column</th>
-<th>Description</th>
+<th><code>ACTION</code></th>
+<th>Does</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Device Group</td>
-<td>Which group the worker belongs to</td>
+<td><code>reset-nebula-credentials</code></td>
+<td>Restores the Nebula username/password in the worker's shared credential file to known-good values</td>
 </tr>
 <tr>
-<td>Worker ID</td>
-<td>A stable id the worker generates once, on its own, at first boot — never regenerated afterward</td>
+<td><code>reset-registry-credentials</code></td>
+<td>Same, for the registry username/password/host</td>
 </tr>
 <tr>
-<td>Host IP</td>
-<td>The worker's LAN-facing IP, determined locally (requires the worker to run with host networking)</td>
+<td><code>refresh-identity</code></td>
+<td>Re-resolves host/remote IP and re-registers with Reporter</td>
 </tr>
 <tr>
-<td>Remote IP</td>
-<td>The worker's externally-visible IP, as observed by <a href="../../configuration/#reporter">Reporter</a></td>
+<td><code>update-worker</code></td>
+<td>Pulls a new gustavo-worker image tag and recreates the running worker container on it</td>
 </tr>
 <tr>
-<td>Last Updated</td>
-<td>When this entry was last refreshed</td>
+<td><code>change-device-group</code></td>
+<td>Moves a worker to a different device group in one call — container recreate, identity refresh, and cleanup of its old-group Reporter entry</td>
 </tr>
 </tbody>
 </table>
-<p>Non-admins only see rows for device groups they've been granted (<code>ro</code>
-or <code>rw</code>) — the same permission check used everywhere else in Gustavo.</p>
+<p>Each action is independently schedulable — run any subset, on whatever
+cadence makes sense for that one. Full env var reference and deployment
+examples are in the image's own
+<a href="https://github.com/disys-lab/gustavo-worker-cron#readme">README</a>.</p>
 <hr />
-<h2 id="where-the-data-comes-from">Where the data comes from</h2>
-<p>Every row is read directly from Redis on page load — the same Redis
-<a href="../../configuration/#reporter">Reporter</a> writes to, but Gustavo reads
-it itself rather than asking Reporter over HTTP. See
-<a href="../../configuration/#reporter">Configuration: Reporter</a> for the
-<code>DIRECTORY_TTL_SECONDS</code> setting that controls whether stale entries
-expire.</p>
-<p>Population is a two-part process, neither of which happens through
-this UI:</p>
-<ol>
-<li>A worker writes its own identity locally (host IP, a self-generated
-   id, its device group) on first boot, and registers it with Reporter.</li>
-<li><a href="../worker-maintenance/">gustavo-worker-cron</a>'s <code>refresh-identity</code>
-   action, deployed as a Nebula cron job independently of this UI,
-   periodically refreshes the remote IP and re-registers with
-   Reporter on whatever schedule that cron job is given.</li>
-</ol>
+<h2 id="deploying-it-as-a-nebula-cron-job">Deploying it as a Nebula cron job</h2>
+<p>Every cron job a worker launches automatically has access to that
+worker's own mounted volumes — including its shared identity/credential
+directory — via Docker's <code>volumes_from</code>, referencing the worker's own
+container (<code>worker_&lt;device_group&gt;</code>). This is unconditional and needs no
+configuration on the cron job's own <code>volumes</code> field; see
+<a href="../../api/cron-jobs/#worker-volume-inheritance">Cron Jobs API: worker volume inheritance</a>.
+That's what makes gustavo-worker-cron usable as a Nebula cron job at all,
+rather than only via host crontab.</p>
 <hr />
-<h2 id="deleting-an-entry">Deleting an entry</h2>
-<p>Each row has a <strong>Delete</strong> button — removes that one worker's entry
-immediately, no confirmation dialog (same pattern as <a href="../backups/">Backups</a>).
-Requires <code>rw</code> on that device group — non-admins can only delete entries
-for groups they hold <code>rw</code> on, same as every other mutating action in
-Gustavo.</p>
-<p>Deleting an entry here doesn't affect the worker itself — it's purely
-a Redis record. A worker that's still running and still checking in
-will simply reappear on its next refresh.</p>
+<h2 id="exposing-a-workers-node-identity-to-a-regular-app">Exposing a worker's node identity to a regular app</h2>
+<p>Regular apps do <strong>not</strong> get automatic access to a worker's volumes the
+way cron jobs do — deliberately, since apps can be arbitrary images and
+the worker's own directory includes real credentials, not just an id.
+There's no automatic or built-in opt-in path for a specific app either.</p>
+<p>The pattern for an admin who explicitly wants to expose this to one app
+anyway: a small, separate cron job (an admin might call it something like
+<code>tmpfs-parity</code>) using a minimal image (e.g. <code>alpine</code>) that copies the
+worker's identity directory to another path on a schedule:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"docker_image"</span><span class="p">:</span><span class="w"> </span><span class="s2">"alpine:3.19"</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*/15 * * * *"</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"sh"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-c"</span><span class="p">,</span><span class="w"> </span><span class="s2">"cp -r /etc/gustavo-worker/. /dest"</span><span class="p">],</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">"volumes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"/tmp/.gustavo-worker:/dest"</span><span class="p">],</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">"running"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
+</code></pre></div>
+<p>The destination host path (<code>/tmp/.gustavo-worker</code> above) is a plain
+choice — any real, writable path works the same way. Like any other
+cron job, this one already gets <code>/etc/gustavo-worker</code> for free via the
+automatic <code>volumes_from</code> behavior above; the <code>volumes</code> entry here is
+what makes the <em>copy</em>'s destination a real host path other containers
+can also reach.</p>
+<p>The app that should see this data then adds the <strong>same</strong> host path to
+its own <code>volumes</code> config, mapped to wherever it expects to read it. No
+worker or Gustavo code is involved in granting this — it's a plain
+Docker bind mount an admin sets up per app, same as any other volume.</p>
+<p><strong>Copies everything, credentials included.</strong> <code>cp -r /etc/gustavo-worker/.</code>
+copies both <code>host.json</code> (node id, IPs, device group) <em>and</em>
+<code>credential.json</code> (the worker's actual Nebula/registry passwords) into
+the destination. Whatever app gets the matching volume mapping gets both
+— this is a deliberate, per-app admin choice, not a Gustavo-enforced
+boundary. Copying only <code>host.json</code> instead (dropping the credentials
+file from the <code>cp</code>) is the safer variant if an app only needs the node
+id, not the credentials.</p>
+<p>Since a cron job runs periodically, this copy is naturally kept fresh
+across restarts too — no separate "resync" step needed beyond the
+schedule itself.</p>
 
 
 
@@ -2174,7 +2204,7 @@ will simply reappear on its next refresh.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../registry/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Registry">
+          <a href="../worker-directory/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Worker Directory">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2184,20 +2214,20 @@ will simply reappear on its next refresh.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Registry
+                Worker Directory
               </div>
             </div>
           </a>
         
         
           
-          <a href="../worker-maintenance/" class="md-footer__link md-footer__link--next" aria-label="Next: Worker Maintenance">
+          <a href="../monitoring/" class="md-footer__link md-footer__link--next" aria-label="Next: Monitoring">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Worker Maintenance
+                Monitoring
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -1276,6 +1276,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#worker-volume-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker volume inheritance
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1697,6 +1708,34 @@
     
   
     Worker Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/worker-maintenance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker Maintenance
   
 
     
@@ -3476,6 +3515,19 @@ membership is not read from this request — manage it via the
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">schedule</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0 2 * * *</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nt">running</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre></div>
+<hr />
+<h2 id="worker-volume-inheritance">Worker volume inheritance</h2>
+<p>Every cron job container a worker launches automatically has access to
+that worker's own mounted volumes — including its shared identity/
+credential directory — via Docker's <code>volumes_from</code>, referencing the
+worker's own container (<code>worker_&lt;device_group&gt;</code>). This is unconditional:
+no <code>volumes_from</code> field on the cron job's own <code>config</code>, no admin action,
+nothing in the UI. It's why <a href="../../ui/worker-maintenance/">gustavo-worker-cron</a>
+is deployable as a Nebula cron job at all, not just via host crontab.</p>
+<p>Regular apps do <strong>not</strong> get this — only cron jobs. If a cron job's own
+<code>volumes</code> entries target a different container path, both mounts coexist
+fine; a <code>volumes</code> entry that also targets the worker's own mount path
+overrides the inherited one for that path.</p>
 
 
 
