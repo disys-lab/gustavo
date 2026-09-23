@@ -1,10 +1,17 @@
 # Worker Directory API
 
-Proxies onto [gustavo-reporter](../configuration.md#reporter)'s own worker
-identity directory. Gustavo holds no direct Redis connection for this
-data — every call here is a synchronous HTTP round-trip to Reporter's
-`/api/directory/...` endpoints, authenticated with the caller's own
-Nebula credential (the same one used for every other write in Gustavo).
+Reads the worker identity directory directly from Redis — the same
+Redis, and the same `REDIS_HOST`/`REDIS_PORT`/`REDIS_AUTH_TOKEN` config,
+[Monitoring](monitoring.md) already uses for cached vitals/container
+reports. [gustavo-reporter](../configuration.md#reporter) is still what
+*writes* this data (workers register with it, not with Gustavo), but
+Gustavo no longer goes back out over HTTP to read it back — that
+round trip turned out to be the actual cause of a production incident
+where every directory listing re-triggered Reporter's own full
+credential-verification cascade against Nebula Manager, once per
+device group. Scoping to the caller's visible device groups happens
+the same way it always has (`compute_permissions`/admin check) before
+any Redis key is touched.
 
 ::: gustavo.api.routers.worker_directory
 
@@ -35,10 +42,9 @@ anyone else.
 }
 ```
 
-Issues one HTTP call to Reporter per visible device group — Reporter
-has no "all groups at once" endpoint, since its own authorization is
-per-device-group. A device group Reporter itself rejects (e.g. a stale
-grant) is silently skipped rather than failing the whole request.
+Scans Redis once per visible device group (`gustavo-directory_{device_group}@*`
+keys) — a Redis error scanning any one group is logged and skipped
+rather than failing the whole request.
 
 ---
 

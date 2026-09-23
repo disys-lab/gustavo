@@ -24,21 +24,22 @@ or `rw`) — the same permission check used everywhere else in Gustavo.
 
 ## Where the data comes from
 
-Gustavo has no direct connection to this data — every row comes from
-a live call to Reporter's own worker directory API on page load.
-Reporter is the only thing that writes and reads this in Redis; see
-[Configuration: Reporter](../configuration.md#reporter) for the `DIRECTORY_TTL_SECONDS`
-setting that controls whether stale entries expire.
+Every row is read directly from Redis on page load — the same Redis
+[Reporter](../configuration.md#reporter) writes to, but Gustavo reads
+it itself rather than asking Reporter over HTTP. See
+[Configuration: Reporter](../configuration.md#reporter) for the
+`DIRECTORY_TTL_SECONDS` setting that controls whether stale entries
+expire.
 
 Population is a two-part process, neither of which happens through
 this UI:
 
 1. A worker writes its own identity locally (host IP, a self-generated
    id, its device group) on first boot, and registers it with Reporter.
-2. A separate, dedicated component — deployed as a Nebula cron job,
-   configured independently — periodically refreshes the remote IP and
-   re-registers with Reporter. This UI has no control over that
-   schedule.
+2. [gustavo-worker-cron](worker-maintenance.md)'s `refresh-identity`
+   action, deployed as a Nebula cron job independently of this UI,
+   periodically refreshes the remote IP and re-registers with
+   Reporter on whatever schedule that cron job is given.
 
 ---
 
