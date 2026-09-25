@@ -171,6 +171,9 @@ Use **Get worker config**. Gustavo can generate:
 
 Run the selected worker configuration on the head machine.
 
+```powershell
+docker compose -f <GUSTAVO_WORKER_CONFIG_FILE>.yml up -d
+```
 Verify:
 
 ```powershell
@@ -345,7 +348,7 @@ Windows example:
 
 ```text
 HOST PATH
-/run/desktop/mnt/host/c/gustavo/examples/scarlet_csv_avg_cntns/scarlet_data
+/run/desktop/mnt/host/c/gustavo/examples/scarlet-worker-average/dynamic-worker-average/scarlet_csv_avg_cntns/scarlet_data
 
 CONTAINER PATH
 /data

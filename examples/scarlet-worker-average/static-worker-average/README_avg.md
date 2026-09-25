@@ -96,7 +96,7 @@ Do not commit or copy `.scarlet_node_id` between devices.
 
 ## 4. Docker image
 
-Create `Dockerfile.static`:
+Create `Dockerfile`:
 
 ```dockerfile
 FROM ghcr.io/disys-lab/scarlet-agent-base:latest
@@ -350,7 +350,7 @@ Windows example:
 
 ```text
 HOST PATH
-/run/desktop/mnt/host/c/gustavo/examples/scarlet_csv_avg/scarlet_data
+/run/desktop/mnt/host/c/gustavo/examples/scarlet-worker-average/static-worker-average/scarlet_csv_avg/scarlet_data
 
 CONTAINER PATH
 /data
